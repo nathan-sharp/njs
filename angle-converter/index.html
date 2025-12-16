@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Angle Converter | NJS.dev</title>
+        <script>
+            window.MathJax = {
+                tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+                svg: { fontCache: 'global' }
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+        <script src="/angle-converter/scripts.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>Angle Converter</h1>
+            <p>Enter a value into any the blow fields to get the equivalent in the other units.</p>
+        </header>
+        <main>
+            <div>
+                <label>Decimal Degree:</label>
+                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> °deg
+            </div>
+            <div>
+                <label>Degree Minute Second:</label>
+                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> °deg
+                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> 'min
+                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> "sec
+            </div>
+            <div>
+                <label>Radians:</label>
+                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> rad
+            </div>
+            <!-- removed placeholder -->
+        </main>
+        <!-- Proof -->
+        <section id="proof" aria-labelledby="proof-title">
+            <h2 id="proof-title">Proof</h2>
+            <button id="fill-formula-btn" type="button">Show values in formulas</button>
+            <p>Formulas used by the converter:</p>
+            <ul>
+                <li><strong>DMS → Decimal degrees</strong>: $$\mathrm{DD} = \operatorname{sign}(D)\cdot\bigl(|D| + \tfrac{M}{60} + \tfrac{S}{3600}\bigr)$$</li>
+                <li><strong>Decimal degrees → DMS</strong>:<br/>
+                    $$D = \operatorname{sign}(\mathrm{DD})\cdot\lfloor |\mathrm{DD}| \rfloor,$$
+                    $$M = \Bigl\lfloor (|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 \Bigr\rfloor,$$
+                    $$S = \Bigl((|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 - M\Bigr)\cdot 60$$
+                </li>
+                <li><strong>Degrees ↔ Radians</strong>: $$\mathrm{rad} = \mathrm{deg}\cdot\frac{\pi}{180}, \qquad \mathrm{deg} = \mathrm{rad}\cdot\frac{180}{\pi}$$</li>
+            </ul>
+            <p>Notes: minutes and seconds are non-negative; the sign of the angle is carried on the degrees component.</p>
+            <div id="filled-formulas" aria-live="polite"></div>
+        </section>
+        <footer>
+            <p>©2025 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+    </body>
+</html>
