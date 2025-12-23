@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ThreadMate | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/threadmate/scripts.js"></script>
+        <style>
+            table, th, td {
+            border:1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>ThreadMate</h1>
+            <p>Tool for calculating thread dimensions.</p>
+        </header>
+        <main>
+            <h2>Parameters</h2>
+            <div>
+                <label for="Type">Thread Type:</label>
+                <select name="Types" id="Types">
+                    <option value="UN Threads">UN Threads</option>
+                    <option value="UNR Threads">UNR Threads</option>
+                    <option value="UNJ Threads">UNJ Threads</option>
+                    <option value="ACME Threads">ACME Threads</option>
+                    <option value="Sub Acme Threads">Sub Acme Threads</option>
+                    <option value="M Series Metric">M Series Metric</option>
+                </select>
+            </div>
+            <div id="thread-class-container">
+                <label for="thread-class">Thread Class:</label>
+                <select name="thread-class" id="thread-class">
+                    <option value="Class 1">Class 1</option>
+                    <option value="Class 2">Class 2</option>
+                    <option value="Class 3">Class 3</option>
+                </select>
+            </div>
+            <div>
+                <label for="nominal-diameter">Nominal Diameter:</label>
+                <input type="number" id="nominal-diameter" name="nominal-diameter" inputmode="decimal" pattern="[0-9.+-]*"> mm
+            </div>
+            <div id="pitch-container" style="display:none;">
+                <label for="pitch">Pitch:</label>
+                <input type="number" id="pitch" name="pitch" inputmode="decimal" pattern="[0-9.+-]*"> mm
+            </div>
+            <div id="tpi-container">
+                <label for="threads-per-inch">Threads Per Inch:</label>
+                <input type="number" id="threads-per-inch" name="threads-per-inch" inputmode="decimal" pattern="[0-9.+-]*">
+            </div>
+            <button>Calculate</button>
+            <h2>Dimensions</h2>
+            <table>
+                <tr>
+                    <th>Dim. Table</th>
+                    <th>PD Max</th>
+                    <th>PD Min</th>
+                    <th>Maj Dia Max</th>
+                    <th>Maj Dia Min</th>
+                </tr>
+                <tr>
+                    <td>Internal</td>
+                    <td id="I-PD_Max">null</td>
+                    <td id="I-PD_Min">null</td>
+                    <td id="I-Maj Dia Max">null</td>
+                    <td id="I-Maj Dia Min">null</td>
+                </tr>
+                <tr>
+                    <td>External</td>
+                    <td id="E-PD_Max">null</td>
+                    <td id="E-PD_Min">null</td>
+                    <td id="E-Maj Dia Max">null</td>
+                    <td id="E-Maj Dia Min">null</td>
+                </tr>
+            </table>
+        </main>
+        <footer>
+            <p>©2025 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+    </body>
+</html>
