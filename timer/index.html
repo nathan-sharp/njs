@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Clock | NJS.dev</title>
+        <title>Timer | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -215,6 +215,40 @@
                     }
                 }
 
+                function getTargetParam() {
+                    const params = new URLSearchParams(location.search);
+                    return params.get('t') || params.get('target') || params.get('until');
+                }
+
+                // Parse target ISO parameter (if supplied). If no parameter is present, default to 2 days from now.
+                let targetRaw = getTargetParam();
+                let targetDate = null;
+                if (targetRaw != null) {
+                    // user supplied something — try to parse it as ISO datetime
+                    const parsed = new Date(targetRaw);
+                    if (!isNaN(parsed)) {
+                        targetDate = parsed;
+                    } else {
+                        // Try a simple normalization (space -> T)
+                        const alt = new Date(targetRaw.replace(' ', 'T'));
+                        if (!isNaN(alt)) targetDate = alt;
+                    }
+                } else {
+                    // No explicit target supplied: default to 2 days in the future (based on user's local time at load)
+                    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+                    targetDate = new Date(Date.now() + TWO_DAYS_MS);
+
+                    // Auto-populate the URL with the ISO timestamp so it's visible to users on load
+                    try {
+                        const url = new URL(location.href);
+                        // use ISO (UTC) for a canonical, time zone–aware value
+                        url.searchParams.set('t', targetDate.toISOString());
+                        history.replaceState(null, '', url.toString());
+                    } catch (e) {
+                        // ignore failures when URL manipulation isn't allowed
+                    }
+                }
+
                 function setAudioEnabled(enabled, { updateUrl = true } = {}) {
                     audioEnabled = !!enabled;
                     document.body.setAttribute('aria-audio', audioEnabled ? 'on' : 'off');
@@ -281,47 +315,154 @@
                     }
                 })();
 
-                // Timezone setting from URL
-                const tzSetting = getTzParam();
-
                 function updateClock() {
                     const now = new Date();
-                    const tz = getTzParam();
-                    const parts = getTimeParts(now, tz);
-                    const timeOnly = `${parts.hour}:${parts.minute}:${parts.second}`;
-                    const isoDate = `${parts.year}-${parts.month}-${parts.day}`;
-                    document.getElementById('time').textContent = timeOnly;
-                    document.getElementById('date').textContent = isoDate;
 
-                    // Audio pips: day > hour > minute > second based on displayed timezone (only one per second)
-                    if (audioEnabled) {
-                        const s = parseInt(parts.second, 10);
-                        const m = parseInt(parts.minute, 10);
-                        const h = parseInt(parts.hour, 10);
-                        if (s === lastBeepSecond) return; // avoid duplicate when called multiple times
-                        lastBeepSecond = s;
+                    if (targetDate) {
+                        // Countdown / elapsed mode
+                        const diffMs = targetDate.getTime() - now.getTime();
+                        const negative = diffMs < 0; // true => target is in the past
+                        const absSec = Math.max(0, Math.round(Math.abs(diffMs) / 1000));
 
-                        if (h === 0 && m === 0 && s === 0) {
-                            // day: three ascending beeps
-                            beepSequence([
-                                { f: 800, d: 120 },
-                                { f: 1000, d: 120, delay: 0.18 },
-                                { f: 1200, d: 240, delay: 0.18 }
-                            ]);
-                        } else if (m === 0 && s === 0) {
-                            // hour: long beep
-                            beep(1600, 420);
-                        } else if (s === 0) {
-                            // minute: medium beep
-                            beep(1200, 180);
+                        const days = Math.floor(absSec / 86400);
+                        const years = Math.floor(days / 365);
+                        const daysRem = days % 365;
+                        const hours = Math.floor((absSec % 86400) / 3600);
+                        const minutes = Math.floor((absSec % 3600) / 60);
+                        const seconds = absSec % 60;
+
+                        let timeStr;
+                        if (years > 0) {
+                            // show years, remaining days, then H:M:S
+                            timeStr = `${years}y ${daysRem}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                        } else if (days > 0) {
+                            // keep full H:M:S when days are present
+                            timeStr = `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                        } else if (hours > 0) {
+                            // show hours as a labeled prefix and then MM:SS
+                            timeStr = `${hours}h ${pad(minutes)}:${pad(seconds)}`;
+                        } else if (minutes > 0) {
+                            // show minutes as a labeled prefix and seconds
+                            timeStr = `${minutes}m ${pad(seconds)}`;
                         } else {
-                            // second: short pip
-                            beep(950, 80);
+                            // only seconds remain
+                            timeStr = `${seconds}s`;
+                        }
+
+                        document.getElementById('time').textContent = negative ? `T+ ${timeStr}` : `T- ${timeStr}`;
+                        document.getElementById('date').textContent = toLocalISO(targetDate);
+
+                        if (audioEnabled) {
+                            // Use the seconds component to avoid duplicate beeps within the same second
+                            const s = seconds;
+                            if (s === lastBeepSecond) return;
+                            lastBeepSecond = s;
+
+                            if (absSec === 0) {
+                                // target reached
+                                beepSequence([
+                                    { f: 800, d: 120 },
+                                    { f: 1000, d: 120, delay: 0.18 },
+                                    { f: 1200, d: 240, delay: 0.18 }
+                                ]);
+                            } else if (minutes === 0 && seconds === 0 && hours === 0 && days > 0) {
+                                // day tick
+                                beepSequence([
+                                    { f: 800, d: 120 },
+                                    { f: 1000, d: 120, delay: 0.18 },
+                                    { f: 1200, d: 240, delay: 0.18 }
+                                ]);
+                            } else if (minutes === 0 && seconds === 0) {
+                                // hour
+                                beep(1600, 420);
+                            } else if (seconds === 0) {
+                                // minute
+                                beep(1200, 180);
+                            } else {
+                                // second
+                                beep(950, 80);
+                            }
+                        }
+                    } else {
+                        // Original clock mode (no target)
+                        const tz = getTzParam();
+                        const parts = getTimeParts(now, tz);
+                        const timeOnly = `${parts.hour}:${parts.minute}:${parts.second}`;
+                        const isoDate = `${parts.year}-${parts.month}-${parts.day}`;
+                        document.getElementById('time').textContent = timeOnly;
+                        document.getElementById('date').textContent = isoDate;
+
+                        // Audio pips: day > hour > minute > second based on displayed timezone (only one per second)
+                        if (audioEnabled) {
+                            const s = parseInt(parts.second, 10);
+                            const m = parseInt(parts.minute, 10);
+                            const h = parseInt(parts.hour, 10);
+                            if (s === lastBeepSecond) return; // avoid duplicate when called multiple times
+                            lastBeepSecond = s;
+
+                            if (h === 0 && m === 0 && s === 0) {
+                                // day: three ascending beeps
+                                beepSequence([
+                                    { f: 800, d: 120 },
+                                    { f: 1000, d: 120, delay: 0.18 },
+                                    { f: 1200, d: 240, delay: 0.18 }
+                                ]);
+                            } else if (m === 0 && s === 0) {
+                                // hour: long beep
+                                beep(1600, 420);
+                            } else if (s === 0) {
+                                // minute: medium beep
+                                beep(1200, 180);
+                            } else {
+                                // second: short pip
+                                beep(950, 80);
+                            }
                         }
                     }
+
+                    // Adjust font sizes to ensure text fits horizontally
+                    function fitTextToWidth(el, minFontPx = 12) {
+                        if (!el) return;
+                        const style = window.getComputedStyle(el);
+                        let original = el.dataset.originalFontSize ? parseFloat(el.dataset.originalFontSize) : null;
+                        if (!original) {
+                            original = parseFloat(style.fontSize);
+                            el.dataset.originalFontSize = original;
+                        }
+                        // Start from the original size to allow increasing when space permits
+                        let fs = original;
+                        el.style.fontSize = fs + 'px';
+                        const available = el.clientWidth;
+                        // Reduce font size until it fits or reaches minimum
+                        while (el.scrollWidth > available && fs > minFontPx) {
+                            fs -= 1;
+                            el.style.fontSize = fs + 'px';
+                        }
+                    }
+
+                    function adjustClockFont() {
+                        fitTextToWidth(document.getElementById('time'), 12);
+                        fitTextToWidth(document.getElementById('date'), 10);
+                    }
+
+                    // ensure size is updated after each tick and on resize
+                    adjustClockFont();
+
                 }
                 setInterval(updateClock, 1000);
                 updateClock(); // initial call
+                window.addEventListener('resize', () => {
+                    // Debounce briefly to avoid thrashing during resize
+                    clearTimeout(window._njsTimerResizeTimeout);
+                    window._njsTimerResizeTimeout = setTimeout(() => {
+                        // Reset to original before recalculating so text can grow when space increases
+                        const t = document.getElementById('time');
+                        const d = document.getElementById('date');
+                        if (t && t.dataset.originalFontSize) t.style.fontSize = t.dataset.originalFontSize + 'px';
+                        if (d && d.dataset.originalFontSize) d.style.fontSize = d.dataset.originalFontSize + 'px';
+                        adjustClockFont();
+                    }, 80);
+                });
             </script>
         </main>
     </body>
