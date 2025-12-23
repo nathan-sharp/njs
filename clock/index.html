@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            /* Ensure padding doesn't increase layout width to avoid horizontal scroll */
+            *, *::before, *::after { box-sizing: border-box; }
+
+            html, body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                min-height: 100vh;
+                font-family: Roboto Mono, monospace;
+                text-align: center;
+                background: #000000;
+                color: #ffffff;
+                overflow-x: hidden; /* guard against accidental overflow */
+            }
+
+            main {
+                width: 100%;
+                max-width: 100%;
+                padding: 2vh 2vw;
+            }
+
+            /* Make the time fill more of the viewport while remaining responsive */
+            h1#time {
+                margin: 0;
+                font-weight: 700;
+                line-height: 0.9;
+                font-size: clamp(48px, 20vmin, 24rem);
+                max-height: 80vh;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+
+            h3#date {
+                margin: 1.5vh 0 0;
+                font-weight: 400;
+                font-size: clamp(16px, 4vmin, 3rem);
+                opacity: 0.9;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1 id="time">--:--:--</h1>
+            <h3 id="date">----</h3>
+            <script>
+                function pad(n) { return String(n).padStart(2, '0'); }
+                function toLocalISO(dt) {
+                    const year = dt.getFullYear();
+                    const month = pad(dt.getMonth() + 1);
+                    const day = pad(dt.getDate());
+                    const hour = pad(dt.getHours());
+                    const minute = pad(dt.getMinutes());
+                    const second = pad(dt.getSeconds());
+                    const tzo = -dt.getTimezoneOffset();
+                    const sign = tzo >= 0 ? '+' : '-';
+                    const tzHour = pad(Math.floor(Math.abs(tzo) / 60));
+                    const tzMin = pad(Math.abs(tzo) % 60);
+                    return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${tzHour}:${tzMin}`;
+                }
+
+                function updateClock() {
+                    const now = new Date();
+                    const iso = toLocalISO(now);
+                    const isoDate = iso.slice(0,10);
+                    const timeOnly = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                    document.getElementById('time').textContent = timeOnly;
+                    document.getElementById('date').textContent = isoDate;
+                }
+                setInterval(updateClock, 1000);
+                updateClock(); // initial call
+            </script>
+        </main>
+    </body>
+</html>
