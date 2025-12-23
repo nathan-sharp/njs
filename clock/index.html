@@ -48,6 +48,9 @@
                 font-size: clamp(16px, 4vmin, 3rem);
                 opacity: 0.9;
             }
+
+            /* Click-to-toggle audio area */
+            main { cursor: pointer; }
         </style>
     </head>
     <body>
@@ -70,13 +73,251 @@
                     return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${tzHour}:${tzMin}`;
                 }
 
+                // --- Web Audio pips ---
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                const audioCtx = new AudioContextClass();
+                let audioEnabled = false;
+                let lastBeepSecond = null;
+                let pendingAutoStart = false; // true if auto-start requested but resume was blocked by browser
+
+                function beep(frequency = 1000, duration = 100, when = 0, volume = 0.12) {
+                    const t = audioCtx.currentTime + when;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = frequency;
+                    gain.gain.setValueAtTime(0, t);
+                    gain.gain.linearRampToValueAtTime(volume, t + 0.001);
+                    gain.gain.linearRampToValueAtTime(0, t + duration / 1000);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(t);
+                    osc.stop(t + duration / 1000 + 0.02);
+                }
+
+                function beepSequence(items) {
+                    let offset = 0;
+                    items.forEach(it => {
+                        const d = it.d || 100;
+                        const f = it.f || 1000;
+                        const v = it.v || 0.12;
+                        beep(f, d, offset, v);
+                        offset += (it.delay || (d / 1000 + 0.06));
+                    });
+                }
+
+                function getAudioParam() {
+                    const p = new URLSearchParams(location.search).get('audio');
+                    if (p === null) return null;
+                    if (p === 'true' || p === '1') return true;
+                    if (p === 'false' || p === '0') return false;
+                    return null;
+                }
+
+                function updateAudioParamInUrl(enabled) {
+                    try {
+                        const url = new URL(location.href);
+                        url.searchParams.set('audio', enabled ? 'true' : 'false');
+                        history.replaceState(null, '', url.toString());
+                    } catch (e) {
+                        // ignore if URL manipulation fails
+                    }
+                }
+
+                function getTzParam() {
+                    const raw = new URLSearchParams(location.search).get('tz');
+                    if (!raw) return null;
+                    // support common casing for UTC
+                    if (raw.toLowerCase() === 'utc') return '+00:00';
+
+                    // Normalize cases where '+' was decoded as a space in query strings
+                    let t = raw;
+                    if (t.charAt(0) === ' ') t = '+' + t.slice(1);
+
+                    // If user supplied offset like '02:00' or '0200' (no sign), assume '+'
+                    if (/^\d{2}(:?\d{2})?$/.test(t) || /^\d{4}$/.test(t)) t = '+' + t;
+
+                    return t.trim();
+                }
+
+                function parseOffsetMinutes(t) {
+                    // accept +HH, +HHMM, +HH:MM, -HH:MM, etc.
+                    const m1 = t.match(/^([+-])(\d{2}):(\d{2})$/);
+                    if (m1) return (m1[1] === '+' ? 1 : -1) * (parseInt(m1[2], 10) * 60 + parseInt(m1[3], 10));
+                    const m2 = t.match(/^([+-])(\d{2})(\d{2})$/);
+                    if (m2) return (m2[1] === '+' ? 1 : -1) * (parseInt(m2[2], 10) * 60 + parseInt(m2[3], 10));
+                    const m3 = t.match(/^([+-])(\d{2})$/);
+                    if (m3) return (m3[1] === '+' ? 1 : -1) * (parseInt(m3[2], 10) * 60);
+                    return null;
+                }
+
+                function getTimeParts(date, tz) {
+                    if (!tz) {
+                        return {
+                            year: date.getFullYear(),
+                            month: pad(date.getMonth() + 1),
+                            day: pad(date.getDate()),
+                            hour: pad(date.getHours()),
+                            minute: pad(date.getMinutes()),
+                            second: pad(date.getSeconds())
+                        };
+                    }
+
+                    // offset-style timezone like +01:00
+                    const offsetMin = parseOffsetMinutes(tz);
+                    if (offsetMin !== null) {
+                        const msUtc = date.getTime();
+                        const target = new Date(msUtc + offsetMin * 60000);
+                        return {
+                            year: target.getUTCFullYear(),
+                            month: pad(target.getUTCMonth() + 1),
+                            day: pad(target.getUTCDate()),
+                            hour: pad(target.getUTCHours()),
+                            minute: pad(target.getUTCMinutes()),
+                            second: pad(target.getUTCSeconds())
+                        };
+                    }
+
+                    // Assume IANA timezone and use Intl
+                    try {
+                        const fmt = new Intl.DateTimeFormat('en-GB', {
+                            timeZone: tz,
+                            hour12: false,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        const parts = fmt.formatToParts(date);
+                        const map = {};
+                        parts.forEach(p => { if (p.type && p.value) map[p.type] = p.value; });
+                        return {
+                            year: map.year,
+                            month: map.month,
+                            day: map.day,
+                            hour: map.hour,
+                            minute: map.minute,
+                            second: map.second
+                        };
+                    } catch (e) {
+                        // invalid timezone, fallback to local
+                        return {
+                            year: date.getFullYear(),
+                            month: pad(date.getMonth() + 1),
+                            day: pad(date.getDate()),
+                            hour: pad(date.getHours()),
+                            minute: pad(date.getMinutes()),
+                            second: pad(date.getSeconds())
+                        };
+                    }
+                }
+
+                function setAudioEnabled(enabled, { updateUrl = true } = {}) {
+                    audioEnabled = !!enabled;
+                    document.body.setAttribute('aria-audio', audioEnabled ? 'on' : 'off');
+                    if (updateUrl) updateAudioParamInUrl(audioEnabled);
+                    // brief visual flash to acknowledge the change
+                    const originalBg = document.body.style.background;
+                    document.body.style.transition = 'background 0.08s';
+                    document.body.style.background = audioEnabled ? '#0a0a0a' : '#000000';
+                    setTimeout(() => { document.body.style.background = originalBg || '#000000'; }, 120);
+                }
+
+                // Toggle/resume audio by clicking anywhere on the page
+                document.addEventListener('click', async () => {
+                    // If audio isn't enabled yet or AudioContext is suspended, try to resume/start
+                    if (!audioEnabled || audioCtx.state === 'suspended') {
+                        try {
+                            await audioCtx.resume();
+                        } catch (e) {
+                            // resume may fail if browser requires a user gesture; ignore
+                        }
+                        setAudioEnabled(true, { updateUrl: true });
+                        if (pendingAutoStart) {
+                            // play a confirmation pip
+                            try { beep(950, 80); } catch (e) {}
+                            pendingAutoStart = false;
+                        }
+                    } else {
+                        // already running -> toggle off
+                        setAudioEnabled(false, { updateUrl: true });
+                    }
+                });
+
+                // Keyboard accessibility: Space or Enter toggles/resumes audio
+                document.addEventListener('keydown', async (e) => {
+                    if (e.code === 'Space' || e.code === 'Enter') {
+                        e.preventDefault();
+                        if (!audioEnabled || audioCtx.state === 'suspended') {
+                            try { await audioCtx.resume(); } catch (ex) {}
+                            setAudioEnabled(true, { updateUrl: true });
+                            if (pendingAutoStart) {
+                                try { beep(950,80); } catch (err) {}
+                                pendingAutoStart = false;
+                            }
+                        } else {
+                            setAudioEnabled(false, { updateUrl: true });
+                        }
+                    }
+                });
+
+                // Initialize audio state from ?audio= parameter (if provided)
+                (function initAudioFromUrl() {
+                    const param = getAudioParam();
+                    if (param === true) {
+                        // mark as enabled; attempt to resume and play a short pip if allowed
+                        setAudioEnabled(true, { updateUrl: false });
+                        audioCtx.resume().then(() => {
+                            try { beep(950, 80); } catch (e) {}
+                        }).catch(() => {
+                            // resume blocked; mark pending so first user gesture will play confirmation
+                            pendingAutoStart = true;
+                        });
+                    } else if (param === false) {
+                        setAudioEnabled(false, { updateUrl: false });
+                    }
+                })();
+
+                // Timezone setting from URL
+                const tzSetting = getTzParam();
+
                 function updateClock() {
                     const now = new Date();
-                    const iso = toLocalISO(now);
-                    const isoDate = iso.slice(0,10);
-                    const timeOnly = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                    const tz = getTzParam();
+                    const parts = getTimeParts(now, tz);
+                    const timeOnly = `${parts.hour}:${parts.minute}:${parts.second}`;
+                    const isoDate = `${parts.year}-${parts.month}-${parts.day}`;
                     document.getElementById('time').textContent = timeOnly;
                     document.getElementById('date').textContent = isoDate;
+
+                    // Audio pips: day > hour > minute > second based on displayed timezone (only one per second)
+                    if (audioEnabled) {
+                        const s = parseInt(parts.second, 10);
+                        const m = parseInt(parts.minute, 10);
+                        const h = parseInt(parts.hour, 10);
+                        if (s === lastBeepSecond) return; // avoid duplicate when called multiple times
+                        lastBeepSecond = s;
+
+                        if (h === 0 && m === 0 && s === 0) {
+                            // day: three ascending beeps
+                            beepSequence([
+                                { f: 800, d: 120 },
+                                { f: 1000, d: 120, delay: 0.18 },
+                                { f: 1200, d: 240, delay: 0.18 }
+                            ]);
+                        } else if (m === 0 && s === 0) {
+                            // hour: long beep
+                            beep(1600, 420);
+                        } else if (s === 0) {
+                            // minute: medium beep
+                            beep(1200, 180);
+                        } else {
+                            // second: short pip
+                            beep(950, 80);
+                        }
+                    }
                 }
                 setInterval(updateClock, 1000);
                 updateClock(); // initial call
