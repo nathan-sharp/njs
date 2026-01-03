@@ -16,10 +16,10 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 echo -e "${PURPLE}"
-echo "   ___    _  __      __  ___   "
-echo "  | _ \  /_\ \ \    / / / __|  "
-echo "  |  _/ / _ \ \ \/\/ /  \__ \  "
-echo "  |_|  /_/ \_\ \_/\_/   |___/  "
+echo "   ___      _    __      __    ___   "
+echo "  | _ \    /_\   \ \    / /   / __|  "
+echo "  |  _/   / _ \   \ \/\/ /    \__ \  "
+echo "  |_|    /_/ \_\   \_/\_/     |___/  "
 echo -e "${NC}"
 echo "  Platform Agnostic Wrapper Service"
 echo "  ---------------------------------"

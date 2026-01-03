@@ -2,116 +2,129 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
+#include <sstream>
 #include <thread>
 #include <chrono>
-#include <unistd.h> // For access() and standard POSIX calls
+#include <cstdlib>
+#include <algorithm>
 
 // --- Configuration ---
-const std::string VERSION = "0.1.0";
-const std::string MAGIC_HEADER = "UWU!"; // 0x55 0x57 0x55 0x21
+const std::string VERSION = "2.0.0 (Native Fox)";
+const std::string MAGIC_HEADER = "UWU!";
 
-// --- ANSI Colors ---
+// --- Colors ---
 const std::string ANSI_RESET = "\033[0m";
-const std::string ANSI_RED = "\033[0;31m";
-const std::string ANSI_GREEN = "\033[0;32m";
-const std::string ANSI_YELLOW = "\033[0;33m";
-const std::string ANSI_BLUE = "\033[0;34m";
 const std::string ANSI_PURPLE = "\033[0;35m"; 
 const std::string ANSI_CYAN = "\033[0;36m";
-const std::string ANSI_WHITE = "\033[0;37m";
+const std::string ANSI_GREEN = "\033[0;32m";
 
-// --- Logger Helper ---
-void Log(const std::string& level, const std::string& message, const std::string& color = ANSI_WHITE) {
-    std::cout << ANSI_PURPLE << "[PAWS] ";
-    
-    if (level == "ERROR") std::cout << ANSI_RED;
-    else if (level == "WARN") std::cout << ANSI_YELLOW;
-    else std::cout << ANSI_CYAN;
-    
-    std::cout << level << " ";
-    
-    std::cout << color << ": " << message << ANSI_RESET << std::endl;
+void Log(const std::string& level, const std::string& message) {
+    std::cout << ANSI_PURPLE << "[PAWS] " << ANSI_CYAN << level << ": " << ANSI_RESET << message << std::endl;
 }
 
-// --- Core Logic ---
+// --- The UwuScript Interpreter Engine ---
 
-bool CheckHeader(const std::string& filepath) {
-    std::ifstream file(filepath, std::ios::binary);
-    if (!file.is_open()) return false;
+std::map<std::string, std::string> memory;
 
-    char buffer[4];
-    file.read(buffer, 4);
-    return (buffer[0] == 'U' && buffer[1] == 'W' && buffer[2] == 'U' && buffer[3] == '!');
+std::string Resolve(std::string token) {
+    // If token starts with $, it's a variable
+    if (token.size() > 0 && token[0] == '$') {
+        std::string varName = token.substr(1);
+        if (memory.find(varName) != memory.end()) {
+            return memory[varName];
+        }
+        return ""; // Undefined
+    }
+    // Remove quotes if present
+    if (token.size() >= 2 && token.front() == '"' && token.back() == '"') {
+        return token.substr(1, token.size() - 2);
+    }
+    return token;
 }
 
-void SimulateBootSequence(const std::string& filename) {
-    Log("SCENT", "Scenting environment variables...");
-    std::this_thread::sleep_for(std::chrono::milliseconds(400));
-    Log("SCENT", "Environment is clean.", ANSI_GREEN);
+void ExecuteScript(const std::string& scriptPath) {
+    std::ifstream file(scriptPath);
+    if (!file.is_open()) {
+        Log("FATAL", "Could not read entry point script.");
+        return;
+    }
 
-    Log("GROOM", "Unwrapping " + filename + "...");
-    std::this_thread::sleep_for(std::chrono::milliseconds(800));
-    
-    Log("CHECK", "Reading collar.json...");
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-    Log("CHECK", "Temperament: SOCIAL (Allowed to purr at network)", ANSI_YELLOW);
-    
-    Log("BOOT", "Starting application den...", ANSI_GREEN);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    std::cout << std::endl;
+    std::string line;
+    while (std::getline(file, line)) {
+        // Simple tokenizer
+        std::stringstream ss(line);
+        std::string cmd;
+        ss >> cmd;
+
+        if (cmd == "PRINT") {
+            std::string part;
+            while (ss >> part) {
+                std::cout << Resolve(part) << " ";
+            }
+            std::cout << std::endl;
+        } 
+        else if (cmd == "INPUT") {
+            std::string varName, promptPart, fullPrompt;
+            ss >> varName; // First arg is variable name (e.g. $name)
+            
+            // Rest of line is prompt
+            while (ss >> promptPart) fullPrompt += promptPart + " ";
+            if (!fullPrompt.empty() && fullPrompt.front() == '"') fullPrompt = fullPrompt.substr(1);
+            if (!fullPrompt.empty() && fullPrompt.back() == '"') fullPrompt.pop_back();
+
+            std::cout << fullPrompt;
+            std::string userInput;
+            std::getline(std::cin, userInput);
+            
+            if (varName[0] == '$') varName = varName.substr(1);
+            memory[varName] = userInput;
+        }
+        else if (cmd == "SLEEP") {
+            int ms;
+            ss >> ms;
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        }
+    }
 }
+
+// --- Main Runtime ---
 
 int main(int argc, char* argv[]) {
-    // Set Console Title
-    std::cout << "\033]0;P.A.W.S. Runtime - " << VERSION << "\007";
-
-    // Header
-    std::cout << ANSI_PURPLE << "P.A.W.S. " << ANSI_WHITE 
-              << "Platform Agnostic Wrapper Service " << VERSION << ANSI_RESET << std::endl;
+    std::cout << "\033]0;P.A.W.S. Native VM\007";
+    std::cout << ANSI_PURPLE << "P.A.W.S. Native VM " << ANSI_RESET << VERSION << std::endl;
     std::cout << "------------------------------------------------" << std::endl;
 
-    // Argument Check
-    if (argc < 2) {
-        Log("WARN", "No input unit provided.");
-        std::cout << "Usage: ./paws <file.uwu>" << std::endl;
-        std::cout << "       ./paws --version" << std::endl;
+    if (argc < 2) return 0;
+    std::string targetFile = argv[1];
+
+    // 1. Check Header
+    std::ifstream f(targetFile, std::ios::binary);
+    if (!f.is_open()) return 1;
+    char buf[4];
+    f.read(buf, 4);
+    if (std::string(buf, 4) != MAGIC_HEADER) {
+        Log("ERROR", "Invalid .uwu header.");
         return 1;
     }
+    f.close();
 
-    std::string arg1 = argv[1];
+    // 2. Unpack
+    // NOTE: In a production app, we would use #include <miniz.h> here.
+    // We use the system call purely to keep this code file single-source and copy-pasteable.
+    std::string tempDen = "/tmp/paws_vm_" + std::to_string(time(nullptr));
+    std::string cmd = "mkdir -p " + tempDen + " && unzip -qq -o \"" + targetFile + "\" -d " + tempDen;
+    system(cmd.c_str());
 
-    // --- FIX: Check for version flag before checking for file existence ---
-    if (arg1 == "--version" || arg1 == "-v") {
-        // We already printed the header at the top, so we just exit successfully.
-        return 0;
-    }
-
-    // Now treat arg1 as a filename
-    if (access(arg1.c_str(), F_OK) == -1) {
-        Log("ERROR", "Could not sniff out file: " + arg1);
-        Log("HINT", "Are you sure it exists in this habitat?");
-        return 1;
-    }
-
-    if (!CheckHeader(arg1)) {
-        Log("ERROR", "Invalid file signature.");
-        Log("INFO", "Header does not match 'UWU!'. Is this a valid unit?");
-        return 1;
-    }
-
-    SimulateBootSequence(arg1);
-
-    std::cout << "--- Application Output ---" << std::endl;
-    std::cout << "Welcome to PawPad v1.0!" << std::endl;
-    std::cout << "Type 'exit' to close." << std::endl;
+    Log("BOOT", "Loading UwuScript Bytecode...");
     
-    std::string input;
-    while (true) {
-        std::cout << "> ";
-        std::getline(std::cin, input);
-        if (input == "exit") break;
-    }
+    // 3. Run Internal Interpreter
+    // We assume entry point is always 'main.uwu' for native apps
+    ExecuteScript(tempDen + "/src/main.uwu");
 
-    Log("NAP", "Process is tucking in. Goodnight.");
+    // 4. Cleanup
+    system(("rm -rf " + tempDen).c_str());
+    Log("NAP", "Session ended.");
+
     return 0;
 }
