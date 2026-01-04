@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
     std::string cmd = "mkdir -p " + tempDen + " && unzip -qq -o \"" + targetFile + "\" -d " + tempDen;
     system(cmd.c_str());
 
-    Log("BOOT", "Loading UwuScript Bytecode...");
+    Log("BOOT", "Loading UwUscript Bytecode...");
     
     // 3. Run Internal Interpreter
     // We assume entry point is always 'main.uwu' for native apps
