@@ -6,7 +6,7 @@
   authors: (
     (
       name: "Nathan Sharp",
-      affiliation: "Sharps Trust",
+      affiliation: "Independent",
       email: "nathan@njs.dev",
     ),
     (

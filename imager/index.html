@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Imager</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <style>
+            /* Minimal styling for the progress bar to match the clean aesthetic */
+            progress {
+                width: 100%;
+                height: 20px;
+                margin-top: 10px;
+                display: none; /* Hidden by default */
+            }
+            #status {
+                margin-top: 5px;
+                font-family: sans-serif;
+                font-size: 0.9em;
+                color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Imager</h1>
+            <p>Imager is a web based tool for creating bootable USB drives from ISO images. It allows users to select an ISO file and a target USB drive, and then writes the ISO to the USB drive, making it bootable.</p>
+        </header>
+        <main>
+            <form id="flashForm">
+                <label for="isoFile">Select ISO file:</label>
+                <input type="file" id="isoFile" name="isoFile" accept=".iso" required><br><br>
+                
+                <label for="usbDrive">Select USB drive:</label>
+                <select id="usbDrive" name="usbDrive" required>
+                    <option value="" disabled selected>Click to select drive...</option>
+                </select><br><br>
+                
+                <button type="submit" id="flashBtn">Create Bootable USB</button>
+                
+                <progress id="progressBar" value="0" max="100"></progress>
+                <div id="status"></div>
+            </form>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+
+        <script>
+            let directoryHandle = null;
+
+            const driveSelect = document.getElementById('usbDrive');
+            const flashBtn = document.getElementById('flashBtn');
+            const statusDiv = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+
+            // Handle Drive Selection via File System Access API
+            driveSelect.addEventListener('mousedown', async (e) => {
+                e.preventDefault(); // Prevent default dropdown behavior
+                try {
+                    // Prompt user to pick the root directory of the USB drive
+                    directoryHandle = await window.showDirectoryPicker({
+                        id: 'usb-drive-picker',
+                        mode: 'readwrite'
+                    });
+                    
+                    // Update the dropdown to show the selected folder/drive name
+                    driveSelect.innerHTML = `<option value="selected" selected>${directoryHandle.name} (Ready)</option>`;
+                    statusDiv.textContent = `Target set to: ${directoryHandle.name}`;
+                } catch (err) {
+                    console.error(err);
+                    statusDiv.textContent = "Selection cancelled or failed.";
+                }
+            });
+
+            // Handle Flashing Process
+            document.getElementById('flashForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const fileInput = document.getElementById('isoFile');
+                if (!fileInput.files.length) {
+                    alert("Please select an ISO file first.");
+                    return;
+                }
+                if (!directoryHandle) {
+                    alert("Please select a USB drive.");
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                
+                // UI Updates
+                flashBtn.disabled = true;
+                progressBar.style.display = 'block';
+                progressBar.value = 0;
+                statusDiv.textContent = "Initializing write...";
+
+                try {
+                    // Create a file handle on the USB drive
+                    const fileHandle = await directoryHandle.getFileHandle(file.name, { create: true });
+                    const writable = await fileHandle.createWritable();
+
+                    // Chunked writing for progress calculation
+                    const totalSize = file.size;
+                    const chunkSize = 1024 * 1024 * 5; // 5MB chunks
+                    let offset = 0;
+
+                    while (offset < totalSize) {
+                        const chunk = file.slice(offset, offset + chunkSize);
+                        await writable.write(chunk);
+                        
+                        offset += chunkSize;
+                        
+                        // Update Progress
+                        const percent = Math.min((offset / totalSize) * 100, 100);
+                        progressBar.value = percent;
+                        statusDiv.textContent = `Writing: ${Math.round(percent)}%`;
+                    }
+
+                    await writable.close();
+                    statusDiv.textContent = "Success! ISO written to drive.";
+                } catch (err) {
+                    console.error(err);
+                    statusDiv.textContent = "Error during flashing: " + err.message;
+                } finally {
+                    flashBtn.disabled = false;
+                }
+            });
+        </script>
+    </body>
+</html>
