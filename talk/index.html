@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+    <div id="webtalk-container">
+        <h1>Talk</h1>
+        <p>A simple text-to-speech engine that runs locally in the browser.</p>
+        <textarea id="textInput" rows="5" cols="50">Everyone has the right to freedom of opinion and expression; this right includes freedom to hold opinions without interference and to seek, receive and impart information and ideas through any media and regardless of frontiers.</textarea>
+        
+        <div>
+            <button id="playBtn">Speak</button>
+            <button id="stopBtn">Stop</button>
+        </div>
+
+        <p id="statusLine">Status: Idle</p>
+    </div>
+
+    <!-- Link the external engine script -->
+    <script src="talk_engine.js"></script>
+
+    <details>
+        <summary>Sample Audio</summary>
+        <p>Below is a sample of what the output should sound like:</p>
+        <audio controls=""><source src="/media/webspeak-sample.wav" type="audio/x-wav"></audio>
+    </details>
+</body>
+</html>
