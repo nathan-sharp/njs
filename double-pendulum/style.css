@@ -1,0 +1,161 @@
+body {
+    margin: 0;
+    background-color: #1a1a1a;
+    color: #eee;
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal scroll on body */
+}
+
+h2 { margin: 5px 0 15px 0; font-weight: 300; text-align: center;}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    max-width: 1000px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* The Main Pendulum View */
+.main-view {
+    grid-column: 1 / -1; /* Span full width */
+    display: flex;
+    justify-content: center;
+    background: #2a2a2a;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    position: relative;
+    min-width: 0; /* CRITICAL: Allows grid item to shrink */
+}
+
+/* Wrapper for the left column (stacked angle graphs) */
+.angle-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* CRITICAL for grid responsiveness */
+}
+
+/* The Graph Containers */
+.graph-container {
+    background: #2a2a2a;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0; /* CRITICAL */
+}
+
+.graph-title {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #aaa;
+    text-align: center;
+}
+
+canvas {
+    background-color: #222;
+    border-radius: 4px;
+    border: 1px solid #333;
+    width: 100%; /* Make canvas responsive visually */
+    height: auto;
+    display: block;
+}
+
+/* Settings Panel */
+.settings-panel {
+    grid-column: 1 / -1;
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    min-width: 0;
+}
+
+.settings-panel h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #4CAF50;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.control-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.control-item label {
+    font-size: 0.85rem;
+    color: #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+
+.control-item input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    box-sizing: border-box; /* Ensure padding doesn't widen */
+}
+
+.main-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 10px;
+    flex-wrap: wrap; /* Allow buttons to wrap on tiny screens */
+}
+
+button {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 4px;
+    background-color: #3f51b5;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+button:hover {
+    background-color: #303f9f;
+}
+
+button.secondary {
+    background-color: #555;
+}
+button.secondary:hover {
+    background-color: #666;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+    body {
+        padding: 10px;
+    }
+}

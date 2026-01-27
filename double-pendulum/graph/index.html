@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendulum Grid</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #111;
+            color: #eee;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            border-radius: 6px;
+            pointer-events: auto;
+            border: 1px solid #444;
+            min-width: 200px;
+        }
+
+        button {
+            background: #3f51b5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            background: #303f9f;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .checkbox-container {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        
+        .checkbox-container input {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div style="font-weight:bold; margin-bottom:4px;">NJS.dev Multi Pendulum Comparison Grid</div>
+        <div style="font-size: 0.85rem; color: #ccc;">
+            Center (0,0) = White<br>
+            Red ∝ Cos(θ1)<br>
+            Green ∝ Cos(θ2)<br>
+            Blue ∝ Cos(θ1 + θ2)
+        </div>
+        
+        <div class="slider-container">
+            <label>Resolution (Grid Size): <span id="disp-grid-size">20</span></label>
+            <input type="range" id="inp-grid-size" min="2" max="100" value="20">
+        </div>
+
+        <div class="slider-container">
+            <label>Speed: <span id="disp-sim-speed">4</span>x</label>
+            <input type="range" id="inp-sim-speed" min="1" max="20" value="4">
+        </div>
+
+        <div class="checkbox-container">
+            <label>
+                <input type="checkbox" id="inp-pixel-mode"> Pixel Mode (Heatmap)
+            </label>
+        </div>
+
+        <button id="btn-pause">Resume Simulation</button>
+
+        <div id="debug-info" style="font-size: 0.8rem; margin-top: 8px; color: #4CAF50;"></div>
+    </div>
+
+    <canvas id="graphCanvas"></canvas>
+
+    <!-- Import shared physics from script.js -->
+    <script src="/double-pendulum/script.js"></script>
+
+<script>
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const debugInfo = document.getElementById('debug-info');
+    const btnPause = document.getElementById('btn-pause');
+    const inpGridSize = document.getElementById('inp-grid-size');
+    const dispGridSize = document.getElementById('disp-grid-size');
+    const inpSimSpeed = document.getElementById('inp-sim-speed');
+    const dispSimSpeed = document.getElementById('disp-sim-speed');
+    const inpPixelMode = document.getElementById('inp-pixel-mode');
+
+    // --- Configuration ---
+    let GRAPH_CONFIG = {
+        gridStep: 20,
+        gridSize: 20,
+        simSteps: 4,
+        paused: true,
+        pixelMode: false
+    };
+
+    // VISUAL ONLY (Physics uses PhysicsEngine defaults r=100)
+    const VISUAL = {
+        r1: 5,   
+        r2: 5
+    };
+
+    // --- State ---
+    let camera = {
+        x: 0,
+        y: 0,
+        scale: 1.5,
+        minScale: 0.05,
+        maxScale: 20
+    };
+
+    let pendulums = [];
+    let isDragging = false;
+    let lastMouse = { x: 0, y: 0 };
+
+    // --- Helper: Color Mapping ---
+    function getColor(a1, a2) {
+        const r = Math.floor(127.5 * (1 + Math.cos(a1)));
+        const g = Math.floor(127.5 * (1 + Math.cos(a2)));
+        const b = Math.floor(127.5 * (1 + Math.cos(a1 + a2)));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    // --- Pendulum Class ---
+    class Pendulum {
+        constructor(baseX, baseY) {
+            this.baseX = baseX; 
+            this.baseY = baseY; 
+            
+            // Initial Conditions
+            this.a1 = (baseX * Math.PI) / 180;
+            this.a2 = (baseY * Math.PI) / 180;
+            this.a1_v = 0;
+            this.a2_v = 0;
+        }
+
+        update() {
+            // Using the shared engine from script.js
+            window.PhysicsEngine.update(this, {
+                // Ensure we use the same constants as the main simulation
+                r1: 100, 
+                r2: 100, 
+                m1: 10, 
+                m2: 10, 
+                g: 9.8, 
+                damping: 1.0, // No friction / losses
+                dt: 0.1
+            });
+        }
+
+        draw(ctx) {
+            const color = getColor(this.a1, this.a2);
+
+            ctx.save();
+            ctx.translate(this.baseX, this.baseY);
+
+            if (GRAPH_CONFIG.pixelMode) {
+                ctx.fillStyle = color;
+                const size = GRAPH_CONFIG.gridStep + 0.5; 
+                ctx.fillRect(-size/2, -size/2, size, size);
+            } else {
+                const { r1, r2 } = VISUAL;
+                
+                let x1 = r1 * Math.sin(this.a1);
+                let y1 = r1 * Math.cos(this.a1);
+                let x2 = x1 + r2 * Math.sin(this.a2);
+                let y2 = y1 + r2 * Math.cos(this.a2);
+
+                ctx.lineWidth = 1.0 / camera.scale;
+                ctx.strokeStyle = color; 
+                ctx.fillStyle = color;   
+                
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                let radius = 0.8;
+                ctx.beginPath(); ctx.arc(x1, y1, radius, 0, 2*Math.PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(x2, y2, radius, 0, 2*Math.PI); ctx.fill();
+            }
+
+            ctx.restore();
+        }
+    }
+
+    // --- Initialization ---
+    function initSim() {
+        pendulums = [];
+        
+        GRAPH_CONFIG.gridStep = 360 / GRAPH_CONFIG.gridSize;
+
+        const count = GRAPH_CONFIG.gridSize;
+        const offset = Math.floor(count / 2);
+        
+        for (let i = 0; i < count; i++) {
+            const x = i - offset; 
+            for (let j = 0; j < count; j++) {
+                const y = j - offset; 
+                pendulums.push(new Pendulum(x * GRAPH_CONFIG.gridStep, y * GRAPH_CONFIG.gridStep));
+            }
+        }
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        if (camera.x === 0 && camera.y === 0) {
+            camera.x = canvas.width / 2;
+            camera.y = canvas.height / 2;
+        }
+    }
+
+    // --- Interaction ---
+    
+    btnPause.addEventListener('click', () => {
+        GRAPH_CONFIG.paused = !GRAPH_CONFIG.paused;
+        btnPause.innerText = GRAPH_CONFIG.paused ? "Resume Simulation" : "Pause Simulation";
+    });
+
+    inpGridSize.addEventListener('input', (e) => {
+        GRAPH_CONFIG.gridSize = parseInt(e.target.value);
+        dispGridSize.innerText = GRAPH_CONFIG.gridSize;
+        initSim(); 
+    });
+
+    inpSimSpeed.addEventListener('input', (e) => {
+        GRAPH_CONFIG.simSteps = parseInt(e.target.value);
+        dispSimSpeed.innerText = GRAPH_CONFIG.simSteps;
+    });
+
+    inpPixelMode.addEventListener('change', (e) => {
+        GRAPH_CONFIG.pixelMode = e.target.checked;
+    });
+
+    canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        camera.x += e.clientX - lastMouse.x;
+        camera.y += e.clientY - lastMouse.y;
+        lastMouse = { x: e.clientX, y: e.clientY };
+    });
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        const factor = Math.exp(-e.deltaY * 0.001);
+        const mouseWx = (e.clientX - camera.x) / camera.scale;
+        const mouseWy = (e.clientY - camera.y) / camera.scale;
+        
+        camera.scale = Math.max(camera.minScale, Math.min(camera.maxScale, camera.scale * factor));
+        camera.x = e.clientX - mouseWx * camera.scale;
+        camera.y = e.clientY - mouseWy * camera.scale;
+    }, { passive: false });
+    window.addEventListener('resize', resize);
+
+    // --- Main Loop ---
+    function loop() {
+        if (!GRAPH_CONFIG.paused) {
+            for(let i=0; i<GRAPH_CONFIG.simSteps; i++) {
+                pendulums.forEach(p => p.update());
+            }
+        }
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.save();
+        ctx.translate(camera.x, camera.y);
+        ctx.scale(camera.scale, camera.scale);
+
+        if (!GRAPH_CONFIG.pixelMode) {
+            drawGrid(w, h);
+        }
+        
+        pendulums.forEach(p => p.draw(ctx));
+        
+        if (!GRAPH_CONFIG.pixelMode) {
+            drawOrigin(ctx);
+        }
+
+        ctx.restore();
+
+        debugInfo.innerText = `Simulating ${pendulums.length} instances`;
+        requestAnimationFrame(loop);
+    }
+
+    function drawGrid(w, h) {
+        const step = GRAPH_CONFIG.gridStep;
+        ctx.lineWidth = 1 / camera.scale;
+        ctx.strokeStyle = '#222'; 
+
+        const left = -camera.x / camera.scale;
+        const top = -camera.y / camera.scale;
+        const right = (w - camera.x) / camera.scale;
+        const bottom = (h - camera.y) / camera.scale;
+
+        const startX = Math.floor(left / step) * step;
+        const endX = Math.ceil(right / step) * step;
+        const startY = Math.floor(top / step) * step;
+        const endY = Math.ceil(bottom / step) * step;
+
+        ctx.beginPath();
+        for (let x = startX; x <= endX; x += step) {
+            ctx.moveTo(x, top);
+            ctx.lineTo(x, bottom);
+        }
+        for (let y = startY; y <= endY; y += step) {
+            ctx.moveTo(left, y);
+            ctx.lineTo(right, y);
+        }
+        ctx.stroke();
+    }
+    
+    function drawOrigin(ctx) {
+        ctx.lineWidth = 2 / camera.scale;
+        ctx.strokeStyle = 'rgba(255, 80, 80, 0.3)';
+        ctx.beginPath(); ctx.moveTo(-1000, 0); ctx.lineTo(1000, 0); ctx.stroke();
+        
+        ctx.strokeStyle = 'rgba(80, 255, 80, 0.3)';
+        ctx.beginPath(); ctx.moveTo(0, -1000); ctx.lineTo(0, 1000); ctx.stroke();
+    }
+
+    // Start
+    resize();
+    initSim();
+    loop();
+
+</script>
+</body>
+</html>
