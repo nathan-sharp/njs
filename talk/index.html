@@ -29,5 +29,38 @@
         <p>Below is a sample of what the output should sound like:</p>
         <audio controls=""><source src="/media/webspeak-sample.wav" type="audio/x-wav"></audio>
     </details>
+    <hr>
+    <h2>How to add this to your website</h2>
+    <p>
+        This synthesizer is 100% client-side JavaScript. You can drop it into any project without needing a backend server.
+    </p>
+    <br>
+    <ul>    
+        <li>
+            <p>Add a link to Talk Engine to your site. You can also download <a href="https://njs.dev/talk/talk_engine.js">this file</a> and host it yourself.</p>
+            <code>
+                &lt;script src="https://njs.dev/talk/talk_engine.js"&gt;&lt;/script&gt;
+            </code>
+        </li>
+        <li>
+            <p>An input element with id="textInput" is required:</p>
+            <code>
+                &lt;textarea id="textInput" rows="5" cols="40"&gt;Hello world.&lt;/textarea&gt;
+            </code>
+        </li>
+        <li>
+            <p>Buttons to control speech playback:</p>
+            <code>
+                &lt;button id="playBtn"&gt;Speak&lt;/button&gt;
+                &lt;button id="stopBtn"&gt;Stop&lt;/button&gt;
+            </code>
+        </li>
+        <li>
+            <p>An optional status line to show current state:</p>
+            <code>
+                &lt;p id="statusLine"&gt;Status: Idle&lt;/p&gt;
+            </code>
+        </li>
+    </ul>
 </body>
 </html>
