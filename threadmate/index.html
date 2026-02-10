@@ -1,83 +1,204 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>ThreadMate | NJS.dev</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-        <script src="/threadmate/scripts.js"></script>
-        <style>
-            table, th, td {
-            border:1px solid black;
-            }
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>ThreadMate</h1>
-            <p>Tool for calculating thread dimensions.</p>
-        </header>
-        <main>
-            <h2>Parameters</h2>
+<html lang="en">
+<head>
+    <title>ThreadMate | NJS.dev</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Free online thread dimension calculator for Unified Inch (UN), ISO Metric, NPT, and ISO 7-1 (BSPT) threads. Calculate Pitch Diameter, Major Diameter, and manufacturing tolerances.">
+    <!-- 
+      ThreadMate - Thread Dimension Calculator
+      Standards Referenced:
+      1. ASME B1.1-2003 (Unified Inch Screw Threads) - Section 5 Design Formulas
+      2. ASME B1.13M-2005 / ISO 965-1 (Metric Screw Threads)
+      3. ASME B1.20.1-2013 (NPT Taper Pipe Threads)
+      4. ISO 7-1:1994 (Pipe threads where pressure-tight joints are made on the threads)
+    -->
+    <style>
+        /* Minimal functional styling only */
+        header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+        }
+        h1 {
+            margin-bottom: 0.2em;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+        }
+        table {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .error-msg {
+            color: red;
+            font-weight: bold;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            max-width: 100%;
+        }
+        label {
+            display: inline-block;
+            width: 160px;
+            font-weight: 500;
+        }
+        div {
+            margin-bottom: 10px;
+        }
+        .note {
+            font-size: 0.85em;
+            color: #555;
+            font-style: italic;
+        }
+        input, select {
+            padding: 4px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ThreadMate</h1>
+        <p><strong>ThreadMate</strong> is a free engineering calculator for determining precision thread dimensions. Instantly calculate <strong>Pitch Diameter</strong>, <strong>Major Diameter</strong>, and manufacturing tolerances for <strong>Unified Inch (UN/UNR)</strong>, <strong>ISO Metric</strong>, <strong>NPT</strong>, and <strong>ISO 7-1 (BSPT)</strong> threads. Simply select your standard and nominal size to generate ASME and ISO compliant data for machining and inspection.</p>
+    </header>
+
+    <main>
+        <h2>Parameters</h2>
+        
+        <div>
+            <label for="Types">Thread Type:</label>
+            <select name="Types" id="Types">
+                <option value="UN">Unified (UN/UNR - Inch)</option>
+                <option value="Metric" selected>M Series Metric (ISO)</option>
+                <option value="NPT">NPT (National Pipe Taper)</option>
+                <option value="ISO7">ISO Taper (R/Rc - ISO 7-1)</option>
+            </select>
+        </div>
+
+        <div id="thread-class-container">
+            <label for="thread-class">Tolerance Class:</label>
+            <select name="thread-class" id="thread-class">
+                <option value="1">Class 1A/1B (Loose)</option>
+                <option value="2" selected>Class 2A/2B (Standard)</option>
+                <option value="3">Class 3A/3B (Tight/Precision)</option>
+            </select>
+            <span id="metric-class-label" style="display:none; font-style:italic;">Standard Fit (6g/6H)</span>
+            <span id="npt-class-label" style="display:none; font-style:italic;">Standard NPT (B1.20.1)</span>
+            <span id="iso7-class-label" style="display:none; font-style:italic;">Standard ISO 7-1</span>
+        </div>
+
+        <div>
+            <label for="nominal-diameter" id="nom-dia-label">Nominal Diameter:</label>
+            <input type="number" id="nominal-diameter" step="0.0001" placeholder="e.g. 0.250 or 6">
+            <span id="dia-unit">in</span>
+        </div>
+
+        <div id="pitch-container" style="display:none;">
+            <label for="pitch">Pitch:</label>
+            <input type="number" id="pitch" step="0.001" placeholder="e.g. 1.0">
+            <span>mm</span>
+        </div>
+
+        <div id="tpi-container">
+            <label for="threads-per-inch">Threads Per Inch:</label>
+            <input type="number" id="threads-per-inch" step="0.01" placeholder="e.g. 20">
+        </div>
+
+        <div id="le-container">
+            <label for="le">Length of Engagement:</label>
+            <input type="number" id="le" step="0.001">
+            <span id="le-unit">in</span>
+            <small>(Defaults to 1.0 × Dia)</small>
+        </div>
+
+        <button id="calc-btn">Calculate Dimensions</button>
+        <div id="error-box" class="error-msg" style="display:none;"></div>
+
+        <h2>Dimensions</h2>
+        <div id="npt-note" class="note" style="display:none; margin-bottom:10px;">
+            <strong>Note (NPT):</strong> Dimensions shown are at the Hand-Tight Plane (L1). Tolerance is ±1 turn.
+        </div>
+        <div id="iso7-note" class="note" style="display:none; margin-bottom:10px;">
+            <strong>Note (ISO 7-1):</strong> Dimensions shown are at the Gauge Plane. Tolerance is ±1 pitch length (equivalent to diameter tolerance shown). Thread form is 55° Whitworth.
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Pitch Dia Max</th>
+                    <th>Pitch Dia Min</th>
+                    <th>Major Dia Max</th>
+                    <th>Major Dia Min</th>
+                    <th>Minor Dia Max</th>
+                    <th>Minor Dia Min</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Internal (Nut/Pipe)</strong><br><small id="int-class-display">Class 2B</small></td>
+                    <td id="I-PD_Max">-</td>
+                    <td id="I-PD_Min">-</td>
+                    <td id="I-Maj_Max" style="color:#888;">(Ref)</td>
+                    <td id="I-Maj_Min">-</td>
+                    <td id="I-Min_Max">-</td>
+                    <td id="I-Min_Min">-</td>
+                </tr>
+                <tr>
+                    <td><strong>External (Bolt/Pipe)</strong><br><small id="ext-class-display">Class 2A</small></td>
+                    <td id="E-PD_Max">-</td>
+                    <td id="E-PD_Min">-</td>
+                    <td id="E-Maj_Max">-</td>
+                    <td id="E-Maj_Min">-</td>
+                    <td id="E-Min_Max" style="color:#888;">(Ref)</td>
+                    <td id="E-Min_Min">-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Diagram Section -->
+        <div id="diagram-container">
+            <h3>Thread Visualizer</h3>
+            
             <div>
-                <label for="Type">Thread Type:</label>
-                <select name="Types" id="Types">
-                    <option value="UN Threads">UN Threads</option>
-                    <option value="UNR Threads">UNR Threads</option>
-                    <option value="UNJ Threads">UNJ Threads</option>
-                    <option value="ACME Threads">ACME Threads</option>
-                    <option value="Sub Acme Threads">Sub Acme Threads</option>
-                    <option value="M Series Metric">M Series Metric</option>
-                </select>
+                <h4>External Thread (Bolt)</h4>
+                <canvas id="thread-diagram-ext" width="750" height="300"></canvas>
             </div>
-            <div id="thread-class-container">
-                <label for="thread-class">Thread Class:</label>
-                <select name="thread-class" id="thread-class">
-                    <option value="Class 1">Class 1</option>
-                    <option value="Class 2">Class 2</option>
-                    <option value="Class 3">Class 3</option>
-                </select>
-            </div>
+            
             <div>
-                <label for="nominal-diameter">Nominal Diameter:</label>
-                <input type="number" id="nominal-diameter" name="nominal-diameter" inputmode="decimal" pattern="[0-9.+-]*"> mm
+                <h4>Internal Thread (Nut)</h4>
+                <canvas id="thread-diagram-int" width="750" height="300"></canvas>
             </div>
-            <div id="pitch-container" style="display:none;">
-                <label for="pitch">Pitch:</label>
-                <input type="number" id="pitch" name="pitch" inputmode="decimal" pattern="[0-9.+-]*"> mm
-            </div>
-            <div id="tpi-container">
-                <label for="threads-per-inch">Threads Per Inch:</label>
-                <input type="number" id="threads-per-inch" name="threads-per-inch" inputmode="decimal" pattern="[0-9.+-]*">
-            </div>
-            <button>Calculate</button>
-            <h2>Dimensions</h2>
-            <table>
-                <tr>
-                    <th>Dim. Table</th>
-                    <th>PD Max</th>
-                    <th>PD Min</th>
-                    <th>Maj Dia Max</th>
-                    <th>Maj Dia Min</th>
-                </tr>
-                <tr>
-                    <td>Internal</td>
-                    <td id="I-PD_Max">null</td>
-                    <td id="I-PD_Min">null</td>
-                    <td id="I-Maj Dia Max">null</td>
-                    <td id="I-Maj Dia Min">null</td>
-                </tr>
-                <tr>
-                    <td>External</td>
-                    <td id="E-PD_Max">null</td>
-                    <td id="E-PD_Min">null</td>
-                    <td id="E-Maj Dia Max">null</td>
-                    <td id="E-Maj Dia Min">null</td>
-                </tr>
-            </table>
-        </main>
-        <footer>
-            <p>©2025 Nathan James Sharp. All Rights Reserved.</p>
-        </footer>
-    </body>
+            
+            <p><small>Schematic representation. Horizontal lines indicate diameter levels. Hatched area represents solid material.</small></p>
+        </div>
+
+        <div class="disclaimer">
+            <p><strong>Standards Reference:</strong></p>
+            <ul>
+                <li><strong>Unified (Inch):</strong> Calculations based on <a href="https://www.asme.org/codes-standards/find-codes-standards/b1-1-unified-inch-screw-threads-un-unr-thread-form" target="_blank">ASME B1.1-2003</a>.</li>
+                <li><strong>Metric:</strong> Calculations based on <a href="https://www.iso.org/standard/45719.html" target="_blank">ISO 965-1</a>.</li>
+                <li><strong>NPT (Taper):</strong> Calculations based on <a href="https://www.asme.org/codes-standards/find-codes-standards/b1-20-1-pipe-threads-general-purpose-inch" target="_blank">ASME B1.20.1-2013</a>.</li>
+                <li><strong>ISO 7-1 (Taper):</strong> Calculations based on <a href="https://www.iso.org/standard/2115.html" target="_blank">ISO 7-1:1994</a> (R/Rc threads).</li>
+            </ul>
+            <p><strong>Disclaimer:</strong> This tool is for educational and reference purposes only. Always verify critical engineering dimensions against the official printed standards.</p>
+        </div>
+    </main>
+    <footer>
+        <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
 </html>
