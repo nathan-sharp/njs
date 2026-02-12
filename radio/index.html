@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Radio | NJS.dev</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        :root {
+            --primary: #ff4757;
+            --dark: #2f3542;
+            --light: #dfe4ea;
+            --bg: #1e272e;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #radio-container {
+            background: var(--dark);
+            width: 350px;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        /* The Album Art / Visualizer Placeholder */
+        .visualizer {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, var(--primary), #5352ed);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem auto;
+            animation: pulse 2s infinite ease-in-out;
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visualizer::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background: var(--dark);
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #747d8c;
+            margin-bottom: 0.5rem;
+        }
+
+        #song-title {
+            font-size: 1.5rem;
+            margin: 0 0 0.5rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 1.8rem;
+        }
+
+        #artist-name {
+            font-size: 1rem;
+            color: #a4b0be;
+            margin-bottom: 2rem;
+        }
+
+        /* Custom Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #57606f;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.2s linear;
+        }
+
+        #time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #747d8c;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Status Indicator */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Overlay for "Click to Start" (Browser Policy Requirement) */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 39, 46, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        #tune-in-btn {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        #tune-in-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Debug/Status text */
+        #debug-status {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #747d8c;
+            min-height: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="radio-container">
+        <!-- Overlay to handle Autoplay policy -->
+        <div id="overlay">
+            <button id="tune-in-btn">Tune In 📻</button>
+            <p style="margin-top: 1rem; color: #a4b0be; font-size: 0.9rem;">Click to sync with broadcast</p>
+        </div>
+
+        <h1>Live Station</h1>
+        
+        <div class="visualizer"></div>
+        
+        <h2 id="song-title">Waiting for signal...</h2>
+        <p id="artist-name">...</p>
+
+        <div class="progress-container">
+            <div id="progress-fill"></div>
+        </div>
+        
+        <div id="time-info">
+            <span id="current-time">00:00</span>
+            <span id="total-time">00:00</span>
+        </div>
+
+        <div class="status">
+            <span class="live-dot"></span> Live Broadcast
+        </div>
+        <div id="debug-status"></div>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <audio id="radio-audio" preload="auto"></audio>
+
+    <script>
+        /**
+         * ------------------------------------------------------------------
+         * CONFIGURATION
+         * ------------------------------------------------------------------
+         * Updated with MP3 files for better browser compatibility (Safari/iOS).
+         * ------------------------------------------------------------------
+         */
+        const playlist = [
+            {
+                title: "Cortosis",
+                artist: "Kevin MacLeod",
+                src: "/media/music/Cortosis.mp3",
+                duration: 153 // 2:33
+            },
+            {
+                title: "I Got a Stick",
+                artist: "Kevin MacLeod",
+                src: "/media/music/I Got a Stick.mp3",
+                duration: 31 // 0:31
+            },
+            {
+                title: "Impact Moderato",
+                artist: "Kevin MacLeod",
+                src: "/media/music/Impact Moderato.mp3",
+                duration: 75 // 1:15
+            },
+            {
+                title: "Monkeys Spinning Monkeys",
+                artist: "Kevin MacLeod",
+                src: "/media/music/Monkeys Spinning Monkeys.mp3",
+                duration: 125 // 2:05
+            },
+            {
+                title: "Unity",
+                artist: "Kevin MacLeod",
+                src: "/media/music/Unity.mp3",
+                duration: 264 // 4:24
+            }
+        ];
+
+        // System Variables
+        const audioPlayer = document.getElementById('radio-audio');
+        const uiTitle = document.getElementById('song-title');
+        const uiArtist = document.getElementById('artist-name');
+        const uiProgress = document.getElementById('progress-fill');
+        const uiCurrentTime = document.getElementById('current-time');
+        const uiTotalTime = document.getElementById('total-time');
+        const overlay = document.getElementById('overlay');
+        const tuneInBtn = document.getElementById('tune-in-btn');
+        const debugStatus = document.getElementById('debug-status');
+
+        let isTunedIn = false;
+        let currentSongIndex = -1; // Added: Track the active song ID to prevent reload loops
+        let animationFrame;
+
+        // Calculate total playlist duration once
+        const totalPlaylistDuration = playlist.reduce((acc, song) => acc + song.duration, 0);
+
+        /**
+         * The Core Radio Logic
+         * Calculates exactly what song should be playing right now based on UTC time.
+         */
+        function getRadioState() {
+            const now = Date.now() / 1000; // Current time in seconds
+            let timeInLoop = now % totalPlaylistDuration;
+            
+            let accumulatedTime = 0;
+            for (let i = 0; i < playlist.length; i++) {
+                const song = playlist[i];
+                if (timeInLoop < (accumulatedTime + song.duration)) {
+                    return {
+                        songIndex: i,
+                        song: song,
+                        seekTime: timeInLoop - accumulatedTime
+                    };
+                }
+                accumulatedTime += song.duration;
+            }
+            return null;
+        }
+
+        function syncRadio() {
+            if (!isTunedIn) return;
+
+            const state = getRadioState();
+            if (!state) return;
+
+            // 1. Check if the correct track is loaded
+            // We now compare index (ID) instead of src string to avoid URL encoding bugs (spaces vs %20)
+            if (state.songIndex !== currentSongIndex) {
+                console.log("Switching track to:", state.song.title);
+                currentSongIndex = state.songIndex; // Lock this song so we don't request it again
+                
+                audioPlayer.src = state.song.src;
+                audioPlayer.load();
+                
+                // Try to play
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        debugStatus.innerText = "Error: Autoplay blocked or Network issue";
+                        console.error("Play error:", error);
+                    });
+                }
+            }
+
+            // 2. Sync Time (Drift Correction)
+            // If the time difference is greater than 2 seconds, we jump to the correct spot.
+            const timeDiff = Math.abs(audioPlayer.currentTime - state.seekTime);
+            if (timeDiff > 2) {
+                console.log(`Resyncing: Drifted by ${timeDiff.toFixed(2)}s`);
+                
+                // Only seek if the audio is ready to be seeked
+                if(audioPlayer.readyState >= 1) { 
+                     audioPlayer.currentTime = state.seekTime;
+                }
+            }
+            
+            // Check if user paused via keyboard or system controls and force play
+            if (audioPlayer.paused && audioPlayer.readyState >= 3) {
+                 audioPlayer.play().catch(e => {});
+            }
+
+            // 3. Update UI
+            updateUI(state.song, state.seekTime);
+            updateStatus();
+
+            // 4. Schedule next check
+            animationFrame = requestAnimationFrame(syncRadio);
+        }
+
+        function updateUI(song, currentSeek) {
+            if (uiTitle.innerText !== song.title) {
+                uiTitle.innerText = song.title;
+                uiArtist.innerText = song.artist;
+                uiTotalTime.innerText = formatTime(song.duration);
+            }
+
+            const percent = (currentSeek / song.duration) * 100;
+            uiProgress.style.width = `${percent}%`;
+            uiCurrentTime.innerText = formatTime(currentSeek);
+        }
+
+        function updateStatus() {
+            if (audioPlayer.error) {
+                debugStatus.innerText = "Error loading audio file.";
+            } else if (audioPlayer.readyState < 3) {
+                debugStatus.innerText = "Buffering...";
+            } else if (!audioPlayer.paused) {
+                debugStatus.innerText = "Playing";
+            } else {
+                debugStatus.innerText = "Paused (Syncing...)";
+            }
+        }
+
+        // Helper: Format seconds to MM:SS
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Start Button Handler
+        tuneInBtn.addEventListener('click', () => {
+            isTunedIn = true;
+            overlay.classList.add('hidden');
+            
+            // Resume Audio Context (fixes some browser audio issues)
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                const ctx = new AudioContext();
+                ctx.resume();
+            }
+
+            const state = getRadioState();
+            
+            // Set initial state so the loop doesn't try to reload it immediately
+            currentSongIndex = state.songIndex;
+            audioPlayer.src = state.song.src;
+            
+            // Attempt initial play
+            audioPlayer.play().then(() => {
+                // Once playing starts, jump to correct time
+                audioPlayer.currentTime = state.seekTime;
+                syncRadio();
+            }).catch(e => {
+                debugStatus.innerText = "Click failed to start audio. Check permissions.";
+                console.error(e);
+            });
+        });
+
+        // Handle window focus to resync
+        window.addEventListener('focus', () => {
+            if(isTunedIn) syncRadio();
+        });
+
+    </script>
+</body>
+</html>
