@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unit Converter | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <!-- MathJax Configuration -->
+        <script>
+            window.MathJax = {
+                tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+                svg: { fontCache: 'global' }
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <h1>Unit Converter</h1>
+            <p>Convert between common units of measurement with real-time formula display.</p>
+        </header>
+
+        <main>
+            <!-- Category Selection -->
+            <section>
+                <label for="categorySelect"><strong>Category:</strong></label>
+                <br>
+                <select id="categorySelect" style="font-size: 1.1em; padding: 5px; margin-top: 5px;">
+                    <!-- Populated by JS -->
+                </select>
+            </section>
+
+            <hr>
+
+            <!-- Converter Interface -->
+            <section id="converterInterface">
+                <!-- From Input -->
+                <div style="margin-bottom: 20px;">
+                    <label for="fromVal"><strong>From:</strong></label>
+                    <br>
+                    <input type="number" id="fromVal" value="1" style="font-size: 1.2em; padding: 5px; width: 200px;">
+                    <select id="fromUnit" style="font-size: 1.2em; padding: 5px;">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <!-- To Input -->
+                <div style="margin-bottom: 20px;">
+                    <label for="toVal"><strong>To:</strong></label>
+                    <br>
+                    <input type="number" id="toVal" style="font-size: 1.2em; padding: 5px; width: 200px;">
+                    <select id="toUnit" style="font-size: 1.2em; padding: 5px;">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </section>
+
+            <hr>
+
+            <!-- Results & Explanations -->
+            <section>
+                <h2>Result</h2>
+                <p id="resultText" style="font-size: 1.2em; font-weight: bold;">---</p>
+
+                <h3>Formula</h3>
+                <p>The algebraic formula used for this conversion:</p>
+                <div id="formulaMath" style="font-size: 1.1em; margin: 10px 0;">$$ ... $$</div>
+
+                <h3>Calculation</h3>
+                <p>The formula with your specific values filled in:</p>
+                <div id="filledMath" style="font-size: 1.1em; margin: 10px 0;">$$ ... $$</div>
+
+                <h3>Source & Definitions</h3>
+                <p>Definitions and authorities for the units used:</p>
+                <dl id="sourceList" style="line-height: 1.6;">
+                    <!-- Populated by JS -->
+                </dl>
+            </section>
+        </main>
+
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+
+        <script src="scripts.js"></script>
+    </body>
+</html>
