@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>QR Generator | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <script src="/qr/scripts.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>QR Code Generator</h1>
+            <p>Generate and export QR codes entirely within your browser.</p>
+        </header>
+        <main>
+            <div>
+                <label for="qr-text">Text or URL:</label><br>
+                <textarea id="qr-text" rows="4" cols="50">https://njs.dev</textarea>
+            </div>
+            <br>
+            <div>
+                <label for="qr-level">Error Correction Level:</label>
+                <select id="qr-level">
+                    <option value="L">L (Low, ~7%)</option>
+                    <option value="M" selected>M (Medium, ~15%)</option>
+                    <option value="Q">Q (Quartile, ~25%)</option>
+                    <option value="H">H (High, ~30%)</option>
+                </select>
+            </div>
+            <br>
+            <div>
+                <label for="qr-fg-color">QR Code Color:</label>
+                <input type="color" id="qr-fg-color" value="#000000">
+            </div>
+            <br>
+            <div>
+                <label for="qr-bg-color">Background Color:</label>
+                <input type="color" id="qr-bg-color" value="#FFFFFF">
+            </div>
+            <br>
+            <button id="gen-btn">Generate QR</button>
+            <hr>
+            <div id="result-container">
+                <canvas id="qr-canvas" style="display:none;"></canvas>
+                <p>Preview:</p>
+                <img id="qr-preview" alt="QR Code Preview" style="border: 1px solid #000; max-width: 100%;">
+            </div>
+            <br>
+            <div>
+                <button onclick="download('png')">Download PNG</button>
+                <button onclick="download('jpg')">Download JPG</button>
+                <button onclick="download('svg')">Download SVG</button>
+            </div>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+
+        <script>
+            const textInput = document.getElementById('qr-text');
+            const levelInput = document.getElementById('qr-level');
+            const fgColorInput = document.getElementById('qr-fg-color');
+            const bgColorInput = document.getElementById('qr-bg-color');
+            const btn = document.getElementById('gen-btn');
+            const canvas = document.getElementById('qr-canvas');
+            const imgPreview = document.getElementById('qr-preview');
+            const ctx = canvas.getContext('2d');
+
+            // Internal state for SVG generation
+            let currentQr = null;
+
+            function generate() {
+                const typeNumber = 0; // 0 = Auto-detect
+                const errorCorrectionLevel = levelInput.value;
+                const qr = qrcode(typeNumber, errorCorrectionLevel);
+                
+                const text = textInput.value || "";
+                qr.addData(text);
+                qr.make();
+                currentQr = qr;
+
+                // --- Draw to Canvas (for PNG/JPG) ---
+                const moduleCount = qr.getModuleCount();
+                const cellSize = 10; // Pixels per module
+                const margin = 4; // Modules margin
+                const size = (moduleCount + (margin * 2)) * cellSize;
+
+                canvas.width = size;
+                canvas.height = size;
+
+                // Fill background with selected color
+                ctx.fillStyle = bgColorInput.value;
+                ctx.fillRect(0, 0, size, size);
+
+                // Draw modules with selected color
+                ctx.fillStyle = fgColorInput.value;
+                for (let r = 0; r < moduleCount; r++) {
+                    for (let c = 0; c < moduleCount; c++) {
+                        if (qr.isDark(r, c)) {
+                            ctx.fillRect(
+                                (c + margin) * cellSize, 
+                                (r + margin) * cellSize, 
+                                cellSize, 
+                                cellSize
+                            );
+                        }
+                    }
+                }
+
+                // Update Preview Image
+                imgPreview.src = canvas.toDataURL();
+            }
+
+            window.download = function(format) {
+                if (!currentQr) {
+                    alert("Please generate a QR code first.");
+                    return;
+                }
+
+                const link = document.createElement('a');
+                link.download = `qrcode.${format}`;
+
+                if (format === 'svg') {
+                    // Generate SVG content manually to ensure clean scaling
+                    const moduleCount = currentQr.getModuleCount();
+                    const cellSize = 10;
+                    const margin = 4;
+                    const size = (moduleCount + (margin * 2)) * cellSize;
+                    
+                    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+                    svg += `<rect width="100%" height="100%" fill="${bgColorInput.value}"/>`; // Background
+                    
+                    for (let r = 0; r < moduleCount; r++) {
+                        for (let c = 0; c < moduleCount; c++) {
+                            if (currentQr.isDark(r, c)) {
+                                const x = (c + margin) * cellSize;
+                                const y = (r + margin) * cellSize;
+                                svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${fgColorInput.value}"/>`;
+                            }
+                        }
+                    }
+                    svg += `</svg>`;
+
+                    const blob = new Blob([svg], {type: 'image/svg+xml'});
+                    link.href = URL.createObjectURL(blob);
+                    
+                } else if (format === 'png') {
+                    link.href = canvas.toDataURL('image/png');
+                } else if (format === 'jpg' || format === 'jpeg') {
+                    link.href = canvas.toDataURL('image/jpeg', 1.0);
+                }
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            btn.addEventListener('click', generate);
+            fgColorInput.addEventListener('change', generate);
+            bgColorInput.addEventListener('change', generate);
+
+            // Init
+            generate();
+        </script>
+    </body>
+</html>
