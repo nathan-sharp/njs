@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hooke's Law | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    </head>
+    <body>
+        <header>
+            <h1>Hooke's Law</h1>
+            <p>Explore the relationship between force, displacement, and spring constant with this interactive visualization.</p>
+        </header>
+        <main>
+            <h2>What is Hooke's Law?</h2>
+            <p>
+                <strong>Hooke's Law</strong> describes the behavior of springs and elastic materials. It states that the force exerted by a spring is directly proportional to the displacement from its equilibrium position, with the spring constant determining the stiffness.
+            </p>
+            
+            <h3>Formulas</h3>
+            <p><strong>F = -k × x</strong></p>
+            <p><strong>Where:</strong></p>
+            <ul>
+                <li><strong>F</strong> = Force exerted by the spring (Newtons)</li>
+                <li><strong>k</strong> = Spring constant (N/m) - determines stiffness</li>
+                <li><strong>x</strong> = Displacement from equilibrium (meters)</li>
+                <li>The negative sign indicates the restoring force opposes displacement</li>
+            </ul>
+            
+            <p>Additional formulas:</p>
+            <ul>
+                <li><strong>F = m × g</strong> (Force from mass, where g = 9.81 m/s²)</li>
+                <li><strong>Elastic Potential Energy: E = ½kx²</strong> <a href="https://en.wikipedia.org/wiki/Elastic_potential_energy" target="_blank">[Reference]</a></li>
+                <li><strong>Work Done: W = ½Fx</strong> <a href="https://en.wikipedia.org/wiki/Work_(physics)" target="_blank">[Reference]</a></li>
+            </ul>
+
+            <h2>Calculator</h2>
+            <p>Enter mass and spring constant to see the displacement and other calculated values:</p>
+
+            <div>
+                <label>Mass (kg):</label><br>
+                <input type="range" id="massSlider" min="0" max="10" step="0.1" value="1.02">
+                <input type="number" id="massInput" min="0" max="10" step="0.1" value="1.02">
+                <span id="massValue">1.02</span> kg (≈ <span id="forceValue">10.0</span> N)
+            </div>
+
+            <div>
+                <label>Spring Constant (N/m):</label><br>
+                <input type="range" id="springConstantSlider" min="10" max="200" step="5" value="50">
+                <input type="number" id="springConstantInput" min="10" max="200" step="5" value="50">
+                <span id="springConstantValue">50</span> N/m
+            </div>
+
+            <h2>Results</h2>
+            <p>
+                <strong>Formula:</strong> x = (F / k) × 1000 (to convert from m to mm)
+            </p>
+            <p>
+                <strong>Calculation:</strong> x = (<span id="forceValueFormula">10.0</span> / <span id="springConstantValueFormula">50</span>) × 1000 = <span id="displacementValue">200</span> mm
+            </p>
+
+            <h2>Visual Representation</h2>
+            <canvas id="canvas" width="400" height="500"></canvas>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+        <script src="scripts.js"></script>
+    </body>
+</html>
