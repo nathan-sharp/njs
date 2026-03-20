@@ -70,6 +70,23 @@
                      <small style="display: block; margin-top: 5px;">Requires playing video through once to render.</small>
                 </div>
 
+                <hr>
+
+                <div class="setting" id="audioSection">
+                    <label for="audioAlgoSelect">Audio Compression:</label>
+                    <select id="audioAlgoSelect">
+                        <option value="pcm8_22050">8-bit PCM @ 22.05 kHz</option>
+                        <option value="pcm4_11025">4-bit PCM @ 11.025 kHz</option>
+                        <option value="pcm2_8000">2-bit PCM @ 8 kHz</option>
+                    </select>
+                    <small style="display: block; margin-top: 5px;">Designed for old-school low-fidelity output (mono, reduced bit depth, reduced sample rate).</small>
+                    <div class="audio-controls-row" style="margin-top: 8px;">
+                        <button id="previewAudioBtn" disabled>Preview Compressed Audio</button>
+                        <button id="downloadAudioBtn" disabled>Download Compressed WAV</button>
+                    </div>
+                    <small id="audioStatus" style="display: block; margin-top: 5px;">Load a video with audio to enable compression tools.</small>
+                </div>
+
                 <div class="video-controls-bar setting">
                     <button id="playPauseBtn">▶</button>
                     <span id="currentTimeText">0:00</span>

@@ -31,6 +31,10 @@ const videoProgress = document.getElementById('videoProgress');
 const currentTimeText = document.getElementById('currentTimeText');
 const durationText = document.getElementById('durationText');
 const videoControlsBar = document.querySelector('.video-controls-bar');
+const audioAlgoSelect = document.getElementById('audioAlgoSelect');
+const previewAudioBtn = document.getElementById('previewAudioBtn');
+const downloadAudioBtn = document.getElementById('downloadAudioBtn');
+const audioStatus = document.getElementById('audioStatus');
 
 // --- State Variables ---
 let currentMediaType = 'none';
@@ -46,6 +50,17 @@ let isRenderingForDownload = false;
 let isUserScrubbing = false;
 let activeCameraStream = null;
 let isMirrorEnabled = false;
+let currentVideoFile = null;
+let decodedAudioBuffer = null;
+let previewAudioContext = null;
+let previewSourceNode = null;
+let audioDecodeRequestId = 0;
+
+const AUDIO_ALGORITHMS = {
+    pcm8_22050: { bits: 8, sampleRate: 22050, label: '8-bit PCM @ 22.05 kHz' },
+    pcm4_11025: { bits: 4, sampleRate: 11025, label: '4-bit PCM @ 11.025 kHz' },
+    pcm2_8000: { bits: 2, sampleRate: 8000, label: '2-bit PCM @ 8 kHz' }
+};
 
 async function populateCameraDevices() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
@@ -136,7 +151,165 @@ function setControlsEnabled(enabled) {
     vidDownloadBtn.disabled = !enabled;
     videoProgress.disabled = !enabled;
     playPauseBtn.disabled = !enabled;
+    if (previewAudioBtn) previewAudioBtn.disabled = !enabled || !decodedAudioBuffer;
+    if (downloadAudioBtn) downloadAudioBtn.disabled = !enabled || !decodedAudioBuffer;
     videoControlsBar.style.opacity = enabled ? '1' : '0.5';
+}
+
+function stopAudioPreview() {
+    if (previewSourceNode) {
+        previewSourceNode.stop();
+        previewSourceNode.disconnect();
+        previewSourceNode = null;
+    }
+    previewAudioBtn.textContent = 'Preview Compressed Audio';
+}
+
+async function ensurePreviewAudioContext() {
+    if (!previewAudioContext || previewAudioContext.state === 'closed') {
+        previewAudioContext = new AudioContext();
+    }
+    if (previewAudioContext.state === 'suspended') {
+        await previewAudioContext.resume();
+    }
+    return previewAudioContext;
+}
+
+function resetAudioState(message = 'Load a video with audio to enable compression tools.') {
+    stopAudioPreview();
+    decodedAudioBuffer = null;
+    currentVideoFile = null;
+    if (previewAudioBtn) previewAudioBtn.disabled = true;
+    if (downloadAudioBtn) downloadAudioBtn.disabled = true;
+    if (audioStatus) audioStatus.textContent = message;
+}
+
+function downsampleLinearMono(channelData, sourceRate, targetRate) {
+    if (targetRate >= sourceRate) return channelData;
+
+    const ratio = sourceRate / targetRate;
+    const targetLength = Math.max(1, Math.floor(channelData.length / ratio));
+    const output = new Float32Array(targetLength);
+
+    for (let i = 0; i < targetLength; i++) {
+        const position = i * ratio;
+        const left = Math.floor(position);
+        const right = Math.min(channelData.length - 1, left + 1);
+        const frac = position - left;
+        output[i] = channelData[left] * (1 - frac) + channelData[right] * frac;
+    }
+
+    return output;
+}
+
+function quantizeBitDepth(samples, bits) {
+    const levels = (1 << bits) - 1;
+    const out = new Float32Array(samples.length);
+
+    for (let i = 0; i < samples.length; i++) {
+        const clamped = Math.max(-1, Math.min(1, samples[i]));
+        const normalized = (clamped + 1) * 0.5;
+        const quantized = Math.round(normalized * levels) / levels;
+        out[i] = (quantized * 2) - 1;
+    }
+
+    return out;
+}
+
+function buildCompressedMonoData(buffer, algorithmKey) {
+    const profile = AUDIO_ALGORITHMS[algorithmKey] || AUDIO_ALGORITHMS.pcm8_22050;
+    const channels = [];
+
+    for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+        channels.push(buffer.getChannelData(ch));
+    }
+
+    const mono = new Float32Array(buffer.length);
+    for (let i = 0; i < buffer.length; i++) {
+        let sum = 0;
+        for (let ch = 0; ch < channels.length; ch++) {
+            sum += channels[ch][i] || 0;
+        }
+        mono[i] = sum / channels.length;
+    }
+
+    const downsampled = downsampleLinearMono(mono, buffer.sampleRate, profile.sampleRate);
+    const quantized = quantizeBitDepth(downsampled, profile.bits);
+
+    return {
+        samples: quantized,
+        sampleRate: profile.sampleRate,
+        label: profile.label
+    };
+}
+
+function encodeMonoWavFromFloat32(samples, sampleRate) {
+    const bytesPerSample = 2;
+    const blockAlign = bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    const dataSize = samples.length * bytesPerSample;
+    const wavBuffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(wavBuffer);
+
+    let offset = 0;
+    function writeString(str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset++, str.charCodeAt(i));
+    }
+
+    writeString('RIFF');
+    view.setUint32(offset, 36 + dataSize, true); offset += 4;
+    writeString('WAVE');
+    writeString('fmt ');
+    view.setUint32(offset, 16, true); offset += 4;
+    view.setUint16(offset, 1, true); offset += 2;
+    view.setUint16(offset, 1, true); offset += 2;
+    view.setUint32(offset, sampleRate, true); offset += 4;
+    view.setUint32(offset, byteRate, true); offset += 4;
+    view.setUint16(offset, blockAlign, true); offset += 2;
+    view.setUint16(offset, 16, true); offset += 2;
+    writeString('data');
+    view.setUint32(offset, dataSize, true); offset += 4;
+
+    for (let i = 0; i < samples.length; i++) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        offset += 2;
+    }
+
+    return new Blob([wavBuffer], { type: 'audio/wav' });
+}
+
+async function decodeAudioFromVideoFile(file) {
+    if (!file || !file.type.startsWith('video/')) {
+        resetAudioState();
+        return;
+    }
+
+    const requestId = ++audioDecodeRequestId;
+    resetAudioState('Reading audio track...');
+    currentVideoFile = file;
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const decodeContext = new AudioContext();
+        const decoded = await decodeContext.decodeAudioData(arrayBuffer.slice(0));
+        await decodeContext.close();
+
+        if (requestId !== audioDecodeRequestId || currentVideoFile !== file) return;
+
+        decodedAudioBuffer = decoded;
+        if (!decoded.numberOfChannels || decoded.length === 0) {
+            resetAudioState('Video loaded but no audible track was detected.');
+            return;
+        }
+
+        previewAudioBtn.disabled = false;
+        downloadAudioBtn.disabled = false;
+        audioStatus.textContent = `Audio ready: ${decoded.numberOfChannels} channel(s), ${Math.round(decoded.sampleRate)} Hz source.`;
+    } catch (err) {
+        console.error('Could not decode video audio:', err);
+        resetAudioState('Unable to decode audio track from this video format.');
+    }
 }
 
 function stopCameraStream() {
@@ -153,6 +326,7 @@ function resetPlayerState() {
     sourceVideo.removeAttribute('src');
     sourceVideo.currentTime = 0;
     stopCameraStream();
+    stopAudioPreview();
     playPauseBtn.textContent = '▶';
     isRenderingForDownload = false;
 }
@@ -175,6 +349,7 @@ mediaInput.addEventListener('change', function(e) {
         imageControls.style.display = 'none';
         videoContainer.style.display = 'block';
         statusDiv.textContent = "Loading video...";
+        decodeAudioFromVideoFile(file);
         
         sourceVideo.src = url;
         sourceVideo.onloadedmetadata = () => {
@@ -196,6 +371,7 @@ mediaInput.addEventListener('change', function(e) {
         currentMediaType = 'image';
         videoContainer.style.display = 'none';
         imageControls.style.display = 'block';
+        resetAudioState();
         statusDiv.textContent = "Loading image...";
         
         const img = new Image();
@@ -222,6 +398,7 @@ async function startCameraFeed() {
 
     imageControls.style.display = 'none';
     videoContainer.style.display = 'none';
+    resetAudioState('Audio tools are available for uploaded videos only.');
     currentMediaType = 'camera';
     statusDiv.textContent = 'Requesting camera permission...';
     startCameraBtn.disabled = true;
@@ -289,6 +466,62 @@ stopCameraBtn.addEventListener('click', () => {
     startCameraBtn.disabled = false;
     stopCameraBtn.disabled = true;
     statusDiv.textContent = 'Camera stopped. Waiting for media...';
+});
+
+previewAudioBtn.addEventListener('click', async () => {
+    if (!decodedAudioBuffer) return;
+
+    if (previewSourceNode) {
+        stopAudioPreview();
+        return;
+    }
+
+    try {
+        const processed = buildCompressedMonoData(decodedAudioBuffer, audioAlgoSelect.value);
+        const context = await ensurePreviewAudioContext();
+        const buffer = context.createBuffer(1, processed.samples.length, processed.sampleRate);
+        buffer.copyToChannel(processed.samples, 0);
+
+        const source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.onended = () => {
+            if (previewSourceNode === source) {
+                previewSourceNode = null;
+                previewAudioBtn.textContent = 'Preview Compressed Audio';
+            }
+        };
+
+        previewSourceNode = source;
+        previewAudioBtn.textContent = 'Stop Preview';
+        audioStatus.textContent = `Previewing ${processed.label} (mono).`;
+        source.start();
+    } catch (err) {
+        console.error('Audio preview failed:', err);
+        audioStatus.textContent = 'Could not preview compressed audio.';
+        stopAudioPreview();
+    }
+});
+
+downloadAudioBtn.addEventListener('click', () => {
+    if (!decodedAudioBuffer) return;
+
+    try {
+        const processed = buildCompressedMonoData(decodedAudioBuffer, audioAlgoSelect.value);
+        const wavBlob = encodeMonoWavFromFloat32(processed.samples, processed.sampleRate);
+        downloadBlob(wavBlob, `dither_audio_${getTimestampStr()}.wav`);
+        audioStatus.textContent = `Downloaded ${processed.label} WAV.`;
+    } catch (err) {
+        console.error('Audio download failed:', err);
+        audioStatus.textContent = 'Could not export compressed audio.';
+    }
+});
+
+audioAlgoSelect.addEventListener('change', () => {
+    if (!decodedAudioBuffer) return;
+    stopAudioPreview();
+    const profile = AUDIO_ALGORITHMS[audioAlgoSelect.value] || AUDIO_ALGORITHMS.pcm8_22050;
+    audioStatus.textContent = `Ready: ${profile.label} preset selected.`;
 });
 
 function updateOutput() {

@@ -73,6 +73,15 @@ header p { margin: 0; }
     width: auto;
 }
 
+.audio-controls-row {
+    display: flex;
+    gap: 8px;
+}
+
+.audio-controls-row button {
+    flex: 1;
+}
+
 /* Push footer to bottom */
 footer {
     margin-top: auto; 
