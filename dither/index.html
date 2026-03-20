@@ -18,6 +18,19 @@
                 <label for="mediaInput">Select Media (Image or Video):</label>
                 <input type="file" id="mediaInput" accept="image/*,video/*">
             </div>
+
+            <div class="setting" id="cameraControls">
+                <button id="startCameraBtn">Use Camera</button>
+                <button id="stopCameraBtn" disabled>Stop Camera</button>
+                <label for="cameraSelect" style="margin-top: 8px;">Camera Device:</label>
+                <select id="cameraSelect" disabled>
+                    <option value="">Default Camera</option>
+                </select>
+                <label for="mirrorToggle" style="margin-top: 8px;">
+                    <input type="checkbox" id="mirrorToggle"> Mirror Preview
+                </label>
+                <small style="display: block; margin-top: 5px;">Camera feed is processed live using the selected dither algorithm.</small>
+            </div>
             
             <div class="setting">
                 <label for="algoSelect">Algorithm:</label>

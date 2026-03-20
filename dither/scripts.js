@@ -22,6 +22,10 @@ const imageControls = document.getElementById('imageControls');
 const imgDownloadBtn = document.getElementById('imgDownloadBtn');
 const videoContainer = document.getElementById('videoContainer');
 const vidDownloadBtn = document.getElementById('vidDownloadBtn');
+const startCameraBtn = document.getElementById('startCameraBtn');
+const stopCameraBtn = document.getElementById('stopCameraBtn');
+const cameraSelect = document.getElementById('cameraSelect');
+const mirrorToggle = document.getElementById('mirrorToggle');
 const playPauseBtn = document.getElementById('playPauseBtn');
 const videoProgress = document.getElementById('videoProgress');
 const currentTimeText = document.getElementById('currentTimeText');
@@ -40,6 +44,40 @@ let animationId;
 let gifEncoder = null;
 let isRenderingForDownload = false;
 let isUserScrubbing = false;
+let activeCameraStream = null;
+let isMirrorEnabled = false;
+
+async function populateCameraDevices() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+
+        const previousValue = cameraSelect.value;
+        cameraSelect.innerHTML = '';
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Default Camera';
+        cameraSelect.appendChild(defaultOption);
+
+        cameras.forEach((cam, index) => {
+            const option = document.createElement('option');
+            option.value = cam.deviceId;
+            option.textContent = cam.label || `Camera ${index + 1}`;
+            cameraSelect.appendChild(option);
+        });
+
+        cameraSelect.disabled = cameras.length === 0;
+        if ([...cameraSelect.options].some(o => o.value === previousValue)) {
+            cameraSelect.value = previousValue;
+        }
+    } catch (err) {
+        console.error('Unable to enumerate camera devices:', err);
+        cameraSelect.disabled = true;
+    }
+}
 
 // GIF Recording constants
 let lastFrameTime = 0;
@@ -101,17 +139,34 @@ function setControlsEnabled(enabled) {
     videoControlsBar.style.opacity = enabled ? '1' : '0.5';
 }
 
+function stopCameraStream() {
+    if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(track => track.stop());
+        activeCameraStream = null;
+    }
+    if (sourceVideo.srcObject) sourceVideo.srcObject = null;
+}
+
+function resetPlayerState() {
+    if (animationId) cancelAnimationFrame(animationId);
+    sourceVideo.pause();
+    sourceVideo.removeAttribute('src');
+    sourceVideo.currentTime = 0;
+    stopCameraStream();
+    playPauseBtn.textContent = '▶';
+    isRenderingForDownload = false;
+}
+
 // --- Event Listeners: Media Loading & Settings ---
 mediaInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (animationId) cancelAnimationFrame(animationId);
-    sourceVideo.pause();
-    sourceVideo.removeAttribute('src');
+    resetPlayerState();
     originalImage = null;
-    isRenderingForDownload = false;
     setControlsEnabled(true);
+    startCameraBtn.disabled = false;
+    stopCameraBtn.disabled = true;
 
     const url = URL.createObjectURL(file);
 
@@ -126,6 +181,8 @@ mediaInput.addEventListener('change', function(e) {
             statusDiv.textContent = "Video loaded. Ready.";
             durationText.textContent = formatTime(sourceVideo.duration);
             videoProgress.max = sourceVideo.duration;
+            videoProgress.value = 0;
+            currentTimeText.textContent = '0:00';
             canvas.style.display = 'block';
             sourceVideo.currentTime = 0; 
         };
@@ -153,6 +210,87 @@ mediaInput.addEventListener('change', function(e) {
     }
 });
 
+async function startCameraFeed() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera access is not supported in this browser.');
+        return false;
+    }
+
+    resetPlayerState();
+    originalImage = null;
+    setControlsEnabled(true);
+
+    imageControls.style.display = 'none';
+    videoContainer.style.display = 'none';
+    currentMediaType = 'camera';
+    statusDiv.textContent = 'Requesting camera permission...';
+    startCameraBtn.disabled = true;
+    stopCameraBtn.disabled = true;
+
+    try {
+        const selectedDeviceId = cameraSelect.value;
+        const videoConstraints = selectedDeviceId
+            ? { deviceId: { exact: selectedDeviceId } }
+            : { facingMode: 'user' };
+
+        activeCameraStream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraints,
+            audio: false
+        });
+
+        sourceVideo.srcObject = activeCameraStream;
+        await sourceVideo.play();
+        await populateCameraDevices();
+
+        const runningTrack = activeCameraStream.getVideoTracks()[0];
+        const runningDeviceId = runningTrack && runningTrack.getSettings ? runningTrack.getSettings().deviceId : '';
+        if (runningDeviceId && [...cameraSelect.options].some(o => o.value === runningDeviceId)) {
+            cameraSelect.value = runningDeviceId;
+        }
+
+        canvas.style.display = 'block';
+        statusDiv.textContent = 'Camera active. Dithering live feed.';
+        stopCameraBtn.disabled = false;
+        renderLoop(performance.now());
+        return true;
+    } catch (err) {
+        console.error('Unable to start camera:', err);
+        currentMediaType = 'none';
+        startCameraBtn.disabled = false;
+        stopCameraBtn.disabled = true;
+        statusDiv.textContent = 'Could not access camera. Check browser permissions.';
+        return false;
+    }
+}
+
+startCameraBtn.addEventListener('click', async () => {
+    await startCameraFeed();
+});
+
+cameraSelect.addEventListener('change', async () => {
+    if (currentMediaType !== 'camera') return;
+    await startCameraFeed();
+});
+
+mirrorToggle.addEventListener('change', () => {
+    isMirrorEnabled = mirrorToggle.checked;
+    if (currentMediaType === 'image' && originalImage) {
+        processAndDraw(originalImage);
+    } else if ((currentMediaType === 'video' || currentMediaType === 'camera') && sourceVideo.paused) {
+        processAndDraw(sourceVideo);
+    }
+});
+
+stopCameraBtn.addEventListener('click', () => {
+    if (currentMediaType !== 'camera') return;
+    resetPlayerState();
+    currentMediaType = 'none';
+    canvas.style.display = 'none';
+    startCameraBtn.disabled = false;
+    stopCameraBtn.disabled = true;
+    statusDiv.textContent = 'Camera stopped. Waiting for media...';
+});
+
 function updateOutput() {
     if (currentMediaType === 'image' && originalImage) {
         processAndDraw(originalImage);
@@ -163,6 +301,8 @@ function updateOutput() {
 algoSelect.addEventListener('change', updateOutput);
 scaleSlider.addEventListener('input', (e) => scaleValue.textContent = e.target.value + '%');
 scaleSlider.addEventListener('change', updateOutput);
+
+populateCameraDevices();
 
 
 // --- Event Listeners: Video Controls ---
@@ -191,7 +331,7 @@ videoProgress.addEventListener('change', () => {
 function renderLoop(timestamp) {
     if (!timestamp) timestamp = performance.now();
 
-    if (currentMediaType === 'video' && !sourceVideo.paused && !sourceVideo.ended) {
+    if ((currentMediaType === 'video' || currentMediaType === 'camera') && !sourceVideo.paused && !sourceVideo.ended) {
         processAndDraw(sourceVideo);
         
         // Grab frames for GIF at specified FPS interval
@@ -203,7 +343,7 @@ function renderLoop(timestamp) {
         }
         
         animationId = requestAnimationFrame(renderLoop);
-    } else if (sourceVideo.ended) {
+    } else if (currentMediaType === 'video' && sourceVideo.ended) {
         playPauseBtn.textContent = '▶';
     }
 }
@@ -293,10 +433,14 @@ function finishRecordingState() {
 // CORE DITHERING PROCESSING ENGINE
 // =========================================
 function processAndDraw(source) {
-    if (!source || source.videoWidth === 0 || source.videoHeight === 0) return;
+    if (!source) return;
 
-    let origWidth = source.videoWidth || source.width;
-    let origHeight = source.videoHeight || source.height;
+    const sourceWidth = source.videoWidth || source.width || 0;
+    const sourceHeight = source.videoHeight || source.height || 0;
+    if (sourceWidth === 0 || sourceHeight === 0) return;
+
+    let origWidth = sourceWidth;
+    let origHeight = sourceHeight;
 
     const scale = parseInt(scaleSlider.value) / 100;
     let newWidth = Math.max(2, Math.floor((origWidth * scale) / 2) * 2);
@@ -307,7 +451,15 @@ function processAndDraw(source) {
         canvas.height = newHeight;
     }
 
-    ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+    if (isMirrorEnabled) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    } else {
+        ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+    }
     
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
