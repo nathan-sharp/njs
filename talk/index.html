@@ -43,7 +43,7 @@
             </code>
         </li>
         <li>
-            <p>An input element with id="textInput" is required:</p>
+            <p>If you use the default wiring, include this input element:</p>
             <code>
                 &lt;textarea id="textInput" rows="5" cols="40"&gt;Hello world.&lt;/textarea&gt;
             </code>
@@ -59,6 +59,14 @@
             <p>An optional status line to show current state:</p>
             <code>
                 &lt;p id="statusLine"&gt;Status: Idle&lt;/p&gt;
+            </code>
+        </li>
+        <li>
+            <p>Or call it directly from JavaScript without requiring specific element ids:</p>
+            <code>
+                window.WebTalk.speak("Hello from local browser TTS");
+                window.WebTalk.stop();
+                window.WebTalk.configure({ basePitch: 96, pace: 1.0 });
             </code>
         </li>
     </ul>
