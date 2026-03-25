@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Software Versioning | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    </head>
+    <body>
+        <div>
+            <header>
+                <h1>ISO Timestamp Versioning</h1>
+                <p>
+                    Versions are based on release time and always use the shortest
+                    ISO 8601 date fragment needed for the project at that point.
+                </p>
+                <p>Prefix versions with <code>v</code>, for example <code>v1991-08-06</code>.</p>
+            </header>
+
+            <main>
+                <section>
+                    <h2>Core Rule</h2>
+                    <p>
+                        Start with release date in UTC and pick the shortest ISO timestamp that uniquely identifies the release among
+                        all releases of the same app.
+                    </p>
+                    <ul>
+                        <li><code>YYYY</code> when there is only one release in that year.</li>
+                        <li><code>YYYY-MM</code> when there are multiple releases in the same year.</li>
+                        <li><code>YYYY-MM-DD</code> when there are multiple releases in the same month.</li>
+                        <li><code>YYYY-MM-DDThh</code> if needed for multiple releases in one day.</li>
+                        <li><code>YYYY-MM-DDThh:mm</code> or <code>YYYY-MM-DDThh:mm:ss</code> only if collisions continue.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Example Timeline:</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Release Date (UTC)</th>
+                                <th>Version</th>
+                                <th>Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1989-03-12 (initial submission)</td>
+                                <td><code>v1989</code></td>
+                                <td>First milestone in 1989, so year precision is enough.</td>
+                            </tr>
+                            <tr>
+                                <td>1990-11-12 (proposal approved path)</td>
+                                <td><code>v1990</code></td>
+                                <td>Only milestone in 1990, so year precision is enough.</td>
+                            </tr>
+                            <tr>
+                                <td>1991-03-15 (early implementation milestone)</td>
+                                <td><code>v1991-03</code></td>
+                                <td>Now there are multiple 1991 milestones, so month precision is needed.</td>
+                            </tr>
+                            <tr>
+                                <td>1991-07-15T09 (internal demo build)</td>
+                                <td><code>v1991-07</code></td>
+                                <td>First July milestone, so month precision is still enough.</td>
+                            </tr>
+                            <tr>
+                                <td>1991-07-15T14 (same-day follow-up build)</td>
+                                <td><code>v1991-07-15T14</code></td>
+                                <td>Second release on the same day, so hour precision is required.</td>
+                            </tr>
+                            <tr>
+                                <td>1991-08-01 (pre-public handoff)</td>
+                                <td><code>v1991-08</code></td>
+                                <td>First August milestone, so month precision is enough.</td>
+                            </tr>
+                            <tr>
+                                <td>1991-08-06 (released to the public)</td>
+                                <td><code>v1991-08-06</code></td>
+                                <td>Second August milestone, so day precision is required.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
+                    <h2>How To Use It</h2>
+                    <ol>
+                        <li>Store a canonical release timestamp in UTC for each shipped build.</li>
+                        <li>Generate the shortest unique ISO fragment for that release.</li>
+                        <li>Add the <code>v</code> prefix and publish as your version label.</li>
+                        <li>Use the same label in changelogs, release notes, and build metadata.</li>
+                    </ol>
+                    <p>
+                        This gives immediate chronological ordering and avoids debates over whether a change is major, minor, or patch.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Practical Notes</h2>
+                    <ul>
+                        <li>Use UTC to avoid timezone drift.</li>
+                        <li>Do not skip leading zeros, keep ISO formatting strict.</li>
+                        <li>If releases are generated automatically, include hour/minute only when required.</li>
+                        <li>For API compatibility signaling, pair this with a separate compatibility policy document.</li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+            </footer>
+        </div>
+    </body>
+</html>
