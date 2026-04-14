@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pi Ledger | NJS.dev</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    </head>
+    <body>
+        <header>
+            <h1>Pi Ledger</h1>
+            <p>Upload a <code>.txt</code> file of pi digits, compare it with a local reference, and see how closely it matches without leaving your device.</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Check Pi Digits</h2>
+                <p>Only digits are compared. Spaces, punctuation, and line breaks are ignored. The analysis runs entirely in your browser.</p>
+
+                <form id="pi-form" novalidate>
+                    <p>
+                        <label for="pi-text">Paste or type pi digits:</label><br>
+                        <textarea id="pi-text" name="pi-text" rows="8" cols="60" placeholder="3.141592653..."></textarea>
+                    </p>
+                    <p>
+                        <label for="pi-file">Choose a text file:</label><br>
+                        <input id="pi-file" name="pi-file" type="file" accept=".txt,text/plain">
+                    </p>
+                    <p>
+                        <button type="submit">Analyze digits</button>
+                    </p>
+                </form>
+
+                <p id="status" aria-live="polite">No file selected yet.</p>
+                <div id="result">Paste digits or upload a file to see the accuracy score.</div>
+            </section>
+
+            <section>
+                <h2>What Pi Actually Is</h2>
+                <p>Pi, written as π, is the ratio of a circle's circumference to its diameter. That ratio is the same for every circle, no matter how large or small it is.</p>
+                <p>Pi is irrational, which means its decimal expansion never ends and never settles into a repeating pattern. It also appears in many parts of mathematics, engineering, physics, and statistics because circles, waves, rotations, and periodic systems all turn up in the real world.</p>
+                <p>In simple terms, if a circle has circumference <strong>C</strong> and diameter <strong>d</strong>, then <strong>π = C / d</strong>. This page uses a locally computed reference sequence so the comparison stays on your device.</p>
+            </section>
+
+            <section>
+                <h2>How the Score Works</h2>
+                <p>The page compares the uploaded digits against a high-precision local reference and counts how many leading digits match before the first mismatch.</p>
+                <p>If your file contains more digits than the built-in reference range, only the first portion of your file is compared and the page tells you that limit.</p>
+            </section>
+
+            <details>
+                <summary>Privacy and processing</summary>
+                <p>Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript without sending the data anywhere.</p>
+            </details>
+        </main>
+
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+        </footer>
+
+        <script>
+            const MAX_REFERENCE_DIGITS = 1000;
+            const GUARD_DIGITS = 20;
+            const piTextInput = document.getElementById('pi-text');
+            const piFileInput = document.getElementById('pi-file');
+            const piForm = document.getElementById('pi-form');
+            const statusNode = document.getElementById('status');
+            const resultNode = document.getElementById('result');
+            const piCache = new Map();
+
+            function sanitizeDigits(text) {
+                return (text.match(/\d/g) || []).join('');
+            }
+
+            function countLeadingMatches(userDigits, referenceDigits) {
+                let index = 0;
+                while (index < referenceDigits.length && userDigits[index] === referenceDigits[index]) {
+                    index += 1;
+                }
+                return index;
+            }
+
+            function arctanInverse(x, scale) {
+                const xSquared = x * x;
+                let term = scale / x;
+                let sum = term;
+                let k = 1n;
+
+                while (term !== 0n) {
+                    term = (term * (2n * k - 1n)) / ((2n * k + 1n) * xSquared);
+                    if (term === 0n) {
+                        break;
+                    }
+
+                    if (k % 2n === 1n) {
+                        sum -= term;
+                    } else {
+                        sum += term;
+                    }
+
+                    k += 1n;
+                }
+
+                return sum;
+            }
+
+            function machinPi(scale) {
+                return (16n * arctanInverse(5n, scale)) - (4n * arctanInverse(239n, scale));
+            }
+
+            function computePiDigits(length) {
+                if (length <= 0) {
+                    return '';
+                }
+
+                const scaleDigits = length + GUARD_DIGITS;
+                const scale = 10n ** BigInt(scaleDigits);
+                const scaledPi = machinPi(scale);
+                const rawDigits = scaledPi.toString();
+                const minimumLength = scaleDigits + 1;
+                const normalizedDigits = rawDigits.length < minimumLength ? rawDigits.padStart(minimumLength, '0') : rawDigits;
+
+                return normalizedDigits.slice(0, length);
+            }
+
+            function getPiDigits(length) {
+                const targetLength = Math.min(length, MAX_REFERENCE_DIGITS);
+                if (piCache.has(targetLength)) {
+                    return piCache.get(targetLength);
+                }
+
+                const digits = computePiDigits(targetLength);
+                piCache.set(targetLength, digits);
+                return digits;
+            }
+
+            function renderResult(messageLines) {
+                resultNode.innerHTML = messageLines.map(function (line) {
+                    return '<p>' + line + '</p>';
+                }).join('');
+            }
+
+            function renderComparison(userDigits, referenceDigits, comparedDigits) {
+                const userLine = userDigits.slice(0, comparedDigits).split('').map(function (digit, index) {
+                    const referenceDigit = referenceDigits[index];
+                    return digit === referenceDigit ? '<mark>' + digit + '</mark>' : '<del>' + digit + '</del>';
+                }).join('');
+
+                const referenceLine = referenceDigits.slice(0, comparedDigits).split('').map(function (digit) {
+                    return '<mark>' + digit + '</mark>';
+                }).join('');
+
+                const lines = [
+                    '<section>',
+                    '<h3>Digit-by-digit comparison</h3>',
+                    '<p>Correct user digits are highlighted. Incorrect user digits are struck through. The control row shows the reference pi digits.</p>',
+                    '<pre>User:    ' + userLine + '\nControl: ' + referenceLine + '</pre>',
+                    '</section>'
+                ];
+
+                return lines.join('');
+            }
+
+            function getUserInput() {
+                const pastedText = piTextInput.value.trim();
+                if (pastedText.length) {
+                    return {
+                        sourceLabel: 'pasted text',
+                        text: pastedText
+                    };
+                }
+
+                const file = piFileInput.files && piFileInput.files[0];
+                if (file) {
+                    return {
+                        sourceLabel: 'uploaded file',
+                        file: file
+                    };
+                }
+
+                return null;
+            }
+
+            piForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const input = getUserInput();
+                if (!input) {
+                    statusNode.textContent = 'Please paste digits or choose a .txt file first.';
+                    renderResult(['No digits were analyzed.']);
+                    return;
+                }
+
+                statusNode.textContent = 'Reading input locally...';
+                renderResult(['Analyzing your ' + input.sourceLabel + ' on this device.']);
+
+                try {
+                    const text = input.text || await input.file.text();
+                    const userDigits = sanitizeDigits(text);
+
+                    if (!userDigits.length) {
+                        statusNode.textContent = 'No digits were found in that input.';
+                        renderResult([
+                            'The input was read locally, but no digits were found after ignoring non-digit characters.'
+                        ]);
+                        return;
+                    }
+
+                    const referenceDigits = getPiDigits(userDigits.length);
+                    const comparedDigits = referenceDigits.length;
+                    const matchedDigits = countLeadingMatches(userDigits, referenceDigits);
+                    const accuracy = (matchedDigits / comparedDigits) * 100;
+                    const accuracyText = accuracy.toFixed(2);
+
+                    const lines = [
+                        'Accuracy: ' + accuracyText + '%',
+                        'Leading digits matched: ' + matchedDigits + ' of ' + comparedDigits + '.',
+                        'Digits found in your file: ' + userDigits.length + '.'
+                    ];
+
+                    if (userDigits.length > MAX_REFERENCE_DIGITS) {
+                        lines.push('Only the first ' + MAX_REFERENCE_DIGITS + ' digits were compared because the built-in local reference is capped for performance.');
+                    }
+
+                    if (matchedDigits < comparedDigits) {
+                        lines.push('First mismatch at digit position ' + (matchedDigits + 1) + '.');
+                    } else {
+                        lines.push('The compared digits matched the local reference exactly.');
+                    }
+
+                    statusNode.textContent = 'Analysis complete. Everything stayed on your device.';
+                    renderResult(lines);
+                    resultNode.innerHTML += renderComparison(userDigits, referenceDigits, comparedDigits);
+                } catch (error) {
+                    statusNode.textContent = 'The input could not be read.';
+                    renderResult(['Something went wrong while reading the input locally.']);
+                }
+            });
+        </script>
+    </body>
+</html>
