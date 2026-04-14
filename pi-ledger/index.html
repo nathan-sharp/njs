@@ -9,7 +9,7 @@
     <body>
         <header>
             <h1>Pi Ledger</h1>
-            <p>Upload a <code>.txt</code> file of pi digits, compare it with a local reference, and see how closely it matches without leaving your device.</p>
+            <p>Upload a <code>.txt</code> file of pi digits, compare it with local precomputed control files, and see how closely it matches without leaving your device.</p>
         </header>
 
         <main>
@@ -39,18 +39,30 @@
                 <h2>What Pi Actually Is</h2>
                 <p>Pi, written as π, is the ratio of a circle's circumference to its diameter. That ratio is the same for every circle, no matter how large or small it is.</p>
                 <p>Pi is irrational, which means its decimal expansion never ends and never settles into a repeating pattern. It also appears in many parts of mathematics, engineering, physics, and statistics because circles, waves, rotations, and periodic systems all turn up in the real world.</p>
-                <p>In simple terms, if a circle has circumference <strong>C</strong> and diameter <strong>d</strong>, then <strong>π = C / d</strong>. This page uses a locally computed reference sequence so the comparison stays on your device.</p>
+                <p>In simple terms, if a circle has circumference <strong>C</strong> and diameter <strong>d</strong>, then <strong>π = C / d</strong>. This page uses precomputed control files for comparison so the reference is deterministic and auditable.</p>
             </section>
 
             <section>
                 <h2>How the Score Works</h2>
-                <p>The page compares the uploaded digits against a high-precision local reference and counts how many leading digits match before the first mismatch.</p>
-                <p>If your file contains more digits than the built-in reference range, only the first portion of your file is compared and the page tells you that limit.</p>
+                <p>The page compares your digits against precomputed control files and counts how many leading digits match before the first mismatch.</p>
+                <p>The analyzer picks the smallest control tier that can cover your input. If your input is longer than 10,000,000 digits, only the first 10,000,000 are compared.</p>
+            </section>
+
+            <section>
+                <h2>Control Files</h2>
+                <p>These local control files are the comparison source used by this page.</p>
+                <ul>
+                    <li><a href="./control/pi-10k.txt" download>Download 10,000 digits (pi-10k.txt)</a></li>
+                    <li><a href="./control/pi-100k.txt" download>Download 100,000 digits (pi-100k.txt)</a></li>
+                    <li><a href="./control/pi-500k.txt" download>Download 500,000 digits (pi-500k.txt)</a></li>
+                    <li><a href="./control/pi-1m.txt" download>Download 1,000,000 digits (pi-1m.txt)</a></li>
+                    <li><a href="./control/pi-10m.txt" download>Download 10,000,000 digits (pi-10m.txt)</a></li>
+                </ul>
             </section>
 
             <details>
                 <summary>Privacy and processing</summary>
-                <p>Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript without sending the data anywhere.</p>
+                <p>Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript against local control files.</p>
             </details>
         </main>
 
@@ -59,14 +71,20 @@
         </footer>
 
         <script>
-            const MAX_REFERENCE_DIGITS = 1000;
-            const GUARD_DIGITS = 20;
+            const CONTROL_TIERS = [
+                { digits: 10000, path: './control/pi-10k.txt' },
+                { digits: 100000, path: './control/pi-100k.txt' },
+                { digits: 500000, path: './control/pi-500k.txt' },
+                { digits: 1000000, path: './control/pi-1m.txt' },
+                { digits: 10000000, path: './control/pi-10m.txt' }
+            ];
+            const MAX_COMPARISON_DIGITS = 10000000;
             const piTextInput = document.getElementById('pi-text');
             const piFileInput = document.getElementById('pi-file');
             const piForm = document.getElementById('pi-form');
             const statusNode = document.getElementById('status');
             const resultNode = document.getElementById('result');
-            const piCache = new Map();
+            const controlFileCache = new Map();
 
             function sanitizeDigits(text) {
                 return (text.match(/\d/g) || []).join('');
@@ -80,58 +98,37 @@
                 return index;
             }
 
-            function arctanInverse(x, scale) {
-                const xSquared = x * x;
-                let term = scale / x;
-                let sum = term;
-                let k = 1n;
-
-                while (term !== 0n) {
-                    term = (term * (2n * k - 1n)) / ((2n * k + 1n) * xSquared);
-                    if (term === 0n) {
-                        break;
+            function chooseControlTier(requestedDigits) {
+                for (let index = 0; index < CONTROL_TIERS.length; index += 1) {
+                    if (requestedDigits <= CONTROL_TIERS[index].digits) {
+                        return CONTROL_TIERS[index];
                     }
-
-                    if (k % 2n === 1n) {
-                        sum -= term;
-                    } else {
-                        sum += term;
-                    }
-
-                    k += 1n;
                 }
-
-                return sum;
+                return CONTROL_TIERS[CONTROL_TIERS.length - 1];
             }
 
-            function machinPi(scale) {
-                return (16n * arctanInverse(5n, scale)) - (4n * arctanInverse(239n, scale));
-            }
-
-            function computePiDigits(length) {
-                if (length <= 0) {
-                    return '';
+            async function getControlDigitsForTier(tier) {
+                if (controlFileCache.has(tier.digits)) {
+                    return controlFileCache.get(tier.digits);
                 }
 
-                const scaleDigits = length + GUARD_DIGITS;
-                const scale = 10n ** BigInt(scaleDigits);
-                const scaledPi = machinPi(scale);
-                const rawDigits = scaledPi.toString();
-                const minimumLength = scaleDigits + 1;
-                const normalizedDigits = rawDigits.length < minimumLength ? rawDigits.padStart(minimumLength, '0') : rawDigits;
+                const response = await fetch(tier.path, { cache: 'force-cache' });
+                if (!response.ok) {
+                    throw new Error('Control file unavailable: ' + tier.path);
+                }
+                const digits = sanitizeDigits(await response.text());
 
-                return normalizedDigits.slice(0, length);
-            }
-
-            function getPiDigits(length) {
-                const targetLength = Math.min(length, MAX_REFERENCE_DIGITS);
-                if (piCache.has(targetLength)) {
-                    return piCache.get(targetLength);
+                if (digits.length < tier.digits) {
+                    throw new Error('Control digits shorter than required tier.');
                 }
 
-                const digits = computePiDigits(targetLength);
-                piCache.set(targetLength, digits);
-                return digits;
+                const control = {
+                    source: 'local control file',
+                    digits: digits.slice(0, tier.digits)
+                };
+
+                controlFileCache.set(tier.digits, control);
+                return control;
             }
 
             function renderResult(messageLines) {
@@ -141,12 +138,14 @@
             }
 
             function renderComparison(userDigits, referenceDigits, comparedDigits) {
-                const userLine = userDigits.slice(0, comparedDigits).split('').map(function (digit, index) {
+                const previewDigits = comparedDigits;
+
+                const userLine = userDigits.slice(0, previewDigits).split('').map(function (digit, index) {
                     const referenceDigit = referenceDigits[index];
                     return digit === referenceDigit ? '<mark>' + digit + '</mark>' : '<del>' + digit + '</del>';
                 }).join('');
 
-                const referenceLine = referenceDigits.slice(0, comparedDigits).split('').map(function (digit) {
+                const referenceLine = referenceDigits.slice(0, previewDigits).split('').map(function (digit) {
                     return '<mark>' + digit + '</mark>';
                 }).join('');
 
@@ -154,6 +153,7 @@
                     '<section>',
                     '<h3>Digit-by-digit comparison</h3>',
                     '<p>Correct user digits are highlighted. Incorrect user digits are struck through. The control row shows the reference pi digits.</p>',
+                    '<p>Showing all ' + previewDigits + ' compared digits.</p>',
                     '<pre>User:    ' + userLine + '\nControl: ' + referenceLine + '</pre>',
                     '</section>'
                 ];
@@ -206,34 +206,45 @@
                         return;
                     }
 
-                    const referenceDigits = getPiDigits(userDigits.length);
-                    const comparedDigits = referenceDigits.length;
-                    const matchedDigits = countLeadingMatches(userDigits, referenceDigits);
+                    const comparedDigits = Math.min(userDigits.length, MAX_COMPARISON_DIGITS);
+                    const tier = chooseControlTier(comparedDigits);
+                    statusNode.textContent = 'Loading control digits (' + tier.digits + ' tier)...';
+
+                    const control = await getControlDigitsForTier(tier);
+                    const referenceDigits = control.digits.slice(0, comparedDigits);
+                    const userComparedDigits = userDigits.slice(0, comparedDigits);
+
+                    const matchedDigits = countLeadingMatches(userComparedDigits, referenceDigits);
                     const accuracy = (matchedDigits / comparedDigits) * 100;
                     const accuracyText = accuracy.toFixed(2);
 
                     const lines = [
                         'Accuracy: ' + accuracyText + '%',
                         'Leading digits matched: ' + matchedDigits + ' of ' + comparedDigits + '.',
-                        'Digits found in your file: ' + userDigits.length + '.'
+                        'Digits found in your input: ' + userDigits.length + '.',
+                        'Control tier used: ' + tier.digits + ' (' + control.source + ').'
                     ];
 
-                    if (userDigits.length > MAX_REFERENCE_DIGITS) {
-                        lines.push('Only the first ' + MAX_REFERENCE_DIGITS + ' digits were compared because the built-in local reference is capped for performance.');
+                    if (userDigits.length > MAX_COMPARISON_DIGITS) {
+                        lines.push('Only the first ' + MAX_COMPARISON_DIGITS + ' digits were compared because this is the maximum supported control size.');
                     }
 
                     if (matchedDigits < comparedDigits) {
                         lines.push('First mismatch at digit position ' + (matchedDigits + 1) + '.');
                     } else {
-                        lines.push('The compared digits matched the local reference exactly.');
+                        lines.push('The compared digits matched the control reference exactly.');
                     }
 
-                    statusNode.textContent = 'Analysis complete. Everything stayed on your device.';
+                    statusNode.textContent = 'Analysis complete.';
                     renderResult(lines);
-                    resultNode.innerHTML += renderComparison(userDigits, referenceDigits, comparedDigits);
+                    resultNode.innerHTML += renderComparison(userComparedDigits, referenceDigits, comparedDigits);
                 } catch (error) {
-                    statusNode.textContent = 'The input could not be read.';
-                    renderResult(['Something went wrong while reading the input locally.']);
+                    statusNode.textContent = 'The input could not be analyzed.';
+                    renderResult([
+                        'Something went wrong while reading your input or loading control digits.',
+                        'Make sure the control files exist in ./control/.',
+                        'Error: ' + error.message
+                    ]);
                 }
             });
         </script>
