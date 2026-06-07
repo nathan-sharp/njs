@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Data Mash | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <header>
+            <h1>Data Mash</h1>
+            <p>A simple web app for encryption, encoding, compression and data analysis.</p>
+            <div>
+                <button id="btn-bake">Bake!</button>
+                <button id="btn-clear-recipe">Clear Recipe</button>
+            </div>
+        </header>
+
+        <main class="app-container">
+            <!-- Panel 1: Operations -->
+            <section class="panel panel-operations">
+                <h2>Operations</h2>
+                <div>
+                    <input type="text" id="search-operations" placeholder="Search...">
+                </div>
+                <div id="operations-list">
+                    <!-- Operations will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Panel 2: Recipe -->
+            <section class="panel panel-recipe">
+                <h2>Recipe</h2>
+                <div id="recipe-list">
+                    <div id="recipe-empty-state">
+                        <p>Click or drag operations here</p>
+                    </div>
+                    <!-- Active operations will be listed here -->
+                </div>
+            </section>
+
+            <!-- Panel 3: Input / Output -->
+            <section class="panel-io-container">
+                <!-- Input -->
+                <section class="panel panel-input">
+                    <h2>Input <span id="input-info" style="font-size: 0.8em; font-weight: normal;">(length: 0)</span></h2>
+                    <div>
+                        <textarea id="input-text" placeholder="Paste or type your input here..."></textarea>
+                    </div>
+                </section>
+
+                <!-- Output -->
+                <section class="panel panel-output">
+                    <h2>Output <span id="output-info" style="font-size: 0.8em; font-weight: normal;">(length: 0)</span></h2>
+                    <div>
+                        <textarea id="output-text" readonly placeholder="Result will appear here..."></textarea>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <script type="module" src="js/main.js"></script>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T15:50:57 | Version: 6bae350</p>
+        </footer>
+    </body>
+</html>
