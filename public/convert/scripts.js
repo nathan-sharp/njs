@@ -184,6 +184,21 @@ const definitions = {
             'Atmosphere': { symbol: 'atm', r: 101325, desc: "Standard atmosphere, defined exactly as 101,325 Pa.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/cuu/Units/outside.html" } },
             'Torr': { symbol: 'Torr', r: 133.322368, desc: "1/760 of a standard atmosphere.", source: { name: "NIST", url: "https://www.nist.gov/" } }
         }
+    },
+    'Flow Rate': {
+        baseUnit: 'Cubic meter per second',
+        units: {
+            'Cubic meter per second': { symbol: 'm³/s', r: 1, desc: "SI derived unit of volumetric flow rate.", source: { name: "BIPM", url: "https://www.bipm.org/en/measurement-units/derived-units" } },
+            'Cubic meter per hour': { symbol: 'm³/h', r: 1/3600, desc: "Common metric unit for larger flow rates.", source: { name: "BIPM", url: "https://www.bipm.org/en/measurement-units/outside-si" } },
+            'Liter per second': { symbol: 'L/s', r: 0.001, desc: "Common metric unit of volumetric flow rate.", source: { name: "BIPM", url: "https://www.bipm.org/en/measurement-units/outside-si" } },
+            'Liter per minute': { symbol: 'L/min', r: 0.001 / 60, desc: "Common metric unit of volumetric flow rate.", source: { name: "BIPM", url: "https://www.bipm.org/en/measurement-units/outside-si" } },
+            'Cubic foot per second': { symbol: 'ft³/s', r: 0.028316846592, desc: "US Customary unit of volumetric flow rate.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
+            'Cubic foot per minute': { symbol: 'CFM', r: 0.028316846592 / 60, desc: "US Customary unit of volumetric flow rate.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
+            'Gallon per minute (US)': { symbol: 'GPM', r: 3.785411784 * 0.001 / 60, desc: "US Customary unit of volumetric flow rate.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
+            'Gallon per hour (US)': { symbol: 'GPH', r: 3.785411784 * 0.001 / 3600, desc: "US Customary unit of volumetric flow rate.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
+            'Barrel per day (Petroleum)': { symbol: 'bbl/d', r: 0.158987294928 / 86400, desc: "Standard oil field unit of volumetric flow rate (42 US gallons per day).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
+            'Barrel per hour (Petroleum)': { symbol: 'bbl/h', r: 0.158987294928 / 3600, desc: "Standard oil field unit of volumetric flow rate (42 US gallons per hour).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } }
+        }
     }
 };
 
