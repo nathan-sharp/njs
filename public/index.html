@@ -5,78 +5,88 @@
     <title>NJS.dev</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="stylesheet" href="./style.css">
+    <script src="./scripts.js"></script>
 </head>
 
 <body>
-    <header>
-        <h1>NJS.dev</h1>
-        <p>My name is Nathan and this site is where all the things that I am working on currently will be.</p>
-    </header>
-    <main>
-        <h2>Browser Applications</h2>
-        <dl>
-            <dt><a href="./angle-converter/">Angle Converter</a></dt>
-            <dd>Tool for converting between Decimal degrees, Radians and DMS (Degree Minute Second).</dd>
-            <dt><a href="./clock/">Clock</a></dt>
-            <dd>24h clock with <a href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> date.</dd>
-            <dt><a href="./analog-clock/">Analog Clock</a></dt>
-            <dd>Minimalistic analog clock with smooth hand movements.</dd>
-            <dt><a href="./dither/">Dither</a></dt>
-            <dd>Convert images and videos to 1-bit black and white using classic algorithms directly in your browser.
-            </dd>
-            <dt><a href="./data-mash/">Data Mash</a></dt>
-            <dd>A simple web app for encryption, encoding, compression and data analysis.</dd>
-            <dt><a href="./double-pendulum/">Double Pendulum</a></dt>
-            <dd>Simulation of a double pendulum using the HTML5 canvas.</dd>
-            <dt><a href="./hookes-law/">Hooke's Law</a></dt>
-            <dd>Interactive demonstration of Hooke's Law with dynamic spring visualization showing displacement, force,
-                and elastic potential energy.</dd>
-            <dt><a href="./qr/">QR Code Generator</a></dt>
-            <dd>Generate and export QR codes entirely within your browser.</dd>
-            <dt><a href="./sine-bar/">Sine Bar</a></dt>
-            <dd>Calculator for determining gauge block stack heights to set specific angles.</dd>
-            <dt><a href="./pi-ledger/">Pi Ledger</a></dt>
-            <dd>Upload a text file of pi digits and compare it against a local reference in your browser.</dd>
-            <dt><a href="./talk/">Talk</a></dt>
-            <dd>Text-to-speech engine that runs locally in the browser.</dd>
-            <dt><a href="./threadmate/">ThreadMate</a></dt>
-            <dd>Thread dimension calculator for Unified Inch (UN), ISO Metric, NPT, and ISO 7-1 (BSPT) threads.</dd>
-            <dt><a href="./timer/">Timer</a></dt>
-            <dd>Web timer based on my <a href="/clock/">Clock</a> application.</dd>
-            <dt><a href="./convert/">Unit Converter</a></dt>
-            <dd>Convert between common units of measurement.</dd>
-        </dl>
-        <h2>Projects</h2>
-        <dl>
-            <dt><a href="./open-cad/">OpenCAD</a></dt>
-            <dd>The OpenCAD Standard is a cutting-edge protocol for seamless collaboration and data exchange in
-                cloud-native CAD environments.</dd>
-        </dl>
-        <h2>Other</h2>
-        <dl>
-            <dt><a href="./privacy/">Privacy Policy</a></dt>
-            <dd>
-                Privacy information for apps and services published by NJS.dev.
-            </dd>
-            <dt><a href="./notation/">Notation</a></dt>
-            <dd>
-                A draft list of symbols and meanings for a more universal notation system.
-            </dd>
-            <dt><a href="./versioning/">Software Versioning</a></dt>
-            <dd>
-                ISO timestamp based versioning format that grows in precision as release frequency increases.
-            </dd>
-            <dt><a href="./publications/">Publications</a></dt>
-            <dd>
-                Repository of my papers and publications.
-            </dd>
-        </dl>
-    </main>
-    <footer>
-        <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
-            Version: 6c23e06</p>
-    </footer>
+    <div class="container">
+
+
+        <header>
+            <h1>NJS.dev</h1>
+            <p>My name is Nathan and this site is where all the things that I am working on currently will be.</p>
+        </header>
+
+        <main>
+            <h2>Browser Applications</h2>
+            <dl>
+                <dt><a href="./angle-converter/">Angle Converter</a></dt>
+                <dd>Tool for converting between Decimal degrees, Radians and DMS (Degree Minute Second).</dd>
+                <dt><a href="./clock/">Clock</a></dt>
+                <dd>24h clock with <a href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> date.
+                </dd>
+                <dt><a href="./analog-clock/">Analog Clock</a></dt>
+                <dd>Minimalistic analog clock with smooth hand movements.</dd>
+                <dt><a href="./dither/">Dither</a></dt>
+                <dd>Convert images and videos to 1-bit black and white using classic algorithms directly in your
+                    browser.
+                </dd>
+                <dt><a href="./data-mash/">Data Mash</a></dt>
+                <dd>A simple web app for encryption, encoding, compression and data analysis.</dd>
+                <dt><a href="./double-pendulum/">Double Pendulum</a></dt>
+                <dd>Simulation of a double pendulum using the HTML5 canvas.</dd>
+                <dt><a href="./hookes-law/">Hooke's Law</a></dt>
+                <dd>Interactive demonstration of Hooke's Law with dynamic spring visualization showing displacement,
+                    force,
+                    and elastic potential energy.</dd>
+                <dt><a href="./qr/">QR Code Generator</a></dt>
+                <dd>Generate and export QR codes entirely within your browser.</dd>
+                <dt><a href="./sine-bar/">Sine Bar</a></dt>
+                <dd>Calculator for determining gauge block stack heights to set specific angles.</dd>
+                <dt><a href="./pi-ledger/">Pi Ledger</a></dt>
+                <dd>Upload a text file of pi digits and compare it against a local reference in your browser.</dd>
+                <dt><a href="./talk/">Talk</a></dt>
+                <dd>Text-to-speech engine that runs locally in the browser.</dd>
+                <dt><a href="./threadmate/">ThreadMate</a></dt>
+                <dd>Thread dimension calculator for Unified Inch (UN), ISO Metric, NPT, and ISO 7-1 (BSPT) threads.</dd>
+                <dt><a href="./timer/">Timer</a></dt>
+                <dd>Web timer based on my <a href="/clock/">Clock</a> application.</dd>
+                <dt><a href="./convert/">Unit Converter</a></dt>
+                <dd>Convert between common units of measurement.</dd>
+            </dl>
+            <h2>Projects</h2>
+            <dl>
+                <dt><a href="./open-cad/">OpenCAD</a></dt>
+                <dd>The OpenCAD Standard is a cutting-edge protocol for seamless collaboration and data exchange in
+                    cloud-native CAD environments.</dd>
+            </dl>
+            <h2>Other</h2>
+            <dl>
+                <dt><a href="./privacy/">Privacy Policy</a></dt>
+                <dd>
+                    Privacy information for apps and services published by NJS.dev.
+                </dd>
+                <dt><a href="./notation/">Notation</a></dt>
+                <dd>
+                    A draft list of symbols and meanings for a more universal notation system.
+                </dd>
+                <dt><a href="./versioning/">Software Versioning</a></dt>
+                <dd>
+                    ISO timestamp based versioning format that grows in precision as release frequency increases.
+                </dd>
+                <dt><a href="./publications/">Publications</a></dt>
+                <dd>
+                    Repository of my papers and publications.
+                </dd>
+            </dl>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
+                Version: 6c23e06</p>
+        </footer>
+    </div>
 </body>
 
 </html>
