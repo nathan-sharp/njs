@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="ad-placeholder-text">Google Ads Unit (Insert script here)</div>
         </div>
     `;
-    
+
     // Check if there's a container to inject into, otherwise inject into body
     const container = document.querySelector('.container');
     if (container) {
