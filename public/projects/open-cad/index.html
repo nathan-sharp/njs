@@ -4,24 +4,38 @@
         <title>OpenCAD | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>The OpenCAD Standard</h1>
-            <p><a target="_blank" href="https://github.com/nathan-sharp/OpenCAD">OpenCAD GitHub</a> | <a target="_blank" href="/open-cad/Working Draft.pdf">Current Working Draft</a></p>
-        </header>
-        <main>
-            <p>
-                The OpenCAD Standard is a cutting-edge protocol designed to facilitate seamless collaboration and data exchange in cloud-native CAD environments. By leveraging WebDAV for file management and introducing granular resource locking, OpenCAD enables multiple users to work concurrently on complex assemblies without conflicts. And allows the same file to be accessed and modified using different software applications.
-            </p>
-            <p>
-                If you have any questions, suggestions, or would like to contribute to the development of OpenCAD, please feel free to reach out to me at <a href="mailto:contact@njs.dev">contact@njs.dev</a>.
-            </p>
-
-        </main>
-        <footer>
-            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>The OpenCAD Standard</h1>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap; margin-top: var(--spacing-md);">
+                    <a target="_blank" href="https://github.com/nathan-sharp/OpenCAD" style="background-color: var(--ad-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 4px; font-weight: 500; font-size: 0.875rem; border-bottom: 1px solid var(--border-color);">OpenCAD GitHub</a>
+                    <a target="_blank" href="Working Draft.pdf" style="background-color: var(--ad-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 4px; font-weight: 500; font-size: 0.875rem; border-bottom: 1px solid var(--border-color);">Current Working Draft</a>
+                </div>
+            </header>
+            
+            <main>
+                <section>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        The OpenCAD Standard is a cutting-edge protocol designed to facilitate seamless collaboration and data exchange in cloud-native CAD environments. By leveraging WebDAV for file management and introducing granular resource locking, OpenCAD enables multiple users to work concurrently on complex assemblies without conflicts. And allows the same file to be accessed and modified using different software applications.
+                    </p>
+                    
+                    <div style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-top: var(--spacing-xl);">
+                        <p style="margin: 0;">
+                            If you have any questions, suggestions, or would like to contribute to the development of OpenCAD, please feel free to reach out to me at <a href="mailto:contact@njs.dev" style="font-weight: 600; color: var(--accent-color);">contact@njs.dev</a>.
+                        </p>
+                    </div>
+                </section>
+            </main>
+            
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+            </footer>
+        </div>
+        
+        <script src="../../scripts.js"></script>
     </body>
 </html>

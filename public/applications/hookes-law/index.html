@@ -7,75 +7,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
     <link rel="stylesheet" href="../../style.css">
-    <script src="../../scripts.js"></script>
 </head>
 
 <body>
-    <header>
-        <h1>Hooke's Law</h1>
-        <p>Explore the relationship between force, displacement, and spring constant with this interactive
-            visualization.</p>
-    </header>
-    <main>
-        <h2>What is Hooke's Law?</h2>
-        <p>
-            <strong>Hooke's Law</strong> describes the behavior of springs and elastic materials. It states that the
-            force exerted by a spring is directly proportional to the displacement from its equilibrium position, with
-            the spring constant determining the stiffness.
-        </p>
+    <div class="container">
+        <header>
+            <h1>Hooke's Law</h1>
+            <p>Explore the relationship between force, displacement, and spring constant with this interactive
+                visualization.</p>
+        </header>
+        <main>
+            <section>
+                <h2>What is Hooke's Law?</h2>
+                <p>
+                    <strong>Hooke's Law</strong> describes the behavior of springs and elastic materials. It states that the
+                    force exerted by a spring is directly proportional to the displacement from its equilibrium position, with
+                    the spring constant determining the stiffness.
+                </p>
 
-        <h3>Formulas</h3>
-        <p><strong>F = -k × x</strong></p>
-        <p><strong>Where:</strong></p>
-        <ul>
-            <li><strong>F</strong> = Force exerted by the spring (Newtons)</li>
-            <li><strong>k</strong> = Spring constant (N/m) - determines stiffness</li>
-            <li><strong>x</strong> = Displacement from equilibrium (meters)</li>
-            <li>The negative sign indicates the restoring force opposes displacement</li>
-        </ul>
+                <h3>Formulas</h3>
+                <blockquote style="background: var(--ad-bg); padding: var(--spacing-md); border-left: 4px solid var(--accent-color); margin: var(--spacing-md) 0;">
+                    <strong>F = -k × x</strong>
+                </blockquote>
+                <p><strong>Where:</strong></p>
+                <ul style="line-height: 1.8; margin-bottom: var(--spacing-md);">
+                    <li><strong>F</strong> = Force exerted by the spring (Newtons)</li>
+                    <li><strong>k</strong> = Spring constant (N/m) - determines stiffness</li>
+                    <li><strong>x</strong> = Displacement from equilibrium (meters)</li>
+                    <li>The negative sign indicates the restoring force opposes displacement</li>
+                </ul>
 
-        <p>Additional formulas:</p>
-        <ul>
-            <li><strong>F = m × g</strong> (Force from mass, where g = 9.81 m/s²)</li>
-            <li><strong>Elastic Potential Energy: E = ½kx²</strong> <a
-                    href="https://en.wikipedia.org/wiki/Elastic_potential_energy" target="_blank">[Reference]</a></li>
-            <li><strong>Work Done: W = ½Fx</strong> <a href="https://en.wikipedia.org/wiki/Work_(physics)"
-                    target="_blank">[Reference]</a></li>
-        </ul>
+                <p>Additional formulas:</p>
+                <ul style="line-height: 1.8;">
+                    <li><strong>F = m × g</strong> (Force from mass, where g = 9.81 m/s²)</li>
+                    <li><strong>Elastic Potential Energy: E = ½kx²</strong> <a href="https://en.wikipedia.org/wiki/Elastic_potential_energy" target="_blank">[Reference]</a></li>
+                    <li><strong>Work Done: W = ½Fx</strong> <a href="https://en.wikipedia.org/wiki/Work_(physics)" target="_blank">[Reference]</a></li>
+                </ul>
+            </section>
+            
+            <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
+            
+            <section>
+                <h2>Calculator</h2>
+                <p>Enter mass and spring constant to see the displacement and other calculated values:</p>
 
-        <h2>Calculator</h2>
-        <p>Enter mass and spring constant to see the displacement and other calculated values:</p>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg);">
+                    <label>Mass (kg)</label>
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap;">
+                        <input type="range" id="massSlider" min="0" max="10" step="0.1" value="1.02" style="flex: 1; min-width: 200px;">
+                        <input type="number" id="massInput" min="0" max="10" step="0.1" value="1.02" style="width: 100px;">
+                        <span style="font-weight: 500; color: var(--text-color);"><span id="massValue">1.02</span> kg</span>
+                        <span style="color: var(--text-muted);">(≈ <span id="forceValue">10.0</span> N)</span>
+                    </div>
+                </div>
 
-        <div>
-            <label>Mass (kg):</label><br>
-            <input type="range" id="massSlider" min="0" max="10" step="0.1" value="1.02">
-            <input type="number" id="massInput" min="0" max="10" step="0.1" value="1.02">
-            <span id="massValue">1.02</span> kg (≈ <span id="forceValue">10.0</span> N)
-        </div>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-bottom: var(--spacing-xl);">
+                    <label>Spring Constant (N/m)</label>
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap;">
+                        <input type="range" id="springConstantSlider" min="10" max="200" step="5" value="50" style="flex: 1; min-width: 200px;">
+                        <input type="number" id="springConstantInput" min="10" max="200" step="5" value="50" style="width: 100px;">
+                        <span style="font-weight: 500; color: var(--text-color);"><span id="springConstantValue">50</span> N/m</span>
+                    </div>
+                </div>
 
-        <div>
-            <label>Spring Constant (N/m):</label><br>
-            <input type="range" id="springConstantSlider" min="10" max="200" step="5" value="50">
-            <input type="number" id="springConstantInput" min="10" max="200" step="5" value="50">
-            <span id="springConstantValue">50</span> N/m
-        </div>
+                <div style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color);">
+                    <h3 style="margin-top: 0; font-size: 1.25rem;">Results</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">
+                        <strong>Formula:</strong> x = (F / k) × 1000 (to convert from m to mm)
+                    </p>
+                    <div style="font-family: monospace; font-size: 1.2em; padding: var(--spacing-sm); background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 4px; overflow-x: auto;">
+                        x = (<span id="forceValueFormula">10.0</span> / <span id="springConstantValueFormula">50</span>) × 1000 = <strong style="color: var(--accent-color); font-size: 1.2em;"><span id="displacementValue">200</span> mm</strong>
+                    </div>
+                </div>
 
-        <h2>Results</h2>
-        <p>
-            <strong>Formula:</strong> x = (F / k) × 1000 (to convert from m to mm)
-        </p>
-        <p>
-            <strong>Calculation:</strong> x = (<span id="forceValueFormula">10.0</span> / <span
-                id="springConstantValueFormula">50</span>) × 1000 = <span id="displacementValue">200</span> mm
-        </p>
-
-        <h2>Visual Representation</h2>
-        <canvas id="canvas" width="400" height="500"></canvas>
-    </main>
-    <footer>
-        <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
-            Version: 80b2b5c</p>
-    </footer>
+                <h3 style="margin-top: var(--spacing-xl);">Visual Representation</h3>
+                <div style="overflow-x: auto; margin-top: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); background: #ffffff; padding: var(--spacing-md);">
+                    <canvas id="canvas" width="400" height="500" style="display: block; margin: 0 auto; max-width: 100%; height: auto;"></canvas>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
+                Version: 80b2b5c</p>
+        </footer>
+    </div>
+    <script src="../../scripts.js"></script>
     <script src="scripts.js"></script>
 </body>
 

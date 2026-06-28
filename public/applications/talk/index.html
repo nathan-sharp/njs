@@ -3,72 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talk</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <title>Talk | NJS.dev</title>
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Talk</h1>
+            <p>A simple text-to-speech engine that runs locally in the browser.</p>
+        </header>
 
-    <div id="webtalk-container">
-        <h1>Talk</h1>
-        <p>A simple text-to-speech engine that runs locally in the browser.</p>
-        <textarea id="textInput" rows="5" cols="50">Everyone has the right to freedom of opinion and expression; this right includes freedom to hold opinions without interference and to seek, receive and impart information and ideas through any media and regardless of frontiers.</textarea>
+        <main>
+            <div id="webtalk-container">
+                <div class="form-group">
+                    <textarea id="textInput" rows="5" style="resize: vertical;">Everyone has the right to freedom of opinion and expression; this right includes freedom to hold opinions without interference and to seek, receive and impart information and ideas through any media and regardless of frontiers.</textarea>
+                </div>
+                
+                <div class="form-group" style="display: flex; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-md);">
+                    <button id="playBtn">Speak</button>
+                    <button id="stopBtn" class="secondary">Stop</button>
+                    <span id="statusLine" style="margin-left: var(--spacing-md); font-weight: 500; color: var(--text-muted);">Status: Idle</span>
+                </div>
+            </div>
+
+            <!-- Link the external engine script -->
+            <script src="talk_engine.js"></script>
+
+            <details style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                <summary style="font-weight: 500; cursor: pointer; color: var(--text-color);">Sample Audio</summary>
+                <p style="margin-top: var(--spacing-sm);">Below is a sample of what the output should sound like:</p>
+                <audio controls style="width: 100%; margin-top: var(--spacing-sm);"><source src="/media/webspeak-sample.wav" type="audio/x-wav"></audio>
+            </details>
+            
+            <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
+            
+            <h2>How to add this to your website</h2>
+            <p>
+                This synthesizer is 100% client-side JavaScript. You can drop it into any project without needing a backend server.
+            </p>
+            
+            <ul style="line-height: 1.8;">    
+                <li>
+                    <p>Add a link to Talk Engine to your site. You can also download <a href="https://njs.dev/applications/talk/talk_engine.js">this file</a> and host it yourself.</p>
+                    <pre style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); overflow-x: auto;"><code>&lt;script src="https://njs.dev/applications/talk/talk_engine.js"&gt;&lt;/script&gt;</code></pre>
+                </li>
+                <li>
+                    <p>If you use the default wiring, include this input element:</p>
+                    <pre style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); overflow-x: auto;"><code>&lt;textarea id="textInput" rows="5" cols="40"&gt;Hello world.&lt;/textarea&gt;</code></pre>
+                </li>
+                <li>
+                    <p>Buttons to control speech playback:</p>
+                    <pre style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); overflow-x: auto;"><code>&lt;button id="playBtn"&gt;Speak&lt;/button&gt;
+&lt;button id="stopBtn"&gt;Stop&lt;/button&gt;</code></pre>
+                </li>
+                <li>
+                    <p>An optional status line to show current state:</p>
+                    <pre style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); overflow-x: auto;"><code>&lt;p id="statusLine"&gt;Status: Idle&lt;/p&gt;</code></pre>
+                </li>
+                <li>
+                    <p>Or call it directly from JavaScript without requiring specific element ids:</p>
+                    <pre style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); overflow-x: auto;"><code>window.WebTalk.speak("Hello from local browser TTS");
+window.WebTalk.stop();
+window.WebTalk.configure({ basePitch: 96, pace: 1.0 });</code></pre>
+                </li>
+            </ul>
+        </main>
         
-        <div>
-            <button id="playBtn">Speak</button>
-            <button id="stopBtn">Stop</button>
-        </div>
-
-        <p id="statusLine">Status: Idle</p>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+        </footer>
     </div>
-
-    <!-- Link the external engine script -->
-    <script src="talk_engine.js"></script>
-
-    <details>
-        <summary>Sample Audio</summary>
-        <p>Below is a sample of what the output should sound like:</p>
-        <audio controls=""><source src="/media/webspeak-sample.wav" type="audio/x-wav"></audio>
-    </details>
-    <hr>
-    <h2>How to add this to your website</h2>
-    <p>
-        This synthesizer is 100% client-side JavaScript. You can drop it into any project without needing a backend server.
-    </p>
-    <br>
-    <ul>    
-        <li>
-            <p>Add a link to Talk Engine to your site. You can also download <a href="https://njs.dev/talk/talk_engine.js">this file</a> and host it yourself.</p>
-            <code>
-                &lt;script src="https://njs.dev/talk/talk_engine.js"&gt;&lt;/script&gt;
-            </code>
-        </li>
-        <li>
-            <p>If you use the default wiring, include this input element:</p>
-            <code>
-                &lt;textarea id="textInput" rows="5" cols="40"&gt;Hello world.&lt;/textarea&gt;
-            </code>
-        </li>
-        <li>
-            <p>Buttons to control speech playback:</p>
-            <code>
-                &lt;button id="playBtn"&gt;Speak&lt;/button&gt;
-                &lt;button id="stopBtn"&gt;Stop&lt;/button&gt;
-            </code>
-        </li>
-        <li>
-            <p>An optional status line to show current state:</p>
-            <code>
-                &lt;p id="statusLine"&gt;Status: Idle&lt;/p&gt;
-            </code>
-        </li>
-        <li>
-            <p>Or call it directly from JavaScript without requiring specific element ids:</p>
-            <code>
-                window.WebTalk.speak("Hello from local browser TTS");
-                window.WebTalk.stop();
-                window.WebTalk.configure({ basePitch: 96, pace: 1.0 });
-            </code>
-        </li>
-    </ul>
+    
+    <script src="../../scripts.js"></script>
 </body>
 </html>

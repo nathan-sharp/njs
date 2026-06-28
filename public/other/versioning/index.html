@@ -4,13 +4,14 @@
         <title>Software Versioning | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <div>
+        <div class="container">
             <header>
                 <h1>ISO Timestamp Versioning</h1>
-                <p>
+                <p style="font-size: 1.1rem; line-height: 1.8;">
                     Versions are based on release time and always use the shortest
                     ISO 8601 date fragment needed for the project at that point.
                 </p>
@@ -24,7 +25,7 @@
                         Start with release date in UTC and pick the shortest ISO timestamp that uniquely identifies the release among
                         all releases of the same app.
                     </p>
-                    <ul>
+                    <ul style="line-height: 1.8;">
                         <li><code>YYYY</code> when there is only one release in that year.</li>
                         <li><code>YYYY-MM</code> when there are multiple releases in the same year.</li>
                         <li><code>YYYY-MM-DD</code> when there are multiple releases in the same month.</li>
@@ -34,7 +35,7 @@
                 </section>
 
                 <section>
-                    <h2>Example Timeline:</h2>
+                    <h2>Example Timeline</h2>
                     <table>
                         <thead>
                             <tr>
@@ -85,7 +86,7 @@
 
                 <section>
                     <h2>How To Use It</h2>
-                    <ol>
+                    <ol style="line-height: 1.8;">
                         <li>Store a canonical release timestamp in UTC for each shipped build.</li>
                         <li>Generate the shortest unique ISO fragment for that release.</li>
                         <li>Add the <code>v</code> prefix and publish as your version label.</li>
@@ -98,7 +99,7 @@
 
                 <section>
                     <h2>Practical Notes</h2>
-                    <ul>
+                    <ul style="line-height: 1.8;">
                         <li>Use UTC to avoid timezone drift.</li>
                         <li>Do not skip leading zeros, keep ISO formatting strict.</li>
                         <li>If releases are generated automatically, include hour/minute only when required.</li>
@@ -111,5 +112,7 @@
                 <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
             </footer>
         </div>
+        
+        <script src="../../scripts.js"></script>
     </body>
 </html>

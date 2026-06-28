@@ -6,58 +6,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-    <script src="../qr/scripts.js"></script>
+    <link rel="stylesheet" href="../../style.css">
+    <!-- QR Library -->
+    <script src="scripts.js"></script>
 </head>
 
 <body>
-    <header>
-        <h1>QR Code Generator</h1>
-        <p>Generate and export QR codes entirely within your browser.</p>
-    </header>
-    <main>
-        <div>
-            <label for="qr-text">Text or URL:</label><br>
-            <textarea id="qr-text" rows="4" cols="50">https://njs.dev</textarea>
-        </div>
-        <br>
-        <div>
-            <label for="qr-level">Error Correction Level:</label>
-            <select id="qr-level">
-                <option value="L">L (Low, ~7%)</option>
-                <option value="M" selected>M (Medium, ~15%)</option>
-                <option value="Q">Q (Quartile, ~25%)</option>
-                <option value="H">H (High, ~30%)</option>
-            </select>
-        </div>
-        <br>
-        <div>
-            <label for="qr-fg-color">QR Code Color:</label>
-            <input type="color" id="qr-fg-color" value="#000000">
-        </div>
-        <br>
-        <div>
-            <label for="qr-bg-color">Background Color:</label>
-            <input type="color" id="qr-bg-color" value="#FFFFFF">
-        </div>
-        <br>
-        <button id="gen-btn">Generate QR</button>
-        <hr>
-        <div id="result-container">
-            <canvas id="qr-canvas" style="display:none;"></canvas>
-            <p>Preview:</p>
-            <img id="qr-preview" alt="QR Code Preview" style="border: 1px solid #000; max-width: 100%;">
-        </div>
-        <br>
-        <div>
-            <button onclick="download('png')">Download PNG</button>
-            <button onclick="download('jpg')">Download JPG</button>
-            <button onclick="download('svg')">Download SVG</button>
-        </div>
-    </main>
-    <footer>
-        <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
-            Version: 80b2b5c</p>
-    </footer>
+    <div class="container">
+        <header>
+            <h1>QR Code Generator</h1>
+            <p>Generate and export QR codes entirely within your browser.</p>
+        </header>
+        <main>
+            <div class="form-group">
+                <label for="qr-text">Text or URL:</label>
+                <textarea id="qr-text" rows="4">https://njs.dev</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="qr-level">Error Correction Level:</label>
+                <select id="qr-level">
+                    <option value="L">L (Low, ~7%)</option>
+                    <option value="M" selected>M (Medium, ~15%)</option>
+                    <option value="Q">Q (Quartile, ~25%)</option>
+                    <option value="H">H (High, ~30%)</option>
+                </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <div>
+                    <label for="qr-fg-color">QR Code Color:</label>
+                    <input type="color" id="qr-fg-color" value="#000000" style="padding: 0; height: 40px;">
+                </div>
+                <div>
+                    <label for="qr-bg-color">Background Color:</label>
+                    <input type="color" id="qr-bg-color" value="#FFFFFF" style="padding: 0; height: 40px;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <button id="gen-btn">Generate QR</button>
+            </div>
+            
+            <h2 style="margin-top: var(--spacing-xl);">Result</h2>
+            
+            <div id="result-container" style="display: flex; flex-direction: column; align-items: center; gap: var(--spacing-md); padding: var(--spacing-lg); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                <canvas id="qr-canvas" style="display:none;"></canvas>
+                <img id="qr-preview" alt="QR Code Preview" style="max-width: 100%; max-height: 400px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                
+                <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md); flex-wrap: wrap; justify-content: center;">
+                    <button class="secondary" onclick="download('png')">Download PNG</button>
+                    <button class="secondary" onclick="download('jpg')">Download JPG</button>
+                    <button class="secondary" onclick="download('svg')">Download SVG</button>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-07T17:49:04 |
+                Version: 80b2b5c</p>
+        </footer>
+    </div>
+
+    <!-- Site-wide scripts for Nav and Ads -->
+    <script src="../../scripts.js"></script>
 
     <script>
         const textInput = document.getElementById('qr-text');

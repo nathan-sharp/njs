@@ -4,7 +4,8 @@
         <title>Unit Converter | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
         <!-- MathJax Configuration -->
         <script>
             window.MathJax = {
@@ -15,73 +16,73 @@
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
     </head>
     <body>
-        <header>
-            <h1>Unit Converter</h1>
-            <p>Convert between common units of measurement with real-time formula display.</p>
-        </header>
+        <div class="container">
+            <header>
+                <h1>Unit Converter</h1>
+                <p>Convert between common units of measurement with real-time formula display.</p>
+            </header>
 
-        <main>
-            <!-- Category Selection -->
-            <section>
-                <label for="categorySelect"><strong>Category:</strong></label>
-                <br>
-                <select id="categorySelect" style="font-size: 1.1em; padding: 5px; margin-top: 5px;">
-                    <!-- Populated by JS -->
-                </select>
-            </section>
-
-            <hr>
-
-            <!-- Converter Interface -->
-            <section id="converterInterface">
-                <!-- From Input -->
-                <div style="margin-bottom: 20px;">
-                    <label for="fromVal"><strong>From:</strong></label>
-                    <br>
-                    <input type="number" id="fromVal" value="1" style="font-size: 1.2em; padding: 5px; width: 200px;">
-                    <select id="fromUnit" style="font-size: 1.2em; padding: 5px;">
+            <main>
+                <!-- Category Selection -->
+                <section class="form-group">
+                    <label for="categorySelect">Category</label>
+                    <select id="categorySelect">
                         <!-- Populated by JS -->
                     </select>
-                </div>
+                </section>
 
-                <!-- To Input -->
-                <div style="margin-bottom: 20px;">
-                    <label for="toVal"><strong>To:</strong></label>
-                    <br>
-                    <input type="number" id="toVal" style="font-size: 1.2em; padding: 5px; width: 200px;">
-                    <select id="toUnit" style="font-size: 1.2em; padding: 5px;">
+                <!-- Converter Interface -->
+                <section id="converterInterface">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+                        <!-- From Input -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="fromVal">From</label>
+                            <input type="number" id="fromVal" value="1">
+                            <select id="fromUnit" style="margin-top: var(--spacing-sm);">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+
+                        <!-- To Input -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="toVal">To</label>
+                            <input type="number" id="toVal">
+                            <select id="toUnit" style="margin-top: var(--spacing-sm);">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results & Explanations -->
+                <section>
+                    <h2>Result</h2>
+                    <p id="resultText" style="font-size: 1.5rem; font-weight: 600; color: var(--text-color); margin-bottom: var(--spacing-lg);">---</p>
+
+                    <div style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-top: 0; font-size: 1.25rem;">Formula</h3>
+                        <p style="margin-bottom: var(--spacing-md);">The algebraic formula used for this conversion:</p>
+                        <div id="formulaMath" style="font-size: 1.2em; overflow-x: auto;">$$ ... $$</div>
+
+                        <h3 style="margin-top: var(--spacing-lg); font-size: 1.25rem;">Calculation</h3>
+                        <p style="margin-bottom: var(--spacing-md);">The formula with your specific values filled in:</p>
+                        <div id="filledMath" style="font-size: 1.2em; overflow-x: auto;">$$ ... $$</div>
+                    </div>
+
+                    <h3 style="font-size: 1.25rem;">Source & Definitions</h3>
+                    <p>Definitions and authorities for the units used:</p>
+                    <dl id="sourceList" style="line-height: 1.6; margin-top: var(--spacing-md);">
                         <!-- Populated by JS -->
-                    </select>
-                </div>
-            </section>
+                    </dl>
+                </section>
+            </main>
 
-            <hr>
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+            </footer>
+        </div>
 
-            <!-- Results & Explanations -->
-            <section>
-                <h2>Result</h2>
-                <p id="resultText" style="font-size: 1.2em; font-weight: bold;">---</p>
-
-                <h3>Formula</h3>
-                <p>The algebraic formula used for this conversion:</p>
-                <div id="formulaMath" style="font-size: 1.1em; margin: 10px 0;">$$ ... $$</div>
-
-                <h3>Calculation</h3>
-                <p>The formula with your specific values filled in:</p>
-                <div id="filledMath" style="font-size: 1.1em; margin: 10px 0;">$$ ... $$</div>
-
-                <h3>Source & Definitions</h3>
-                <p>Definitions and authorities for the units used:</p>
-                <dl id="sourceList" style="line-height: 1.6;">
-                    <!-- Populated by JS -->
-                </dl>
-            </section>
-        </main>
-
-        <footer>
-            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
-        </footer>
-
+        <script src="../../scripts.js"></script>
         <script src="scripts.js"></script>
     </body>
 </html>

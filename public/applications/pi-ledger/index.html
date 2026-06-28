@@ -4,71 +4,84 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Pi Ledger | NJS.dev</title>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>Pi Ledger</h1>
-            <p>Upload a <code>.txt</code> file of pi digits, compare it with local precomputed control files, and see how closely it matches without leaving your device.</p>
-        </header>
+        <div class="container">
+            <header>
+                <h1>Pi Ledger</h1>
+                <p>Upload a <code>.txt</code> file of pi digits, compare it with local precomputed control files, and see how closely it matches without leaving your device.</p>
+            </header>
 
-        <main>
-            <section>
-                <h2>Check Pi Digits</h2>
-                <p>Only digits are compared. Spaces, punctuation, and line breaks are ignored. The analysis runs entirely in your browser.</p>
+            <main>
+                <section>
+                    <h2>Check Pi Digits</h2>
+                    <p>Only digits are compared. Spaces, punctuation, and line breaks are ignored. The analysis runs entirely in your browser.</p>
 
-                <form id="pi-form" novalidate>
-                    <p>
-                        <label for="pi-text">Paste or type pi digits:</label><br>
-                        <textarea id="pi-text" name="pi-text" rows="8" cols="60" placeholder="3.141592653..."></textarea>
-                    </p>
-                    <p>
-                        <label for="pi-file">Choose a text file:</label><br>
-                        <input id="pi-file" name="pi-file" type="file" accept=".txt,text/plain">
-                    </p>
-                    <p>
-                        <button type="submit">Analyze digits</button>
-                    </p>
-                </form>
+                    <form id="pi-form" novalidate style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg);">
+                        <div class="form-group">
+                            <label for="pi-text">Paste or type pi digits:</label>
+                            <textarea id="pi-text" name="pi-text" rows="6" placeholder="3.141592653..."></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="text-align: center; margin: var(--spacing-md) 0;">
+                            <span style="color: var(--text-muted); font-weight: 500; font-size: 0.875rem;">— OR —</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pi-file">Choose a text file:</label>
+                            <input id="pi-file" name="pi-file" type="file" accept=".txt,text/plain" style="padding: 0.5rem 0; background: transparent; border: none;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0; margin-top: var(--spacing-lg);">
+                            <button type="submit" style="width: 100%;">Analyze digits</button>
+                        </div>
+                    </form>
 
-                <p id="status" aria-live="polite">No file selected yet.</p>
-                <div id="result">Paste digits or upload a file to see the accuracy score.</div>
-            </section>
+                    <p id="status" aria-live="polite" style="font-weight: 500; color: var(--accent-color);">No file selected yet.</p>
+                    <div id="result" style="margin-top: var(--spacing-md);">Paste digits or upload a file to see the accuracy score.</div>
+                </section>
 
-            <section>
-                <h2>What Pi Actually Is</h2>
-                <p>Pi, written as π, is the ratio of a circle's circumference to its diameter. That ratio is the same for every circle, no matter how large or small it is.</p>
-                <p>Pi is irrational, which means its decimal expansion never ends and never settles into a repeating pattern. It also appears in many parts of mathematics, engineering, physics, and statistics because circles, waves, rotations, and periodic systems all turn up in the real world.</p>
-                <p>In simple terms, if a circle has circumference <strong>C</strong> and diameter <strong>d</strong>, then <strong>π = C / d</strong>. This page uses precomputed control files for comparison so the reference is deterministic and auditable.</p>
-            </section>
+                <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
 
-            <section>
-                <h2>How the Score Works</h2>
-                <p>The page compares your digits against precomputed control files and counts how many leading digits match before the first mismatch.</p>
-                <p>The analyzer picks the smallest control tier that can cover your input. If your input is longer than 10,000,000 digits, only the first 10,000,000 are compared.</p>
-            </section>
+                <section>
+                    <h2>What Pi Actually Is</h2>
+                    <p>Pi, written as π, is the ratio of a circle's circumference to its diameter. That ratio is the same for every circle, no matter how large or small it is.</p>
+                    <p>Pi is irrational, which means its decimal expansion never ends and never settles into a repeating pattern. It also appears in many parts of mathematics, engineering, physics, and statistics because circles, waves, rotations, and periodic systems all turn up in the real world.</p>
+                    <p>In simple terms, if a circle has circumference <strong>C</strong> and diameter <strong>d</strong>, then <strong>π = C / d</strong>. This page uses precomputed control files for comparison so the reference is deterministic and auditable.</p>
+                </section>
 
-            <section>
-                <h2>Control Files</h2>
-                <p>These local control files are the comparison source used by this page.</p>
-                <ul>
-                    <li><a href="./control/pi-10k.txt" download>Download 10,000 digits (pi-10k.txt)</a></li>
-                    <li><a href="./control/pi-100k.txt" download>Download 100,000 digits (pi-100k.txt)</a></li>
-                    <li><a href="./control/pi-500k.txt" download>Download 500,000 digits (pi-500k.txt)</a></li>
-                    <li><a href="./control/pi-1m.txt" download>Download 1,000,000 digits (pi-1m.txt)</a></li>
-                    <li><a href="./control/pi-10m.txt" download>Download 10,000,000 digits (pi-10m.txt)</a></li>
-                </ul>
-            </section>
+                <section>
+                    <h2>How the Score Works</h2>
+                    <p>The page compares your digits against precomputed control files and counts how many leading digits match before the first mismatch.</p>
+                    <p>The analyzer picks the smallest control tier that can cover your input. If your input is longer than 10,000,000 digits, only the first 10,000,000 are compared.</p>
+                </section>
 
-            <details>
-                <summary>Privacy and processing</summary>
-                <p>Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript against local control files.</p>
-            </details>
-        </main>
+                <section>
+                    <h2>Control Files</h2>
+                    <p>These local control files are the comparison source used by this page.</p>
+                    <ul>
+                        <li><a href="./control/pi-10k.txt" download>Download 10,000 digits (pi-10k.txt)</a></li>
+                        <li><a href="./control/pi-100k.txt" download>Download 100,000 digits (pi-100k.txt)</a></li>
+                        <li><a href="./control/pi-500k.txt" download>Download 500,000 digits (pi-500k.txt)</a></li>
+                        <li><a href="./control/pi-1m.txt" download>Download 1,000,000 digits (pi-1m.txt)</a></li>
+                        <li><a href="./control/pi-10m.txt" download>Download 10,000,000 digits (pi-10m.txt)</a></li>
+                    </ul>
+                </section>
 
-        <footer>
-            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
-        </footer>
+                <details style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                    <summary style="font-weight: 500; cursor: pointer; color: var(--text-color);">Privacy and processing</summary>
+                    <p style="margin-top: var(--spacing-sm); margin-bottom: 0;">Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript against local control files.</p>
+                </details>
+            </main>
+
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+            </footer>
+        </div>
+
+        <script src="../../scripts.js"></script>
 
         <script>
             const CONTROL_TIERS = [

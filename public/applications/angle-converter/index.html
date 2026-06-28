@@ -4,7 +4,8 @@
         <title>Angle Converter | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
         <script>
             window.MathJax = {
                 tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
@@ -12,49 +13,71 @@
             };
         </script>
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
-        <script src="/angle-converter/scripts.js"></script>
     </head>
     <body>
-        <header>
-            <h1>Angle Converter</h1>
-            <p>Enter a value into any the blow fields to get the equivalent in the other units.</p>
-        </header>
-        <main>
-            <div>
-                <label>Decimal Degree:</label>
-                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> °deg
-            </div>
-            <div>
-                <label>Degree Minute Second:</label>
-                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> °deg
-                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> 'min
-                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> "sec
-            </div>
-            <div>
-                <label>Radians:</label>
-                <input type="text" inputmode="decimal" pattern="[0-9.+-]*"> rad
-            </div>
-            <!-- removed placeholder -->
-        </main>
-        <!-- Proof -->
-        <section id="proof" aria-labelledby="proof-title">
-            <h2 id="proof-title">Proof</h2>
-            <button id="fill-formula-btn" type="button">Show values in formulas</button>
-            <p>Formulas used by the converter:</p>
-            <ul>
-                <li><strong>DMS → Decimal degrees</strong>: $$\mathrm{DD} = \operatorname{sign}(D)\cdot\bigl(|D| + \tfrac{M}{60} + \tfrac{S}{3600}\bigr)$$</li>
-                <li><strong>Decimal degrees → DMS</strong>:<br/>
-                    $$D = \operatorname{sign}(\mathrm{DD})\cdot\lfloor |\mathrm{DD}| \rfloor,$$
-                    $$M = \Bigl\lfloor (|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 \Bigr\rfloor,$$
-                    $$S = \Bigl((|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 - M\Bigr)\cdot 60$$
-                </li>
-                <li><strong>Degrees ↔ Radians</strong>: $$\mathrm{rad} = \mathrm{deg}\cdot\frac{\pi}{180}, \qquad \mathrm{deg} = \mathrm{rad}\cdot\frac{180}{\pi}$$</li>
-            </ul>
-            <p>Notes: minutes and seconds are non-negative; the sign of the angle is carried on the degrees component.</p>
-            <div id="filled-formulas" aria-live="polite"></div>
-        </section>
-        <footer>
-            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>Angle Converter</h1>
+                <p>Enter a value into any the blow fields to get the equivalent in the other units.</p>
+            </header>
+            
+            <main>
+                <div class="form-group">
+                    <label>Decimal Degree</label>
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <input type="text" inputmode="decimal" pattern="[0-9.+-]*">
+                        <span style="color: var(--text-muted); font-weight: 500;">°deg</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Degree Minute Second</label>
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto; gap: var(--spacing-sm); align-items: center;">
+                        <input type="text" inputmode="decimal" pattern="[0-9.+-]*">
+                        <span style="color: var(--text-muted); font-weight: 500;">°deg</span>
+                        <input type="text" inputmode="decimal" pattern="[0-9.+-]*">
+                        <span style="color: var(--text-muted); font-weight: 500;">'min</span>
+                        <input type="text" inputmode="decimal" pattern="[0-9.+-]*">
+                        <span style="color: var(--text-muted); font-weight: 500;">"sec</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Radians</label>
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <input type="text" inputmode="decimal" pattern="[0-9.+-]*">
+                        <span style="color: var(--text-muted); font-weight: 500;">rad</span>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Proof -->
+            <section id="proof" aria-labelledby="proof-title" style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-top: var(--spacing-xl);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                    <h2 id="proof-title" style="margin: 0; border: none; padding: 0;">Proof</h2>
+                    <button id="fill-formula-btn" type="button" class="secondary">Show values in formulas</button>
+                </div>
+                
+                <p>Formulas used by the converter:</p>
+                <ul style="line-height: 1.8; overflow-x: auto;">
+                    <li><strong>DMS → Decimal degrees</strong>: $$\mathrm{DD} = \operatorname{sign}(D)\cdot\bigl(|D| + \tfrac{M}{60} + \tfrac{S}{3600}\bigr)$$</li>
+                    <li><strong>Decimal degrees → DMS</strong>:<br/>
+                        $$D = \operatorname{sign}(\mathrm{DD})\cdot\lfloor |\mathrm{DD}| \rfloor,$$
+                        $$M = \Bigl\lfloor (|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 \Bigr\rfloor,$$
+                        $$S = \Bigl((|\mathrm{DD}| - \lfloor |\mathrm{DD}| \rfloor)\cdot 60 - M\Bigr)\cdot 60$$
+                    </li>
+                    <li><strong>Degrees ↔ Radians</strong>: $$\mathrm{rad} = \mathrm{deg}\cdot\frac{\pi}{180}, \qquad \mathrm{deg} = \mathrm{rad}\cdot\frac{180}{\pi}$$</li>
+                </ul>
+                <p style="font-size: 0.875rem;">Notes: minutes and seconds are non-negative; the sign of the angle is carried on the degrees component.</p>
+                <div id="filled-formulas" aria-live="polite" style="margin-top: var(--spacing-md); font-size: 1.1em; overflow-x: auto;"></div>
+            </section>
+            
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+            </footer>
+        </div>
+
+        <script src="../../scripts.js"></script>
+        <script src="scripts.js"></script>
     </body>
 </html>

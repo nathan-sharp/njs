@@ -130,8 +130,8 @@ dd {
   background-color: var(--ad-bg);
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
   text-align: center;
   position: relative;
   min-height: 120px;
@@ -139,6 +139,23 @@ dd {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+@media (min-width: 1100px) {
+  .ad-container {
+    float: right;
+    position: sticky;
+    top: var(--spacing-lg);
+    width: 200px;
+    min-height: 600px;
+    margin-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .container .ad-container {
+    /* If inside a max-width container, pull it out to the right */
+    margin-right: calc(-200px - var(--spacing-lg));
+  }
 }
 
 .ad-label {
@@ -187,4 +204,101 @@ dd {
 
 .site-nav .nav-links a:hover {
   color: var(--text-color);
+}
+
+/* 7. Forms & Inputs */
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: 1rem;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="color"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  transition: border-color 0.2s;
+  margin-top: 0.25rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--text-color);
+}
+
+button {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button.secondary {
+  background-color: var(--ad-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+button.secondary:hover {
+  background-color: var(--border-color);
+}
+
+label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+/* 8. Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-lg);
+  background: var(--bg-color);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+th, td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background-color: var(--ad-bg);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background-color: var(--ad-bg);
 }

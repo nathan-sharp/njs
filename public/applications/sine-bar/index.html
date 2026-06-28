@@ -4,78 +4,84 @@
         <title>Sine Bar Calculator | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>Sine Bar Calculator</h1>
-            <p>A precision engineering tool for calculating gauge block stack heights to set specific angles.</p>
-        </header>
-        <main>
-            <section>
-                <h2>What is a Sine Bar?</h2>
-                <p>
-                    A <strong>Sine Bar</strong> is a precision measuring instrument used by machinists and inspectors to construct very accurate angles. It consists of a hardened, ground steel bar with two precision cylinders (rollers) attached at the ends. The distance between the centers of these rollers is precisely controlled (typically 5 inches or 100mm).
-                </p>
-                <h3>How it Works</h3>
-                <p>
-                    The tool utilizes the trigonometric function <em>Sine</em> to define an angle. When one roller rests on a surface plate and the other is elevated by a stack of gauge blocks, the bar forms the hypotenuse of a right-angled triangle.
-                </p>
-                <p>The relationship is defined by the formula:</p>
-                <blockquote>
-                    <strong>sin(Angle) = Height / Length</strong>
-                </blockquote>
-                <p>Therefore, to find the required height of gauge blocks:</p>
-                <blockquote>
-                    <strong>Height = Length × sin(Angle)</strong>
-                </blockquote>
+        <div class="container">
+            <header>
+                <h1>Sine Bar Calculator</h1>
+                <p>A precision engineering tool for calculating gauge block stack heights to set specific angles.</p>
+            </header>
+            
+            <main>
+                <section>
+                    <h2>What is a Sine Bar?</h2>
+                    <p>
+                        A <strong>Sine Bar</strong> is a precision measuring instrument used by machinists and inspectors to construct very accurate angles. It consists of a hardened, ground steel bar with two precision cylinders (rollers) attached at the ends. The distance between the centers of these rollers is precisely controlled (typically 5 inches or 100mm).
+                    </p>
+                    <h3>How it Works</h3>
+                    <p>
+                        The tool utilizes the trigonometric function <em>Sine</em> to define an angle. When one roller rests on a surface plate and the other is elevated by a stack of gauge blocks, the bar forms the hypotenuse of a right-angled triangle.
+                    </p>
+                    <p>The relationship is defined by the formula:</p>
+                    <blockquote style="background: var(--ad-bg); padding: var(--spacing-md); border-left: 4px solid var(--accent-color); margin: var(--spacing-md) 0;">
+                        <strong>sin(Angle) = Height / Length</strong>
+                    </blockquote>
+                    <p>Therefore, to find the required height of gauge blocks:</p>
+                    <blockquote style="background: var(--ad-bg); padding: var(--spacing-md); border-left: 4px solid var(--accent-color); margin: var(--spacing-md) 0;">
+                        <strong>Height = Length × sin(Angle)</strong>
+                    </blockquote>
 
-                <h3>Why use it?</h3>
-                <ul>
-                    <li><strong>High Accuracy:</strong> Because gauge blocks can be stacked with tolerances in the millionths of an inch (or microns), sine bars can set angles with far greater precision than a protractor or angle gauge.</li>
-                    <li><strong>Stability:</strong> It provides a rigid, physical reference surface for machining or inspection setups.</li>
-                </ul>
-            </section>
+                    <h3>Why use it?</h3>
+                    <ul style="line-height: 1.8;">
+                        <li><strong>High Accuracy:</strong> Because gauge blocks can be stacked with tolerances in the millionths of an inch (or microns), sine bars can set angles with far greater precision than a protractor or angle gauge.</li>
+                        <li><strong>Stability:</strong> It provides a rigid, physical reference surface for machining or inspection setups.</li>
+                    </ul>
+                </section>
 
-            <hr>
+                <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
 
-            <section>
-                <h2>Calculator</h2>
-                <p>Enter your Sine Bar dimensions and target angle below.</p>
+                <section>
+                    <h2>Calculator</h2>
+                    <p>Enter your Sine Bar dimensions and target angle below.</p>
 
-                <form id="calcForm" onsubmit="return false;">
-                    <div>
-                        <label for="length"><strong>Bar Length (L):</strong></label>
-                        <br>
-                        <input type="number" id="length" step="0.0001" value="100.0000" style="font-size: 1.1em; padding: 5px; width: 150px;">
-                        <select id="units">
-                            <option value="in">Inches</option>
-                            <option value="mm" selected>Millimeters</option>
-                        </select>
-                    </div>
-                    <br>
-                    <div>
-                        <label for="angle"><strong>Target Angle (θ):</strong></label>
-                        <br>
-                        <input type="number" id="angle" step="0.0001" value="30.0" style="font-size: 1.1em; padding: 5px; width: 150px;"> degrees (°)
-                    </div>
-                    <br>
-                    
-                    <div style="margin-bottom: 20px; color: #555;">
-                        <label><strong>Formula used:</strong></label>
-                        <div style="font-family: monospace; font-size: 1.1em; margin-top: 5px;">
-                            Height = <span id="formL">100.0000</span> × sin(<span id="formTheta">30.0</span>°)
+                    <form id="calcForm" onsubmit="return false;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                            <div class="form-group" style="margin: 0;">
+                                <label for="length">Bar Length (L)</label>
+                                <input type="number" id="length" step="0.0001" value="100.0000">
+                                <select id="units" style="margin-top: var(--spacing-sm);">
+                                    <option value="in">Inches</option>
+                                    <option value="mm" selected>Millimeters</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin: 0;">
+                                <label for="angle">Target Angle (θ) in Degrees (°)</label>
+                                <input type="number" id="angle" step="0.0001" value="30.0">
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div style="margin-bottom: var(--spacing-md); color: var(--text-muted);">
+                            <label style="font-weight: 500; font-size: 0.875rem;">Formula used</label>
+                            <div style="font-family: monospace; font-size: 1.1em; margin-top: 4px; padding: var(--spacing-sm); background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 4px;">
+                                Height = <span id="formL">100.0000</span> × sin(<span id="formTheta">30.0</span>°)
+                            </div>
+                        </div>
 
-                    <div style="background-color: #eee; padding: 15px; border: 1px solid #999; display: inline-block;">
-                        <strong>Required Gauge Block Height (H):</strong><br>
-                        <span id="result" style="font-size: 2em; font-family: monospace;">50.0000</span> <span id="resUnit">mm</span>
-                    </div>
-                </form>
+                        <div style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color);">
+                            <strong style="color: var(--text-muted); text-transform: uppercase; font-size: 0.875rem; letter-spacing: 0.05em;">Required Gauge Block Height (H)</strong><br>
+                            <div style="margin-top: var(--spacing-sm); display: flex; align-items: baseline; gap: var(--spacing-sm);">
+                                <span id="result" style="font-size: 2.5rem; font-family: monospace; font-weight: 700; color: var(--text-color);">50.0000</span>
+                                <span id="resUnit" style="font-size: 1.25rem; font-weight: 500; color: var(--text-muted);">mm</span>
+                            </div>
+                        </div>
+                    </form>
 
-                <h3>Visual Representation</h3>
-                <!-- Updated SVG to match the reference image -->
+                    <h3 style="margin-top: var(--spacing-xl);">Visual Representation</h3>
+                    <!-- Updated SVG to match the reference image -->
+                    <div style="overflow-x: auto; margin-top: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color); background: #ffffff;">
                 <svg width="450" height="300" viewBox="0 0 450 300" style="border: 1px solid #ccc; background: #fff;">
                     <defs>
                         <!-- Steel Gradient -->
@@ -128,15 +134,17 @@
                     <!-- Angle Arc -->
                     <path id="angleArc" d="M 0 0" fill="none" stroke="#1976D2" stroke-width="2" />
                     <text id="thetaLabel" x="0" y="0" font-family="sans-serif" font-size="14" fill="#1976D2" font-weight="bold">θ</text>
-                </svg>
-            </section>
-        </main>
+                        </svg>
+                    </div>
+                </section>
+            </main>
 
-        <footer>
-            <br>
-            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
-        </footer>
-
+            <footer>
+                <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by nathan-sharp at 2026-06-28T10:17:34 | Version: 73f83fa</p>
+            </footer>
+        </div>
+        
+        <script src="../../scripts.js"></script>
         <script src="scripts.js"></script>
     </body>
 </html>
