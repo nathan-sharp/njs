@@ -199,6 +199,15 @@ const definitions = {
             'Barrel per day (Petroleum)': { symbol: 'bbl/d', r: 0.158987294928 / 86400, desc: "Standard oil field unit of volumetric flow rate (42 US gallons per day).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } },
             'Barrel per hour (Petroleum)': { symbol: 'bbl/h', r: 0.158987294928 / 3600, desc: "Standard oil field unit of volumetric flow rate (42 US gallons per hour).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/Pubs/SP811/appenB9.html" } }
         }
+    },
+    Torque: {
+        baseUnit: 'Newton-meter',
+        units: {
+            'Newton-meter': { symbol: 'N·m', r: 1, desc: "SI derived unit of torque (moment of force).", source: { name: "BIPM", url: "https://www.bipm.org/en/measurement-units/derived-units" } },
+            'Pound-foot': { symbol: 'lb·ft', r: 1.3558179483314004, desc: "US Customary unit of torque (often called foot-pound).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/cuu/Units/outside.html" } },
+            'Pound-inch': { symbol: 'lb·in', r: 0.1129848290276167, desc: "US Customary unit of torque (often called inch-pound).", source: { name: "NIST SP 811", url: "https://physics.nist.gov/cuu/Units/outside.html" } },
+            'Kilogram-meter': { symbol: 'kgf·m', r: 9.80665, desc: "Metric unit of torque based on kilogram-force.", source: { name: "NIST SP 811", url: "https://physics.nist.gov/cuu/Units/outside.html" } }
+        }
     }
 };
 
