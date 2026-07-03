@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDMS Viewer | NJS.dev</title>
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TDMS Viewer</h1>
+            <p>Interactive oscilloscope and telemetry plotter for National Instruments LabVIEW TDMS streaming files. Runs 100% locally in your browser.</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Load Telemetry File</h2>
+                <p>Upload a binary <code>.tdms</code> file or load an included test telemetry run. No data is sent to any server.</p>
+
+                <form id="upload-form" novalidate style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg);">
+                    <div class="form-group">
+                        <label for="file-input">Choose a local .tdms file:</label>
+                        <input id="file-input" type="file" accept=".tdms" style="padding: 0.5rem 0; background: transparent; border: none;">
+                    </div>
+                    
+                    <div class="form-group" style="text-align: center; margin: var(--spacing-md) 0;">
+                        <span style="color: var(--text-muted); font-weight: 500; font-size: 0.875rem;">— OR QUICK TEST WITH DEMOS —</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                        <button type="button" class="secondary" id="btn-demo-engine" style="flex: 1; min-width: 180px;">Dyno Engine Telemetry</button>
+                        <button type="button" class="secondary" id="btn-demo-audio" style="flex: 1; min-width: 180px;">Acoustic Resonance</button>
+                        <button type="button" class="secondary" id="btn-demo-battery" style="flex: 1; min-width: 180px;">Battery Thermal Cycle</button>
+                    </div>
+                </form>
+
+                <p id="active-file-badge" style="font-weight: 500; color: var(--accent-color);">Ready. Select a demo or load a .TDMS file.</p>
+            </section>
+
+            <section style="margin-top: var(--spacing-lg); background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color);">
+                <div style="display: flex; gap: var(--spacing-lg); flex-wrap: wrap; align-items: center;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="group-selector">Channel Group:</label>
+                        <select id="group-selector"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="xaxis-selector">X-Axis Channel:</label>
+                        <select id="xaxis-selector"></select>
+                    </div>
+                </div>
+            </section>
+
+            <div style="margin-top: var(--spacing-lg); display: flex; gap: var(--spacing-sm); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-sm); overflow-x: auto;">
+                <button type="button" class="tab-btn active" data-tab="chart" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Chart View</button>
+                <button type="button" class="secondary tab-btn" data-tab="explorer" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Hierarchy & Properties</button>
+                <button type="button" class="secondary tab-btn" data-tab="table" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Data Table & Export</button>
+                <button type="button" class="secondary tab-btn" data-tab="about" style="padding: 0.5rem 1rem; font-size: 0.9rem;">About TDMS Format</button>
+            </div>
+
+            <!-- Tab 1: Chart & Oscilloscope View -->
+            <div id="panel-chart" class="tab-panel" style="display: block; margin-top: var(--spacing-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                    <div>
+                        <span style="font-size: 0.875rem; color: var(--text-muted); margin-right: var(--spacing-sm);">Display Mode:</span>
+                        <button type="button" class="chart-mode-btn active" data-mode="stacked" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Stacked</button>
+                        <button type="button" class="secondary chart-mode-btn" data-mode="normalized" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Normalized</button>
+                        <button type="button" class="secondary chart-mode-btn" data-mode="shared" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Shared Y-Axis</button>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Drag chart to zoom in, double-click to reset</span>
+                        <button type="button" class="secondary" id="btn-reset-zoom" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Reset Zoom</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
+                    <!-- Canvas Plotter -->
+                    <div id="canvas-container" style="position: relative; width: 100%; min-height: 450px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: var(--bg-color);">
+                        <canvas id="telemetry-canvas" style="width: 100%; height: 100%; display: block; cursor: crosshair;"></canvas>
+                        <div id="chart-tooltip" style="position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 4px; padding: 0.75rem; font-size: 0.8rem; color: var(--text-color); pointer-events: none; opacity: 0; transition: opacity 0.1s ease; z-index: 10; min-width: 180px;"></div>
+                    </div>
+
+                    <!-- Channel Toggles -->
+                    <details open style="background: var(--ad-bg); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <summary style="font-weight: 600; cursor: pointer; color: var(--text-color);">Plotted Channels & Trace Toggles</summary>
+                        <div id="channel-toggles-list" style="margin-top: var(--spacing-sm); display: flex; flex-wrap: wrap; gap: var(--spacing-md);"></div>
+                    </details>
+                </div>
+
+                <!-- Live Channel Statistics Grid -->
+                <section style="margin-top: var(--spacing-lg);">
+                    <h2>Waveform Telemetry Statistics</h2>
+                    <div id="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--spacing-md);"></div>
+                </section>
+            </div>
+
+            <!-- Tab 2: Hierarchy & Properties Explorer -->
+            <div id="panel-explorer" class="tab-panel" style="display: none; margin-top: var(--spacing-md);">
+                <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-lg);">
+                    <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <h3 style="margin-top: 0; margin-bottom: var(--spacing-sm);">TDMS Object Hierarchy</h3>
+                        <p style="margin-bottom: var(--spacing-md);">National Instruments files organize data into three levels: Root File, Groups, and Channels.</p>
+                        <div id="hierarchy-tree" style="overflow-x: auto;"></div>
+                    </section>
+
+                    <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <h3 style="margin-top: 0; margin-bottom: var(--spacing-sm);">Root File Properties</h3>
+                        <p style="margin-bottom: var(--spacing-md);">Metadata parameters attached to the root level of the binary streaming file.</p>
+                        <div id="file-properties-list"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Tab 3: Data Table & Export -->
+            <div id="panel-table" class="tab-panel" style="display: none; margin-top: var(--spacing-md);">
+                <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--spacing-md);">
+                    <div>
+                        <h3 style="margin: 0 0 0.25rem 0;">Data Extraction & Export</h3>
+                        <p style="margin: 0;">Export processed telemetry to CSV or download full metadata reports.</p>
+                    </div>
+                    <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                        <button type="button" id="btn-export-csv">Export CSV</button>
+                        <button type="button" class="secondary" id="btn-export-json">Export Metadata JSON</button>
+                        <button type="button" class="secondary" id="btn-download-tdms">Download .TDMS File</button>
+                    </div>
+                </section>
+
+                <div style="max-height: 500px; overflow: auto; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <table id="data-table" style="margin: 0; font-family: monospace; font-size: 0.875rem;">
+                        <thead>
+                            <tr><th>Index</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p id="table-footer-info" style="margin-top: var(--spacing-sm); text-align: right;"></p>
+            </div>
+
+            <!-- Tab 4: About TDMS Format -->
+            <div id="panel-about" class="tab-panel" style="display: none; margin-top: var(--spacing-md);">
+                <h2>What is LabVIEW TDMS?</h2>
+                <p>The <strong>Technical Data Management Streaming (TDMS)</strong> file format was created by National Instruments (NI) to provide structured, high-speed data logging for LabVIEW, DIAdem, and DAQmx test and measurement systems. Unlike plain text CSV files, TDMS uses a structured binary layout that allows logging gigabytes of high-frequency sensor telemetry at tens of thousands of samples per second without disk write bottlenecks.</p>
+
+                <h2>Three-Level Hierarchy</h2>
+                <p>TDMS files organize information into a logical tree structure with three distinct object tiers:</p>
+                <ul>
+                    <li><strong>File (Root <code>/</code>):</strong> Contains file-level metadata such as test title, author, date, LabVIEW version, and experiment notes.</li>
+                    <li><strong>Groups (<code>/'Group Name'</code>):</strong> Logical containers that group related measurement channels together (e.g., "Engine Sensors", "Voltage Grid", "Acoustic Stream"). Each group can carry its own custom properties.</li>
+                    <li><strong>Channels (<code>/'Group'/'Channel'</code>):</strong> Individual measurement series containing raw binary arrays (integers, double-precision floats, timestamps, strings) along with channel properties like unit strings (<code>unit_string</code>), descriptions, and scaling factors.</li>
+                </ul>
+
+                <h2>Binary Segment Structure (Lead-In Header)</h2>
+                <p>A TDMS file is composed of a continuous sequence of binary blocks called <strong>segments</strong>. Every segment begins with a fixed 28-byte Lead-In header:</p>
+                <ul>
+                    <li><strong>Tag (4 bytes):</strong> Always ASCII <code>TDSm</code>, uniquely identifying a valid TDMS block.</li>
+                    <li><strong>ToC Bitmask (4 bytes):</strong> Table of Contents flags indicating whether the segment contains metadata (<code>kTocMetaData</code>), raw measurement data (<code>kTocRawData</code>), DAQmx raw layouts, or interleaved arrays.</li>
+                    <li><strong>Version Number (4 bytes):</strong> Format revision (e.g., <code>4713</code> for TDMS 2.0).</li>
+                    <li><strong>Offsets (16 bytes):</strong> Two 64-bit unsigned integers indicating the byte offset to the raw data segment and the byte offset to the next segment in the file, allowing instantaneous random access without scanning the entire file.</li>
+                </ul>
+
+                <h2>Why Local Browser Processing?</h2>
+                <p>Test engineers often deal with confidential prototype telemetry or massive multi-megabyte datasets. This TDMS Viewer processes your data entirely on your device using JavaScript <code>ArrayBuffer</code> and <code>DataView</code> APIs. <strong>Zero bytes are sent to any external server or cloud</strong>, guaranteeing 100% data privacy and instantaneous analysis.</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>©2026 Nathan James Sharp. All Rights Reserved. | Last updated by unknown at 2026-07-03T22:02:05 | Version: 182fd09</p>
+        </footer>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <script src="../../scripts.js"></script>
+</body>
+</html>
