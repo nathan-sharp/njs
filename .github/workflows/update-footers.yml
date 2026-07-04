@@ -28,15 +28,18 @@ jobs:
         env:
           VERSION_HASH: ${{ github.sha }}
 
-      - name: Commit footer updates
+      - name: Refresh sitemap
+        run: node scripts/update-sitemap.mjs
+
+      - name: Commit metadata updates
         run: |
           if git diff --quiet; then
-            echo "No footer changes to commit."
+            echo "No metadata changes to commit."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --all
-          git commit -m "chore: refresh footer metadata"
+          git commit -m "chore: refresh footer and sitemap metadata"
           git push origin HEAD:${{ github.ref_name }}
