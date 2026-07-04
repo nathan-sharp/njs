@@ -55,9 +55,4 @@ Disallow: /
 User-agent: meta-externalagent
 Disallow: /
 
-# Example of disallowing specific paths (uncomment and modify as needed)
-# Disallow: /private/
-# Disallow: /tmp/
-
-# Sitemap
 Sitemap: https://njs.dev/sitemap.xml

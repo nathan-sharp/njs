@@ -1,0 +1,12 @@
+# Cloudflare Wrangler
+.wrangler
+
+# Node / Dependencies
+node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# OS generated files
+.DS_Store
+Thumbs.db
