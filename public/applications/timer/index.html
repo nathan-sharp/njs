@@ -464,25 +464,6 @@
                     }, 80);
                 });
             </script>
-
-            <details style="margin: 4vh auto 0; max-width: 650px; width: 90%; background: #111; border: 1px solid #333; border-radius: 4px; padding: 12px 16px; font-size: 0.85rem; line-height: 1.6; color: #ccc; text-align: left;">
-                <summary style="cursor: pointer; font-weight: 600; color: #fff;">Precision Countdown Timing & Target Parameter Syntax</summary>
-                <div style="margin-top: 10px;">
-                    <p>This countdown reference utility calculates time deltas down to the exact second against UTC or localized ISO 8601 target timestamps (`targetDate.getTime() - Date.now()`).</p>
-                    <p><strong>Query Parameter Configuration (`?t=`):</strong> You can configure custom countdown targets directly in the browser address bar using the `t` (or `target`) query parameter:</p>
-                    <ul>
-                        <li><strong>ISO 8601 Target:</strong> Example `?t=2026-12-31T23:59:59Z` sets an exact UTC epoch target.</li>
-                        <li><strong>Audio GTS Pips (`?audio=true`):</strong> Just like the reference clock, enabling audio pips plays short 950 Hz tones every second and a special three-tone alert sequence when `T-0` is reached (`absSec === 0`).</li>
-                    </ul>
-                </div>
-            </details>
-
-            <footer style="margin-top: 3vh; font-size: 0.75rem; color: #666; display: flex; gap: 16px; justify-content: center; width: 100%;">
-                <span>©2026 Nathan James Sharp</span>
-                <a href="/about/" style="color: #888; text-decoration: none;">About</a>
-                <a href="/other/privacy/" style="color: #888; text-decoration: none;">Privacy Policy</a>
-            </footer>
         </main>
-        <script src="../../scripts.js"></script>
     </body>
 </html>
