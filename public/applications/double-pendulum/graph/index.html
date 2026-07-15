@@ -3,130 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendulum Grid</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <title>Pendulum Grid | NJS.dev</title>
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../style.css">
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
     <style>
         body {
             margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family, sans-serif);
+        }
+
+        .grid-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+            width: 100%;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .grid-view-window {
+            width: 100%;
+            height: 600px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            position: relative;
             overflow: hidden;
-            background-color: #111;
-            color: #eee;
-            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         canvas {
             display: block;
             cursor: grab;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
         }
 
         canvas:active {
             cursor: grabbing;
         }
 
-        .controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 12px;
-            border-radius: 6px;
-            pointer-events: auto;
-            border: 1px solid #444;
-            min-width: 200px;
-        }
-
-        button {
-            background: #3f51b5;
-            color: white;
-            border: none;
-            padding: 6px 12px;
+        .settings-panel {
+            background: var(--ad-bg);
+            padding: var(--spacing-lg);
             border-radius: 4px;
-            cursor: pointer;
+            border: 1px solid var(--border-color);
             width: 100%;
-            margin-top: 8px;
-            font-size: 0.9rem;
+            box-sizing: border-box;
         }
 
-        button:hover {
-            background: #303f9f;
+        .settings-panel h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--spacing-sm);
         }
 
-        .slider-container {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #ccc;
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
         }
 
-        input[type="range"] {
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .control-item label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-item input[type="range"] {
             width: 100%;
-            margin-top: 4px;
             cursor: pointer;
+            box-sizing: border-box;
+            margin: 0;
         }
 
-        .checkbox-container {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #ccc;
+        .checkbox-item {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: var(--spacing-md);
         }
-        
-        .checkbox-container input {
-            margin-right: 8px;
+
+        .checkbox-item label {
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .main-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        #btn-pause {
+            min-width: 220px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-view-window {
+                height: 420px;
+            }
+            .settings-panel {
+                padding: var(--spacing-md);
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Multi-Pendulum Comparison Grid</h1>
+            <p>Simultaneously integrate an array ($N \times N$) of double pendulums initialized across configuration space, where coordinates correspond to starting angles $\theta_1$ and $\theta_2$.</p>
+        </header>
 
-    <div class="controls">
-        <div style="font-weight:bold; margin-bottom:4px;">NJS.dev Multi Pendulum Comparison Grid</div>
-        <div style="font-size: 0.85rem; color: #ccc;">
-            Center (0,0) = White<br>
-            Red ∝ Cos(θ1)<br>
-            Green ∝ Cos(θ2)<br>
-            Blue ∝ Cos(θ1 + θ2)
-        </div>
-        
-        <div class="slider-container">
-            <label>Resolution (Grid Size): <span id="disp-grid-size">20</span></label>
-            <input type="range" id="inp-grid-size" min="2" max="100" value="20">
-        </div>
-
-        <div class="slider-container">
-            <label>Speed: <span id="disp-sim-speed">4</span>x</label>
-            <input type="range" id="inp-sim-speed" min="1" max="20" value="4">
-        </div>
-
-        <div class="checkbox-container">
-            <label>
-                <input type="checkbox" id="inp-pixel-mode"> Pixel Mode (Heatmap)
-            </label>
-        </div>
-
-        <button id="btn-pause">Resume Simulation</button>
-
-        <div id="debug-info" style="font-size: 0.8rem; margin-top: 8px; color: #4CAF50;"></div>
-
-        <details style="margin-top: 12px; font-size: 0.75rem; color: #bbb; border-top: 1px solid #333; padding-top: 8px; line-height: 1.4;">
-            <summary style="cursor: pointer; font-weight: 600; color: #fff;">About Multi-Pendulum Phase Grid</summary>
-            <div style="margin-top: 6px;">
-                <p>This grid simultaneously integrates an array ($N \times N$) of double pendulums initialized across configuration space where the X and Y coordinates correspond to starting angles $\theta_1$ and $\theta_2$.</p>
-                <p><strong>Heatmap RGB Color Mapping:</strong> Each cell's color encodes real-time angular positions ($R \propto \cos\theta_1, G \propto \cos\theta_2, B \propto \cos(\theta_1+\theta_2)$). In Pixel Mode, this reveals intricate fractal boundaries and bifurcations where tiny shifts in initial angle produce completely different color states.</p>
+        <main>
+            <!-- Navigation banner -->
+            <div style="background: var(--ad-bg); padding: var(--spacing-md) var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+                <div>
+                    <strong style="display: block; color: var(--text-color);">Single Pendulum Simulation</strong>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">Return to the individual double pendulum simulation, phase space, and angle graphs view.</span>
+                </div>
+                <a href="../index.html" style="white-space: nowrap; font-weight: 600;">&larr; Back to Main Sim</a>
             </div>
-        </details>
 
-        <div style="margin-top: 10px; font-size: 0.7rem; color: #666; display: flex; justify-content: space-between;">
-            <a href="/double-pendulum/" style="color: #4CAF50; text-decoration: none;">&larr; Main Sim</a>
-            <div>
-                <a href="/about/" style="color: #777; text-decoration: none; margin-right: 6px;">About</a>
-                <a href="/other/privacy/" style="color: #777; text-decoration: none;">Privacy</a>
+            <!-- Grid Dashboard Layout -->
+            <div class="grid-dashboard">
+                <!-- The Simulation Grid Window -->
+                <div class="grid-view-window" id="gridWindow">
+                    <canvas id="graphCanvas"></canvas>
+                </div>
+
+                <!-- Controls & Legend Panel -->
+                <div class="settings-panel">
+                    <h3>Simulation Controls & Legend</h3>
+                    
+                    <div style="margin-bottom: var(--spacing-md); padding-bottom: var(--spacing-sm); border-bottom: 1px solid var(--border-color); font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">
+                        <strong style="color: var(--text-color);">Heatmap RGB Phase Color Mapping:</strong><br>
+                        Center $(0,0)$ = White &nbsp;|&nbsp; Red $\propto \cos(\theta_1)$ &nbsp;|&nbsp; Green $\propto \cos(\theta_2)$ &nbsp;|&nbsp; Blue $\propto \cos(\theta_1 + \theta_2)$
+                    </div>
+
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <label><span>Resolution (Grid Size)</span> <span id="disp-grid-size">20</span></label>
+                            <input type="range" id="inp-grid-size" min="2" max="100" value="20">
+                        </div>
+                        <div class="control-item">
+                            <label><span>Speed</span> <span id="disp-sim-speed">4x</span></label>
+                            <input type="range" id="inp-sim-speed" min="1" max="20" value="4">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" id="inp-pixel-mode"> Pixel Mode (Heatmap)
+                        </label>
+                    </div>
+
+                    <div class="main-controls">
+                        <button id="btn-pause" class="secondary">Resume Simulation</button>
+                    </div>
+
+                    <div id="debug-info" style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-top: var(--spacing-sm); font-weight: 500;"></div>
+                </div>
             </div>
-        </div>
+
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>Understanding the Phase Grid Matrix</h2>
+                <p>
+                    This grid simultaneously integrates an array ($N \times N$) of independent double pendulums initialized across configuration space where the $X$ and $Y$ coordinates correspond to starting angles $\theta_1$ and $\theta_2$.
+                </p>
+                <p>
+                    <strong>Heatmap RGB Color Mapping:</strong> Each cell's color encodes real-time angular positions ($R \propto \cos\theta_1, G \propto \cos\theta_2, B \propto \cos(\theta_1+\theta_2)$). In Pixel Mode, this reveals intricate fractal boundaries and bifurcations where tiny shifts in initial angle produce completely different color states over time.
+                </p>
+                <p>
+                    <strong>Interactive Navigation:</strong> Click and drag inside the simulation window to pan around the grid. Scroll or use your mouse wheel over the window to zoom smoothly in and out on complex phase boundaries.
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-left">
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                <p>Page last updated by nathan-sharp at 2026-07-15T13:56:23</p>
+                <p>Site version: c3c132b</p>
+            </div>
+            <div class="footer-right">
+                <a href="/about/">About</a>
+                <a href="/other/privacy/">Privacy Policy</a>
+            </div>
+        </footer>
     </div>
 
-    <canvas id="graphCanvas"></canvas>
-
     <!-- Import shared physics from script.js -->
-    <script src="/double-pendulum/script.js"></script>
+    <script src="../script.js"></script>
 
 <script>
     const canvas = document.getElementById('graphCanvas');
@@ -190,16 +294,18 @@
 
         update() {
             // Using the shared engine from script.js
-            window.PhysicsEngine.update(this, {
-                // Ensure we use the same constants as the main simulation
-                r1: 100, 
-                r2: 100, 
-                m1: 10, 
-                m2: 10, 
-                g: 9.8, 
-                damping: 1.0, // No friction / losses
-                dt: 0.1
-            });
+            if (window.PhysicsEngine) {
+                window.PhysicsEngine.update(this, {
+                    // Ensure we use the same constants as the main simulation
+                    r1: 100, 
+                    r2: 100, 
+                    m1: 10, 
+                    m2: 10, 
+                    g: 9.8, 
+                    damping: 1.0, // No friction / losses
+                    dt: 0.1
+                });
+            }
         }
 
         draw(ctx) {
@@ -258,8 +364,14 @@
     }
 
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const gridWindow = document.getElementById('gridWindow');
+        if (gridWindow && gridWindow.clientWidth > 0) {
+            canvas.width = gridWindow.clientWidth;
+            canvas.height = gridWindow.clientHeight || 600;
+        } else {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
         
         if (camera.x === 0 && camera.y === 0) {
             camera.x = canvas.width / 2;
@@ -299,13 +411,16 @@
     });
     canvas.addEventListener('wheel', e => {
         e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
         const factor = Math.exp(-e.deltaY * 0.001);
-        const mouseWx = (e.clientX - camera.x) / camera.scale;
-        const mouseWy = (e.clientY - camera.y) / camera.scale;
+        const mouseWx = (mouseX - camera.x) / camera.scale;
+        const mouseWy = (mouseY - camera.y) / camera.scale;
         
         camera.scale = Math.max(camera.minScale, Math.min(camera.maxScale, camera.scale * factor));
-        camera.x = e.clientX - mouseWx * camera.scale;
-        camera.y = e.clientY - mouseWy * camera.scale;
+        camera.x = mouseX - mouseWx * camera.scale;
+        camera.y = mouseY - mouseWy * camera.scale;
     }, { passive: false });
     window.addEventListener('resize', resize);
 
@@ -320,8 +435,7 @@
         const w = canvas.width;
         const h = canvas.height;
 
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
 
         ctx.save();
         ctx.translate(camera.x, camera.y);
@@ -346,7 +460,7 @@
     function drawGrid(w, h) {
         const step = GRAPH_CONFIG.gridStep;
         ctx.lineWidth = 1 / camera.scale;
-        ctx.strokeStyle = '#222'; 
+        ctx.strokeStyle = '#e0e0e0'; 
 
         const left = -camera.x / camera.scale;
         const top = -camera.y / camera.scale;
@@ -372,10 +486,10 @@
     
     function drawOrigin(ctx) {
         ctx.lineWidth = 2 / camera.scale;
-        ctx.strokeStyle = 'rgba(255, 80, 80, 0.3)';
+        ctx.strokeStyle = 'rgba(220, 50, 50, 0.55)';
         ctx.beginPath(); ctx.moveTo(-1000, 0); ctx.lineTo(1000, 0); ctx.stroke();
         
-        ctx.strokeStyle = 'rgba(80, 255, 80, 0.3)';
+        ctx.strokeStyle = 'rgba(40, 180, 80, 0.55)';
         ctx.beginPath(); ctx.moveTo(0, -1000); ctx.lineTo(0, 1000); ctx.stroke();
     }
 

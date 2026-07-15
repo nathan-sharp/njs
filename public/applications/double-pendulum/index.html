@@ -1,157 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Double Pendulum with Real-time Graphs</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <head>
+        <title>Double Pendulum | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
+        <script>
+            window.MathJax = {
+                tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+                svg: { fontCache: 'global' }
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Double Pendulum</h1>
+                <p>Simulate the rich, non-linear dynamics of a double pendulum with real-time phase space and angle tracking.</p>
+            </header>
 
-    <h2>Double Pendulum Physics</h2>
+            <main>
+                <div style="background: var(--ad-bg); padding: var(--spacing-md) var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+                    <div>
+                        <strong style="display: block; color: var(--text-color);">Multi-Pendulum Comparison Grid</strong>
+                        <span style="font-size: 0.875rem; color: var(--text-muted);">Explore a matrix of initial angles in configuration space with real-time heatmap rendering.</span>
+                    </div>
+                    <a href="graph/index.html" style="white-space: nowrap; font-weight: 600;">Open Grid &rarr;</a>
+                </div>
 
+                <div class="dashboard">
+                    <!-- Main Simulation -->
+                    <div class="main-view">
+                        <canvas id="simCanvas"></canvas>
+                    </div>
 
-    <div style="text-align: center; margin-bottom: 20px;">
-        <a href="/double-pendulum/graph/" style="display: inline-block; padding: 8px 16px; background-color: #2a2a2a; color: #4CAF50; text-decoration: none; border: 1px solid #4CAF50; border-radius: 4px; font-size: 0.9rem; transition: all 0.2s;">
-            Multi Pendulum Comparison Grid &rarr;
-        </a>
-    </div>
+                    <!-- Left Column: Angle Graphs Stacked -->
+                    <div class="angle-wrapper">
+                        <!-- Graph 1: Top Angle -->
+                        <div class="graph-container">
+                            <div class="graph-title">Top Angle (θ1) over Time</div>
+                            <canvas id="angle1Graph"></canvas>
+                        </div>
 
-    <div class="dashboard">
-        <!-- Main Simulation -->
-        <div class="main-view">
-            <canvas id="simCanvas"></canvas>
+                        <!-- Graph 2: Bottom Angle -->
+                        <div class="graph-container">
+                            <div class="graph-title">Bottom Angle (θ2) over Time</div>
+                            <canvas id="angle2Graph"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Config Space -->
+                    <div class="graph-container">
+                        <div class="graph-title">Config Space (θ1 vs θ2)</div>
+                        <canvas id="configGraph"></canvas>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="settings-panel">
+                        <h3>Physical Parameters (Live)</h3>
+                        <div class="control-grid">
+                            <div class="control-item">
+                                <label>Mass 1 (Top): <span id="disp-m1">10</span></label>
+                                <input type="range" id="inp-m1" min="1" max="50" value="10">
+                            </div>
+                            <div class="control-item">
+                                <label>Mass 2 (Bottom): <span id="disp-m2">10</span></label>
+                                <input type="range" id="inp-m2" min="1" max="50" value="10">
+                            </div>
+                            <div class="control-item">
+                                <label>Length 1: <span id="disp-r1">100</span></label>
+                                <input type="range" id="inp-r1" min="50" max="150" value="100">
+                            </div>
+                            <div class="control-item">
+                                <label>Length 2: <span id="disp-r2">100</span></label>
+                                <input type="range" id="inp-r2" min="50" max="150" value="100">
+                            </div>
+                            <div class="control-item">
+                                <label>Gravity (m/s²): <span id="disp-g">9.8</span></label>
+                                <input type="range" id="inp-g" min="0" max="25" step="0.1" value="9.8">
+                            </div>
+                            <!-- Friction Control -->
+                            <div class="control-item">
+                                <label>Friction (%): <span id="disp-friction">0</span></label>
+                                <input type="range" id="inp-friction" min="0" max="100" step="1" value="0">
+                            </div>
+                            <div class="control-item">
+                                <label>Trace Length: <span id="disp-trace">150</span></label>
+                                <input type="range" id="inp-trace" min="0" max="1000" step="10" value="150">
+                            </div>
+                        </div>
+
+                        <h3>Restart Conditions</h3>
+                        <div class="control-grid">
+                            <div class="control-item">
+                                <label>Start Angle 1 (deg): <span id="disp-sa1">90</span></label>
+                                <input type="range" id="inp-sa1" min="0" max="360" value="90">
+                            </div>
+                            <div class="control-item">
+                                <label>Start Angle 2 (deg): <span id="disp-sa2">90</span></label>
+                                <input type="range" id="inp-sa2" min="0" max="360" value="90">
+                            </div>
+                            <div class="control-item" style="justify-content: flex-end;">
+                                <label style="flex-direction: row; justify-content: flex-start; gap: 10px; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="inp-random" style="width: auto; margin: 0;" checked> 
+                                    Randomize on Restart
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="main-controls">
+                            <button onclick="resetSim()">Restart Simulation</button>
+                            <button class="secondary" onclick="togglePause()" id="btn-pause">Pause</button>
+                            <button class="secondary" onclick="clearTrails()">Clear Trails</button>
+                        </div>
+                    </div>
+                </div>
+
+                <section>
+                    <h2>Lagrangian Mechanics & Equations of Motion</h2>
+                    <p>
+                        The double pendulum is a classic example of a simple mechanical system that exhibits rich, highly non-linear dynamics. While deriving its equations of motion using Newtonian mechanics ($\vec{F} = m\vec{a}$) requires solving complex constraint forces along the rigid rods, the system is elegantly described using <strong>Lagrangian Mechanics</strong>.
+                    </p>
+                    <p>
+                        By defining the Lagrangian $\mathcal{L} = T - V$ (where $T$ is the total kinetic energy of both masses and $V$ is their gravitational potential energy relative to the pivot point), we apply the Euler-Lagrange equations to derive two coupled second-order differential equations for angular accelerations $\ddot{\theta}_1$ and $\ddot{\theta}_2$. Because these equations contain products of angular velocities ($\dot{\theta}_1^2, \dot{\theta}_2^2$) and trigonometric terms ($\sin(\theta_1-\theta_2), \cos(\theta_1-\theta_2)$), analytical closed-form solutions do not exist. Instead, this simulation numerical integrates the system in real time using high-order Runge-Kutta differential algorithms.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Deterministic Chaos & Sensitivity to Initial Conditions</h2>
+                    <p>
+                        Despite being completely deterministic governed by classical physics with zero random noise, the double pendulum undergoes transitions from predictable periodic motion at low energies to unpredictable, chaotic motion at higher energies.
+                    </p>
+                    <ul>
+                        <li><strong>The Butterfly Effect (Lyapunov Exponent):</strong> When the pendulum swings with sufficient kinetic energy, any microscopic uncertainty or infinitesimal perturbation in the starting angles ($\Delta\theta$) grows exponentially over time ($\Delta\theta(t) \approx \Delta\theta_0 e^{\lambda t}$, where $\lambda > 0$ is the Lyapunov exponent). Within seconds, two pendulums released from almost identical starting positions will diverge completely into totally different trajectories.</li>
+                        <li><strong>Energy Conservation vs. Friction:</strong> When friction is set to $0\%$, the total mechanical energy ($E = T + V$) remains constant, producing perpetual chaotic wandering across phase space. When damping (friction) is introduced, phase space volume contracts over time until the pendulum settles into stable equilibrium or periodic attractors.</li>
+                    </ul>
+                </section>
+
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Understanding Configuration Space ($\theta_1$ vs $\theta_2$)</h2>
+                    <p>
+                        While the physical simulation shows the rods swinging in Cartesian $(x,y)$ space, the state of a double pendulum at any instant is fully defined by its two generalized coordinates: the top angle $\theta_1$ and bottom angle $\theta_2$.
+                    </p>
+                    <p>
+                        The graph on the right plots the trajectory on a two-dimensional <strong>Configuration Space Torus</strong> ($[-\pi, \pi] \times [-\pi, \pi]$). Periodic orbits appear as repeating closed loops or Lissajous figures on this grid, whereas chaotic trajectories explore the available energy manifold, densely filling bounded regions of configuration space without ever repeating the exact same path twice.
+                    </p>
+                </section>
+            </main>
+
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-15T13:56:23</p>
+                    <p>Site version: c3c132b</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
         </div>
 
-        <!-- Left Column: Angle Graphs Stacked -->
-        <div class="angle-wrapper">
-            <!-- Graph 1: Top Angle -->
-            <div class="graph-container">
-                <div class="graph-title">Top Angle (θ1) over Time</div>
-                <canvas id="angle1Graph"></canvas>
-            </div>
-
-            <!-- Graph 2: Bottom Angle -->
-            <div class="graph-container">
-                <div class="graph-title">Bottom Angle (θ2) over Time</div>
-                <canvas id="angle2Graph"></canvas>
-            </div>
-        </div>
-        
-        <!-- Right Column: Config Space -->
-        <div class="graph-container">
-            <div class="graph-title">Config Space (θ1 vs θ2)</div>
-            <canvas id="configGraph"></canvas>
-        </div>
-
-        <!-- Settings Panel -->
-        <div class="settings-panel">
-            <h3>Physical Parameters (Live)</h3>
-            <div class="control-grid">
-                <div class="control-item">
-                    <label>Mass 1 (Top): <span id="disp-m1">10</span></label>
-                    <input type="range" id="inp-m1" min="1" max="50" value="10">
-                </div>
-                <div class="control-item">
-                    <label>Mass 2 (Bottom): <span id="disp-m2">10</span></label>
-                    <input type="range" id="inp-m2" min="1" max="50" value="10">
-                </div>
-                <div class="control-item">
-                    <label>Length 1: <span id="disp-r1">100</span></label>
-                    <input type="range" id="inp-r1" min="50" max="150" value="100">
-                </div>
-                <div class="control-item">
-                    <label>Length 2: <span id="disp-r2">100</span></label>
-                    <input type="range" id="inp-r2" min="50" max="150" value="100">
-                </div>
-                <div class="control-item">
-                    <label>Gravity (m/s²): <span id="disp-g">9.8</span></label>
-                    <input type="range" id="inp-g" min="0" max="25" step="0.1" value="9.8">
-                </div>
-                <!-- Friction Control -->
-                <div class="control-item">
-                    <label>Friction (%): <span id="disp-friction">0</span></label>
-                    <input type="range" id="inp-friction" min="0" max="100" step="1" value="0">
-                </div>
-                <div class="control-item">
-                    <label>Trace Length: <span id="disp-trace">150</span></label>
-                    <input type="range" id="inp-trace" min="0" max="1000" step="10" value="150">
-                </div>
-            </div>
-
-            <h3>Restart Conditions</h3>
-            <div class="control-grid">
-                <div class="control-item">
-                    <label>Start Angle 1 (deg): <span id="disp-sa1">90</span></label>
-                    <input type="range" id="inp-sa1" min="0" max="360" value="90">
-                </div>
-                <div class="control-item">
-                    <label>Start Angle 2 (deg): <span id="disp-sa2">90</span></label>
-                    <input type="range" id="inp-sa2" min="0" max="360" value="90">
-                </div>
-                <div class="control-item" style="justify-content:flex-end;">
-                     <label style="flex-direction:row; justify-content:flex-start; gap:10px; align-items:center;">
-                        <input type="checkbox" id="inp-random" style="width:auto;" checked> 
-                        Randomize on Restart
-                     </label>
-                </div>
-            </div>
-
-            <div class="main-controls">
-                <button onclick="resetSim()">Restart Simulation</button>
-                <button class="secondary" onclick="togglePause()" id="btn-pause">Pause</button>
-                <button class="secondary" onclick="clearTrails()">Clear Trails</button>
-            </div>
-        </div>
-    </div>
-
-    <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #e0e0e0; font-family: sans-serif; line-height: 1.6;">
-        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <h2 style="margin-top: 0; color: #ffffff;">Lagrangian Mechanics & Equations of Motion</h2>
-            <p>
-                The double pendulum is a classic example of a simple mechanical system that exhibits rich, highly non-linear dynamics. While deriving its equations of motion using Newtonian mechanics ($\vec{F} = m\vec{a}$) requires solving complex constraint forces along the rigid rods, the system is elegantly described using <strong>Lagrangian Mechanics</strong>.
-            </p>
-            <p>
-                By defining the Lagrangian $\mathcal{L} = T - V$ (where $T$ is the total kinetic energy of both masses and $V$ is their gravitational potential energy relative to the pivot point), we apply the Euler-Lagrange equations to derive two coupled second-order differential equations for angular accelerations $\ddot{\theta}_1$ and $\ddot{\theta}_2$. Because these equations contain products of angular velocities ($\dot{\theta}_1^2, \dot{\theta}_2^2$) and trigonometric terms ($\sin(\theta_1-\theta_2), \cos(\theta_1-\theta_2)$), analytical closed-form solutions do not exist. Instead, this simulation numerical integrates the system in real time using high-order Runge-Kutta differential algorithms.
-            </p>
-        </section>
-
-        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <h2 style="margin-top: 0; color: #ffffff;">Deterministic Chaos & Sensitivity to Initial Conditions</h2>
-            <p>
-                Despite being completely deterministic governed by classical physics with zero random noise, the double pendulum undergoes transitions from predictable periodic motion at low energies to unpredictable, chaotic motion at higher energies.
-            </p>
-            <ul>
-                <li><strong>The Butterfly Effect (Lyapunov Exponent):</strong> When the pendulum swings with sufficient kinetic energy, any microscopic uncertainty or infinitesimal perturbation in the starting angles ($\Delta\theta$) grows exponentially over time ($\Delta\theta(t) \approx \Delta\theta_0 e^{\lambda t}$, where $\lambda > 0$ is the Lyapunov exponent). Within seconds, two pendulums released from almost identical starting positions will diverge completely into totally different trajectories.</li>
-                <li><strong>Energy Conservation vs. Friction:</strong> When friction is set to $0\%$, the total mechanical energy ($E = T + V$) remains constant, producing perpetual chaotic wandering across phase space. When damping (friction) is introduced, phase space volume contracts over time until the pendulum settles into stable equilibrium or periodic attractors.</li>
-            </ul>
-        </section>
-
-        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 40px;">
-            <h2 style="margin-top: 0; color: #ffffff;">Understanding Configuration Space ($\theta_1$ vs $\theta_2$)</h2>
-            <p>
-                While the physical simulation shows the rods swinging in Cartesian $(x,y)$ space, the state of a double pendulum at any instant is fully defined by its two generalized coordinates: the top angle $\theta_1$ and bottom angle $\theta_2$.
-            </p>
-            <p>
-                The graph on the right plots the trajectory on a two-dimensional <strong>Configuration Space Torus</strong> ($[-\pi, \pi] \times [-\pi, \pi]$). Periodic orbits appear as repeating closed loops or Lissajous figures on this grid, whereas chaotic trajectories explore the available energy manifold, densely filling bounded regions of configuration space without ever repeating the exact same path twice.
-            </p>
-        </section>
-
-        <footer style="border-top: 1px solid #333; padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: #888;">
-            <div>
-                <p style="margin: 0 0 4px 0;">©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p style="margin: 0 0 4px 0;">Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p style="margin: 0;">Site version: e19b9e7</p>
-            </div>
-            <div>
-                <a href="/about/" style="color: #4CAF50; text-decoration: none; margin-right: 16px;">About</a>
-                <a href="/other/privacy/" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>
-            </div>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
-    <script src="../../scripts.js"></script>
-</body>
+        <script src="script.js"></script>
+        <script src="../../scripts.js"></script>
+    </body>
 </html>
