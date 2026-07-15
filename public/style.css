@@ -336,3 +336,47 @@ tr:last-child td {
 tr:hover {
   background-color: var(--ad-bg);
 }
+
+/* 9. Media & Canvas Utilities */
+canvas {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.setting {
+  margin-bottom: var(--spacing-md);
+}
+
+.setting label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.video-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.video-controls-bar button {
+  width: auto;
+  padding: 0.5rem 1rem;
+}
+
+.video-controls-bar input[type="range"] {
+  flex-grow: 1;
+  width: auto;
+  margin: 0;
+}
+
+.audio-controls-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.audio-controls-row button {
+  flex: 1;
+}
+

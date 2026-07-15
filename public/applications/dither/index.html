@@ -1,112 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Image & Video Dither</title>
+        <title>Media Dither | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-        <link rel="stylesheet" href="styles.css">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
+        <script>
+            window.MathJax = {
+                tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+                svg: { fontCache: 'global' }
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
     </head>
     <body>
-        <div class="sidebar">
+        <div class="container">
             <header>
                 <h1>Media Dither</h1>
                 <p>Convert images and videos to 1-bit black and white using classic algorithms directly in your browser.</p>
             </header>
-            
-            <div class="setting">
-                <label for="mediaInput">Select Media (Image or Video):</label>
-                <input type="file" id="mediaInput" accept="image/*,video/*">
-            </div>
 
-            <div class="setting" id="cameraControls">
-                <button id="startCameraBtn">Use Camera</button>
-                <button id="stopCameraBtn" disabled>Stop Camera</button>
-                <label for="cameraSelect" style="margin-top: 8px;">Camera Device:</label>
-                <select id="cameraSelect" disabled>
-                    <option value="">Default Camera</option>
-                </select>
-                <label for="mirrorToggle" style="margin-top: 8px;">
-                    <input type="checkbox" id="mirrorToggle"> Mirror Preview
-                </label>
-                <small style="display: block; margin-top: 5px;">Camera feed is processed live using the selected dither algorithm.</small>
-            </div>
-            
-            <div class="setting">
-                <label for="algoSelect">Algorithm:</label>
-                <select id="algoSelect">
-                    <optgroup label="Error Diffusion (High Quality, Slower)">
-                        <option value="floyd">Floyd-Steinberg</option>
-                        <option value="atkinson">Atkinson (Classic Mac)</option>
-                        <option value="jjn">Jarvis-Judice-Ninke</option>
-                    </optgroup>
-                    <optgroup label="Ordered (Fast, Best for Video)">
-                        <option value="bayer2">Bayer (2x2)</option>
-                        <option value="bayer4">Bayer (4x4)</option>
-                        <option value="bayer8">Bayer (8x8)</option>
-                    </optgroup>
-                    <optgroup label="Other">
-                        <option value="random">Random Noise</option>
-                        <option value="threshold">Threshold (No Dither)</option>
-                    </optgroup>
-                </select>
-            </div>
+            <main>
+                <!-- Media & Algorithm Settings -->
+                <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-lg);">
+                    <h2 style="margin-top: 0; font-size: 1.25rem;">Media & Algorithm Settings</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-lg); margin-top: var(--spacing-md);">
+                        <div>
+                            <div class="form-group setting">
+                                <label for="mediaInput">Select Media (Image or Video)</label>
+                                <input type="file" id="mediaInput" accept="image/*,video/*" style="padding: 0.5rem 0; background: transparent; border: none;">
+                            </div>
 
-            <div class="setting">
-                <label for="scaleSlider">Scale (Resolution): <span id="scaleValue">100%</span></label>
-                <input type="range" id="scaleSlider" min="5" max="100" value="100" step="5">
-                <small>Lower scale improves video performance.</small>
-            </div>
+                            <div class="form-group setting" id="cameraControls">
+                                <label>Or Live Camera Feed</label>
+                                <div style="display: flex; gap: var(--spacing-sm); margin-top: 0.25rem; margin-bottom: 0.5rem;">
+                                    <button id="startCameraBtn" style="flex: 1;">Use Camera</button>
+                                    <button id="stopCameraBtn" class="secondary" disabled style="flex: 1;">Stop Camera</button>
+                                </div>
+                                <label for="cameraSelect" style="margin-top: 0.75rem;">Camera Device</label>
+                                <select id="cameraSelect" disabled>
+                                    <option value="">Default Camera</option>
+                                </select>
+                                <label for="mirrorToggle" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="mirrorToggle" style="width: auto; margin: 0;"> Mirror Preview
+                                </label>
+                                <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">Camera feed is processed live using the selected dither algorithm.</small>
+                            </div>
+                        </div>
 
-            <hr>
+                        <div>
+                            <div class="form-group setting">
+                                <label for="algoSelect">Dithering Algorithm</label>
+                                <select id="algoSelect">
+                                    <optgroup label="Error Diffusion (High Quality, Slower)">
+                                        <option value="floyd">Floyd-Steinberg</option>
+                                        <option value="atkinson">Atkinson (Classic Mac)</option>
+                                        <option value="jjn">Jarvis-Judice-Ninke</option>
+                                    </optgroup>
+                                    <optgroup label="Ordered (Fast, Best for Video)">
+                                        <option value="bayer2">Bayer (2x2)</option>
+                                        <option value="bayer4">Bayer (4x4)</option>
+                                        <option value="bayer8">Bayer (8x8)</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="random">Random Noise</option>
+                                        <option value="threshold">Threshold (No Dither)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
 
-            <div class="setting" id="imageControls">
-                <button id="imgDownloadBtn" disabled>Download Dithered GIF</button>
-            </div>
-
-            <div id="videoContainer" style="display: none;">
-                <div class="setting">
-                     <button id="vidDownloadBtn">Download Processed GIF</button>
-                     <small style="display: block; margin-top: 5px;">Requires playing video through once to render.</small>
-                </div>
-
-                <hr>
-
-                <div class="setting" id="audioSection">
-                    <label for="audioAlgoSelect">Audio Compression:</label>
-                    <select id="audioAlgoSelect">
-                        <option value="pcm8_22050">8-bit PCM @ 22.05 kHz</option>
-                        <option value="pcm4_11025">4-bit PCM @ 11.025 kHz</option>
-                        <option value="pcm2_8000">2-bit PCM @ 8 kHz</option>
-                    </select>
-                    <small style="display: block; margin-top: 5px;">Designed for old-school low-fidelity output (mono, reduced bit depth, reduced sample rate).</small>
-                    <div class="audio-controls-row" style="margin-top: 8px;">
-                        <button id="previewAudioBtn" disabled>Preview Compressed Audio</button>
-                        <button id="downloadAudioBtn" disabled>Download Compressed WAV</button>
+                            <div class="form-group setting" style="margin-bottom: 0;">
+                                <label for="scaleSlider">Scale (Resolution): <span id="scaleValue">100%</span></label>
+                                <input type="range" id="scaleSlider" min="5" max="100" value="100" step="5">
+                                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Lower scale improves video performance and increases pixelation.</small>
+                            </div>
+                        </div>
                     </div>
-                    <small id="audioStatus" style="display: block; margin-top: 5px;">Load a video with audio to enable compression tools.</small>
-                </div>
+                </section>
 
-                <div class="video-controls-bar setting">
-                    <button id="playPauseBtn">▶</button>
-                    <span id="currentTimeText">0:00</span>
-                    <input type="range" id="videoProgress" min="0" max="100" value="0" step="any">
-                    <span id="durationText">0:00</span>
-                </div>
-            </div>
-            
-            <div class="setting" id="status">
-                Waiting for media...
-            </div>
+                <!-- Preview & Output Area -->
+                <section>
+                    <h2>Preview & Output</h2>
+                    <div class="setting" id="status" style="font-weight: 500; color: var(--text-color); margin-bottom: var(--spacing-md);">
+                        Waiting for media...
+                    </div>
 
-            <details style="margin: 16px 0; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; line-height: 1.5;">
-                <summary style="font-weight: 600; cursor: pointer;">Algorithm Theory & Dithering Guide</summary>
-                <div style="margin-top: 10px;">
-                    <p><strong>Error Diffusion (Floyd-Steinberg, Atkinson, JJN):</strong> Quantizing continuous grayscale pixels ($0\dots255$) down to pure 1-bit binary (black or white) introduces severe quantization error. Error diffusion algorithms calculate this remainder ($e = \text{old\_pixel} - \text{new\_pixel}$) and distribute fractions of $e$ to neighboring unvisited pixels ahead of the scanline. Atkinson dithering (classic early Macintosh style) distributes only $3/4$ of the error, causing highlights and shadows to blow out with crisp, distinct contrast.</p>
-                    <p><strong>Ordered Dithering (Bayer 2x2, 4x4, 8x8):</strong> Unlike error diffusion which processes pixels sequentially, ordered dithering compares each pixel against a fixed threshold matrix ($M_{n\times n}$). Because every pixel is calculated independently of its neighbors, Bayer dithering is extremely fast and produces stable, non-flickering patterns—making it ideal for real-time video feeds.</p>
-                    <p><strong>Lo-Fi Audio PCM Downsampling:</strong> Reducing audio bit depth to 8-bit, 4-bit, or 2-bit introduces characteristic quantization noise and bit-crushed harmonic distortion typical of retro game consoles and vintage digital samplers.</p>
-                </div>
-            </details>
+                    <div style="background: var(--ad-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: var(--spacing-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; overflow: hidden; margin-bottom: var(--spacing-lg);">
+                        <canvas id="canvas" style="display: none; max-width: 100%; max-height: 600px; object-fit: contain; image-rendering: pixelated; margin: 0 auto;"></canvas>
+                    </div>
+
+                    <div class="setting" id="imageControls" style="display: none; margin-bottom: var(--spacing-lg);">
+                        <button id="imgDownloadBtn" disabled style="width: 100%;">Download Dithered GIF</button>
+                    </div>
+
+                    <div id="videoContainer" style="display: none; background: var(--ad-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+                        <div class="setting">
+                             <button id="vidDownloadBtn" style="width: 100%;">Download Processed GIF</button>
+                             <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">Requires playing video through once to render.</small>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: var(--spacing-md) 0;">
+
+                        <div class="video-controls-bar setting" style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                            <button id="playPauseBtn" style="padding: 0.5rem 1rem;">▶</button>
+                            <span id="currentTimeText" style="font-family: monospace; font-size: 0.875rem;">0:00</span>
+                            <input type="range" id="videoProgress" min="0" max="100" value="0" step="any" style="flex-grow: 1; margin: 0;">
+                            <span id="durationText" style="font-family: monospace; font-size: 0.875rem;">0:00</span>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: var(--spacing-md) 0;">
+
+                        <div class="setting" id="audioSection" style="margin-bottom: 0;">
+                            <label for="audioAlgoSelect">Lo-Fi Audio Compression</label>
+                            <select id="audioAlgoSelect">
+                                <option value="pcm8_22050">8-bit PCM @ 22.05 kHz</option>
+                                <option value="pcm4_11025">4-bit PCM @ 11.025 kHz</option>
+                                <option value="pcm2_8000">2-bit PCM @ 8 kHz</option>
+                            </select>
+                            <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">Designed for old-school low-fidelity output (mono, reduced bit depth, reduced sample rate).</small>
+                            <div class="audio-controls-row" style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                                <button id="previewAudioBtn" class="secondary" disabled style="flex: 1;">Preview Compressed Audio</button>
+                                <button id="downloadAudioBtn" class="secondary" disabled style="flex: 1;">Download Compressed WAV</button>
+                            </div>
+                            <small id="audioStatus" style="display: block; margin-top: 0.5rem; color: var(--text-muted);">Load a video with audio to enable compression tools.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Algorithm Theory & Dithering Guide -->
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Algorithm Theory & Dithering Guide</h2>
+                    <p>
+                        Dithering is a mathematical technique used to create the illusion of continuous tone images using a limited color palette—in this case, 1-bit monochrome (pure black and white).
+                    </p>
+                    <h3>Error Diffusion Algorithms</h3>
+                    <p>
+                        Quantizing continuous grayscale pixels ($0\dots255$) down to pure 1-bit binary introduces severe quantization error. Error diffusion algorithms calculate this remainder ($e = \text{old\_pixel} - \text{new\_pixel}$) and distribute fractions of $e$ to neighboring unvisited pixels ahead of the scanline.
+                    </p>
+                    <ul>
+                        <li><strong>Floyd-Steinberg & Jarvis-Judice-Ninke (JJN):</strong> These classic kernels distribute the quantization error across adjacent and subsequent scanlines, producing smooth organic textures and preserving fine detail at the cost of sequential processing overhead.</li>
+                        <li><strong>Atkinson Dithering:</strong> Originally developed by Bill Atkinson for early Macintosh systems, this algorithm distributes only $3/4$ of the error to surrounding pixels. The remaining $1/4$ is discarded, causing highlights and deep shadows to blow out with crisp, high-contrast aesthetics.</li>
+                    </ul>
+
+                    <h3>Ordered Dithering (Bayer Matrix)</h3>
+                    <p>
+                        Unlike error diffusion which processes pixels sequentially, ordered dithering compares each pixel against a fixed threshold matrix ($M_{n\times n}$). Because every pixel is calculated independently of its neighbors, Bayer dithering ($2\times2$, $4\times4$, and $8\times8$) is computationally extremely fast and produces stable, non-flickering crosshatch patterns—making it ideal for real-time video feeds and camera processing.
+                    </p>
+
+                    <h3>Lo-Fi Audio PCM Downsampling</h3>
+                    <p>
+                        Reducing audio bit depth to 8-bit, 4-bit, or 2-bit introduces characteristic quantization noise and bit-crushed harmonic distortion typical of retro game consoles, early arcade hardware, and vintage digital samplers.
+                    </p>
+                </section>
+            </main>
 
             <footer>
                 <div class="footer-left">
@@ -119,10 +166,6 @@
                     <a href="/other/privacy/">Privacy Policy</a>
                 </div>
             </footer>
-        </div>
-
-        <div class="viewer">
-            <canvas id="canvas"></canvas>
         </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
