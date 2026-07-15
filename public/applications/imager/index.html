@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Imager</title>
+        <title>Imager | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
         <style>
             /* Minimal styling for the progress bar to match the clean aesthetic */
             progress {
@@ -22,37 +23,68 @@
         </style>
     </head>
     <body>
-        <header>
-            <h1>Imager</h1>
-            <p>Imager is a web based tool for creating bootable USB drives from ISO images. It allows users to select an ISO file and a target USB drive, and then writes the ISO to the USB drive, making it bootable.</p>
-        </header>
-        <main>
-            <form id="flashForm">
-                <label for="isoFile">Select ISO file:</label>
-                <input type="file" id="isoFile" name="isoFile" accept=".iso" required><br><br>
-                
-                <label for="usbDrive">Select USB drive:</label>
-                <select id="usbDrive" name="usbDrive" required>
-                    <option value="" disabled selected>Click to select drive...</option>
-                </select><br><br>
-                
-                <button type="submit" id="flashBtn">Create Bootable USB</button>
-                
-                <progress id="progressBar" value="0" max="100"></progress>
-                <div id="status"></div>
-            </form>
-        </main>
-        <footer>
-            <div class="footer-left">
-                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p>Site version: e19b9e7</p>
-            </div>
-            <div class="footer-right">
-                <a href="/about/">About</a>
-                <a href="/other/privacy/">Privacy Policy</a>
-            </div>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>Imager</h1>
+                <p>A pure browser-based utility for creating bootable USB flash drives directly from ISO images using modern File System APIs.</p>
+            </header>
+            <main>
+                <form id="flashForm" style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl);">
+                    <div class="form-group">
+                        <label for="isoFile">Select ISO file:</label>
+                        <input type="file" id="isoFile" name="isoFile" accept=".iso" required style="padding: 0.5rem 0; background: transparent; border: none;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="usbDrive">Select Target Drive Directory / Mount Point:</label>
+                        <select id="usbDrive" name="usbDrive" required>
+                            <option value="" disabled selected>Click to pick drive root directory via File System API...</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="flashBtn" style="width: 100%;">Create Bootable USB</button>
+                    
+                    <progress id="progressBar" value="0" max="100"></progress>
+                    <div id="status"></div>
+                </form>
+
+                <section>
+                    <h2>How Direct Client-Side ISO Flashing Works</h2>
+                    <p>
+                        Traditionally, creating bootable installation media required third-party desktop applications (such as Rufus, BalenaEtcher, or `dd` terminal commands) because web browsers were strictly sandboxed from accessing raw local disk storage.
+                    </p>
+                    <p>
+                        <strong>Imager</strong> leverages the modern W3C File System Access API (`window.showDirectoryPicker`) and chunked binary streaming (`ArrayBuffer` / `WritableFileStream`) directly inside your browser. When you select your ISO image and target directory:
+                    </p>
+                    <ul>
+                        <li><strong>Zero Server Uploads:</strong> Multi-gigabyte operating system ISO files (such as Linux distributions or recovery tools) are never uploaded to any remote server, saving hours of network bandwidth and ensuring total privacy.</li>
+                        <li><strong>Chunked Streaming Memory Efficiency:</strong> Instead of loading a 4GB+ ISO entirely into RAM—which would crash the browser tab—the engine slices the file into sequential 5MB blocks (`file.slice(offset, offset + chunkSize)`) and writes them directly to the destination stream.</li>
+                    </ul>
+                </section>
+
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Understanding Boot Sectors, MBR, and UEFI Partitioning</h2>
+                    <p>
+                        An ISO image (`.iso`) is an uncompressed sector-by-sector archival disk image structured according to the ISO 9660 or UDF filesystem standard. Why does writing exact blocks make a drive bootable?
+                    </p>
+                    <ul>
+                        <li><strong>Master Boot Record (MBR) & El Torito:</strong> Hybrid ISO images contain specialized El Torito boot catalogs and Master Boot Records embedded within the first 512 bytes (sector 0) of the image. When a PC powers on, the BIOS executes the machine code stored exactly in sector 0 to initiate the bootloader stage.</li>
+                        <li><strong>EFI System Partition (ESP):</strong> For modern UEFI firmware, the hybrid ISO includes a FAT formatted boot partition containing the `EFI/BOOT/BOOTX64.EFI` binary executable. When the raw sectors are streamed directly to the media without modification, the motherboard firmware immediately recognizes the valid partition table and boot payload.</li>
+                    </ul>
+                </section>
+            </main>
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                    <p>Site version: e19b9e7</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
 
         <script>
             let directoryHandle = null;
@@ -135,5 +167,6 @@
                 }
             });
         </script>
+        <script src="../../scripts.js"></script>
     </body>
 </html>

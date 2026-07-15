@@ -23,6 +23,20 @@
                         The OpenCAD Standard is a cutting-edge protocol designed to facilitate seamless collaboration and data exchange in cloud-native CAD environments. By leveraging WebDAV for file management and introducing granular resource locking, OpenCAD enables multiple users to work concurrently on complex assemblies without conflicts. And allows the same file to be accessed and modified using different software applications.
                     </p>
                     
+                    <section style="margin-top: var(--spacing-xl);">
+                        <h2>WebDAV Concurrency & Granular Resource Locking</h2>
+                        <p>
+                            Traditional desktop CAD software relies on monolithic, filesystem-level file locks (`.LNK` or `.LOCK` temporary files) that freeze entire assembly files the moment a single user opens a part. This prevents concurrent engineering and forces teams into rigid, serialized workflows.
+                        </p>
+                        <p>
+                            <strong>OpenCAD</strong> decouples the geometric payload from synchronization metadata:
+                        </p>
+                        <ul>
+                            <li><strong>Sub-Assembly Level Locking (`PROPPATCH` & `LOCK`):</strong> By extending the HTTP/1.1 WebDAV specification (RFC 4918), OpenCAD allows client applications to request exclusive or shared write locks (`Exclusive Write / Shared Read`) on specific sub-components, sketches, or parameter tables without locking the parent assembly structure.</li>
+                            <li><strong>Cross-Application Universal Schema:</strong> Whether an engineer is modeling parametric solids in an open-source desktop client or reviewing boundary representations (B-Rep) in a WebGL browser viewer, the OpenCAD protocol ensures deterministic delta synchronization across heterogeneous software platforms.</li>
+                        </ul>
+                    </section>
+
                     <div style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-top: var(--spacing-xl);">
                         <p style="margin: 0;">
                             If you have any questions, suggestions, or would like to contribute to the development of OpenCAD, please feel free to reach out to me at <a href="mailto:contact@njs.dev" style="font-weight: 600; color: var(--accent-color);">contact@njs.dev</a>.

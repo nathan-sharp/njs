@@ -323,6 +323,27 @@
                 setInterval(updateClock, 1000);
                 updateClock(); // initial call
             </script>
+
+            <details style="margin: 4vh auto 0; max-width: 650px; width: 90%; background: #111; border: 1px solid #333; border-radius: 4px; padding: 12px 16px; font-size: 0.85rem; line-height: 1.6; color: #ccc; text-align: left;">
+                <summary style="cursor: pointer; font-weight: 600; color: #fff;">Precision Timekeeping & Web Audio GTS Pips Guide</summary>
+                <div style="margin-top: 10px;">
+                    <p>This precision digital reference clock combines full-screen zero-distraction typography with acoustic acoustic cues inspired by the classic BBC Greenwich Time Signal (GTS) pips.</p>
+                    <p><strong>Acoustic Pip Synthesis (`AudioContext`):</strong> When enabled via click or `?audio=true`, the browser synthesizes pure sine wave oscillators (`audioCtx.createOscillator()`) without loading external audio files:</p>
+                    <ul>
+                        <li><strong>Second Pips:</strong> A short 80ms pip at 950 Hz marks each passing second.</li>
+                        <li><strong>Minute Marker:</strong> A 180ms tone at 1200 Hz signals the top of each minute.</li>
+                        <li><strong>Hour & Day Signals:</strong> At the top of the hour, a 420ms tone at 1600 Hz sounds, while midnight triggers an ascending three-tone sequence ($800\text{ Hz} \to 1000\text{ Hz} \to 1200\text{ Hz}$).</li>
+                    </ul>
+                    <p><strong>Timezone & Audio Query Parameters:</strong> You can configure this page for kiosk display or broadcast reference by appending query parameters to the URL: `?tz=UTC` or `?tz=+02:00` sets the display timezone, and `?audio=true` enables pips automatically.</p>
+                </div>
+            </details>
+
+            <footer style="margin-top: 3vh; font-size: 0.75rem; color: #666; display: flex; gap: 16px; justify-content: center; width: 100%;">
+                <span>©2026 Nathan James Sharp</span>
+                <a href="/about/" style="color: #888; text-decoration: none;">About</a>
+                <a href="/other/privacy/" style="color: #888; text-decoration: none;">Privacy Policy</a>
+            </footer>
         </main>
+        <script src="../../scripts.js"></script>
     </body>
 </html>

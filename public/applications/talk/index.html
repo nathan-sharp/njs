@@ -38,6 +38,23 @@
             
             <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
             
+            <section>
+                <h2>How Client-Side Speech Synthesis Works</h2>
+                <p>
+                    Modern voice synthesis typically relies on heavy cloud-based neural networks (such as Tacotron or Wavenet) running on remote GPU clusters. While cloud TTS produces natural human intonation, it introduces network latency, requires ongoing API costs, and streams private user text over the public internet to third-party servers.
+                </p>
+                <p>
+                    <strong>Talk Engine</strong> takes a classic, self-contained approach by executing lightweight formant and time-domain speech synthesis entirely within your browser using JavaScript and the Web Audio API (`AudioContext`). By synthesizing acoustic waveforms directly on your device's audio hardware:
+                </p>
+                <ul>
+                    <li><strong>Instant Response & Zero Latency:</strong> Audio buffers are generated in milliseconds without waiting for network handshakes or audio file streaming.</li>
+                    <li><strong>Complete Offline Capabilities:</strong> Once the page is loaded, speech synthesis functions perfectly even without an active internet connection.</li>
+                    <li><strong>100% Privacy Guarantee:</strong> Your text snippets, notes, and private documents never leave your computer or mobile device.</li>
+                </ul>
+            </section>
+
+            <hr style="margin: var(--spacing-xl) 0; border: 0; border-top: 1px solid var(--border-color);">
+
             <h2>How to add this to your website</h2>
             <p>
                 This synthesizer is 100% client-side JavaScript. You can drop it into any project without needing a backend server.

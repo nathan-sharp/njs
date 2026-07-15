@@ -60,6 +60,45 @@
                     <button class="secondary" onclick="download('svg')">Download SVG</button>
                 </div>
             </div>
+
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>How QR Codes & Error Correction Work</h2>
+                <p>
+                    Quick Response (QR) codes are two-dimensional matrix barcodes invented in 1994 for high-speed industrial automotive tracking. Unlike linear 1D barcodes that only store a few dozen characters along one axis, QR codes store data across both horizontal and vertical axes using dark and light modules, allowing them to encode up to 7,089 numeric characters or 4,296 alphanumeric characters.
+                </p>
+                <h3>Reed-Solomon Error Correction Levels</h3>
+                <p>
+                    One of the most critical engineering features of the QR code standard is its built-in Reed-Solomon error correction. This mathematical parity algorithm allows scanners to reconstruct the encoded message even if a substantial portion of the code is physically torn, stained, scratched, or obscured by custom artwork and logos. When generating a code, you can select from four distinct recovery tiers:
+                </p>
+                <ul>
+                    <li><strong>Level L (Low - approx. 7% recovery):</strong> Best suited for clean digital screens and controlled indoor environments where physical damage is unlikely. Because Level L devotes the fewest modules to redundant error correction codewords, it produces the simplest, least dense grid—making it the easiest tier for low-resolution cameras to scan at a distance.</li>
+                    <li><strong>Level M (Medium - approx. 15% recovery):</strong> The industry default balance between data capacity and resilience. It provides adequate protection against general wear, minor scratches, and everyday handling on packaging or flyers without over-complicating the symbol density.</li>
+                    <li><strong>Level Q (Quartile - approx. 25% recovery):</strong> Highly recommended for industrial labels subjected to moderate outdoor exposure, shipping transit wear, or printing on rough, uneven corrugated cardboard surfaces where module degradation is anticipated.</li>
+                    <li><strong>Level H (High - approx. 30% recovery):</strong> The maximum protection tier. Up to 30% of the symbol can be destroyed without data loss. Level H is essential when embedding a company logo or custom artwork directly into the center of the QR code matrix, or when deploying signage in harsh industrial and outdoor environments where vandalism and severe weathering occur.</li>
+                </ul>
+            </section>
+
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>Vector vs. Raster Export: Choosing PNG, JPG, or SVG</h2>
+                <p>
+                    Selecting the right file format when downloading your generated QR code determines how cleanly the modules will scale across different print and digital mediums:
+                </p>
+                <ul>
+                    <li><strong>SVG (Scalable Vector Graphics):</strong> An XML-based vector format where every square module is geometrically defined as an exact mathematical rectangle. SVG files can be infinitely scaled up to billboards or down to micro-labels with zero pixelation or edge blurring. Always choose SVG for professional graphic design workflows in Adobe Illustrator/Inkscape, high-resolution offset printing, vinyl cutting, and industrial laser marking on metal components.</li>
+                    <li><strong>PNG (Portable Network Graphics):</strong> A lossless raster image format that preserves crisp module edges without compression artifacts. PNG is ideal for embedding QR codes into websites, digital presentations, mobile app layouts, and standard office document printing.</li>
+                    <li><strong>JPG / JPEG:</strong> A lossy raster image format that introduces subtle compression ringing around high-contrast edges. While acceptable for quick sharing via email or social media where file size must be minimized, JPG should generally be avoided for critical industrial scanning because compression artifacts can reduce scanner read reliability.</li>
+                </ul>
+            </section>
+
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>Client-Side Generation & 100% Data Privacy</h2>
+                <p>
+                    Many online QR code generators route your text inputs or URLs through remote backend servers to generate dynamic redirect links, allowing third-party services to track user scans, harvest analytics, or lock your links behind subscription paywalls.
+                </p>
+                <p>
+                    This tool operates entirely inside your local web browser. Your text or sensitive URLs are mathematically encoded into the QR matrix using pure client-side JavaScript. Absolutely no network requests are sent, no server logs are created, and the generated QR code contains the direct, unmediated static data you entered—guaranteeing lifetime readability and complete privacy.
+                </p>
+            </section>
         </main>
         <footer>
             <div class="footer-left">

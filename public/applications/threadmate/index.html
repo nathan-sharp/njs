@@ -6,33 +6,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ThreadMate | NJS.dev</title>
     <meta name="description"
-        content="ThreadMate is a comprehensive engineering thread calculator and reference tool, now available as a native Android app on Google Play.">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        content="ThreadMate is a comprehensive engineering thread calculator and reference tool, providing instant pitch diameter, tap drill, and tolerance specifications for UN, Metric, NPT, and BSPT threads.">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
 </head>
 
 <body>
-    <header>
-        <h1>ThreadMate</h1>
-        <p>The ultimate thread calculator and reference tool.</p>
-    </header>
-    <main>
-        <p>ThreadMate is a blazing-fast native Android app for machinists and engineers. It provides instant offline
-            calculations, tolerances, and thread specifications for Unified Inch (UN), ISO Metric, NPT, and ISO 7-1
-            (BSPT) threads.</p>
+    <div class="container">
+        <header>
+            <h1>ThreadMate</h1>
+            <p>The comprehensive engineering thread calculator and specification reference tool.</p>
+        </header>
 
-        <h2>Beta Program</h2>
-        <p><strong>Note: You must be a member of the beta program in order to download the app.</strong></p>
-        <p>To join the beta program, please fill out <a href="https://forms.gle/XE2QSZstH9jC5GRZ6" target="_blank"
-                rel="noopener noreferrer">the required Google Form</a>. After submitting the form, you will be sent an
-            email with a link to download the app. If you don't receive an email, you can contact me at <a
-                href="mailto:contact@njs.dev">contact@njs.dev</a>.</p>
+        <main>
+            <section>
+                <p style="font-size: 1.1rem; line-height: 1.8;">
+                    <strong>ThreadMate</strong> is a high-speed, native Android engineering application designed for CNC machinists, mechanical engineers, toolmakers, and quality inspectors. It delivers instant, offline dimensional calculations, tolerance classes, and machining parameters for international screw thread standards without requiring internet connectivity on the shop floor.
+                </p>
+            </section>
 
-        <h2>Get the App</h2>
-        <ul>
-            <li><a href="https://play.google.com/apps/testing/com.njsharp.threadmate" target="_blank"
-                    rel="noopener noreferrer">Download ThreadMate on Google Play (Beta Members Only)</a></li>
-        </ul>
-    </main>
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>Global Thread Standards & Specifications</h2>
+                <p>
+                    Navigating complex screw thread standards during precision manufacturing requires rapid access to exact geometrical definitions and allowance tables. ThreadMate covers the four most widely utilized industrial thread families:
+                </p>
+                <ul>
+                    <li><strong>Unified Screw Threads (UN / UNC / UNF / UNEF):</strong> Governed by ASME B1.1, Unified Inch threads utilize a $60^\circ$ flank angle and are standard across North American manufacturing. ThreadMate calculates nominal major diameters, pitch diameters, minor diameters, and lead angles across coarse (UNC), fine (UNF), extra-fine (UNEF), and constant-pitch series.</li>
+                    <li><strong>ISO Metric Screw Threads (M):</strong> Specified under ISO 68-1 and ISO 261, Metric threads represent the global mechanical standard. The app provides exact calculations for both standard coarse pitch profiles and fine pitch variants, detailing crest truncation, root radius allowances, and stress area geometry.</li>
+                    <li><strong>National Pipe Taper (NPT):</strong> Governed by ASME B1.20.1, NPT threads feature a 1-in-16 taper along the pipe axis ($3^\circ 34' 47''$ included angle) to create pressure-tight mechanical seals. ThreadMate computes hand-tight engagement length ($L_1$), effective thread length ($L_2$), and overall dimensions for fluid and gas fittings.</li>
+                    <li><strong>British Standard Pipe Taper (BSPT / ISO 7-1 / R series):</strong> Widely used in international plumbing, hydraulics, and pneumatics, BSPT threads feature a $55^\circ$ flank angle (Whitworth form) with rounded crests and roots paired with a 1-in-16 taper. ThreadMate provides exact gauge plane distances and pipe fitting specifications.</li>
+                </ul>
+            </section>
+
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>Why Shop-Floor Tolerance Classes & Pitch Diameter Matter</h2>
+                <p>
+                    In mechanical assembly, external (bolt) and internal (nut) threads must fit together with specific clearances depending on functional requirements. A thread that is cut too tight will gall or seize during assembly, while a thread cut too loose will suffer from stripped threads or vibrational loosening under fatigue loads.
+                </p>
+                <ul>
+                    <li><strong>Pitch Diameter ($\text{PD}$):</strong> The theoretical diameter where the width of the thread ridge equals the width of the thread groove. Because thread fit and strength depend almost entirely on pitch diameter rather than the major diameter, machinists use ThreadMate to instantly look up exact upper and lower PD tolerance limits for thread micrometer and three-wire inspection setups.</li>
+                    <li><strong>Unified Classes (1A/1B, 2A/2B, 3A/3B):</strong> Class 1A/1B provides loose clearances for rapid, dirty assembly; Class 2A/2B is the general commercial standard for bolts and nuts; and Class 3A/3B provides tight, zero-allowance fits required for aerospace fasteners and critical safety linkages.</li>
+                    <li><strong>Metric Tolerance Grades (e.g., 6g / 6H):</strong> The number designates the tolerance grade (size of the allowable window), while the letter designates the fundamental deviation (position of the window relative to basic size). Lowercase letters denote external threads (bolts), and uppercase letters denote internal threads (tapped holes).</li>
+                    <li><strong>Tap Drill Sizing:</strong> Selecting the correct pre-tap hole diameter is essential to prevent tap breakage while ensuring adequate percentage of thread engagement (typically 65% to 75% for ductile materials). ThreadMate instantly outputs optimal tap drill sizes for any thread profile and material engagement target.</li>
+                </ul>
+            </section>
+
+            <section style="margin-top: var(--spacing-xl); background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color);">
+                <h2 style="margin-top: 0;">Beta Program & Android App Download</h2>
+                <p>
+                    ThreadMate is currently in active beta testing on Google Play. Because the app is distributed via closed testing tracks, <strong>you must be a registered member of the beta program to access and download the installation bundle.</strong>
+                </p>
+                <div style="margin: var(--spacing-lg) 0;">
+                    <a href="https://forms.gle/XE2QSZstH9jC5GRZ6" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: var(--accent-color); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; text-decoration: none; margin-bottom: var(--spacing-sm);">Step 1: Join Beta Program (Google Form) &rarr;</a>
+                </div>
+                <p>
+                    After submitting the registration form, your Google account email will be whitelisted and you will receive an invitation link. Once registered, you can download the application directly from the Google Play store:
+                </p>
+                <ul>
+                    <li><a href="https://play.google.com/apps/testing/com.njsharp.threadmate" target="_blank" rel="noopener noreferrer" style="font-weight: 600;">Step 2: Download ThreadMate on Google Play (Beta Members Only)</a></li>
+                </ul>
+                <p style="margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted);">
+                    If you experience any issues accessing the beta track or have feature requests for new thread standards, please reach out directly at <a href="mailto:contact@njs.dev">contact@njs.dev</a>.
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-left">
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                <p>Site version: e19b9e7</p>
+            </div>
+            <div class="footer-right">
+                <a href="/about/">About</a>
+                <a href="/other/privacy/">Privacy Policy</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../../scripts.js"></script>
 </body>
 
 </html>

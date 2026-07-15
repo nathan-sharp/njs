@@ -217,6 +217,22 @@
             <span class="live-dot"></span> Live Broadcast
         </div>
         <div id="debug-status"></div>
+
+        <details style="margin-top: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; font-size: 0.8rem; text-align: left; color: #a4b0be; line-height: 1.5;">
+            <summary style="cursor: pointer; font-weight: bold; color: #dfe4ea;">How Client-Side Synchronized Broadcast Works</summary>
+            <div style="margin-top: 8px;">
+                <p>Unlike traditional streaming servers (Icecast/SHOUTcast) that require continuous backend audio encoding and high bandwidth consumption, this Web Radio operates deterministically in your browser.</p>
+                <p><strong>Deterministic UTC Modulus Synchronization:</strong> By calculating the modulus of exact UTC system time (`Date.now() / 1000`) against the total playlist duration (`totalPlaylistDuration`), every listener worldwide computes the exact same current track and seek offset (`seekTime`) independently. If background buffering causes the audio playback to drift by more than $2$ seconds, the client automatically resynchronizes (`audioPlayer.currentTime = state.seekTime`).</p>
+            </div>
+        </details>
+
+        <footer style="margin-top: 1.5rem; font-size: 0.75rem; color: #747d8c; display: flex; justify-content: space-between;">
+            <span>©2026 NJS.dev</span>
+            <div>
+                <a href="/about/" style="color: #747d8c; text-decoration: none; margin-right: 8px;">About</a>
+                <a href="/other/privacy/" style="color: #747d8c; text-decoration: none;">Privacy</a>
+            </div>
+        </footer>
     </div>
 
     <!-- Hidden Audio Element -->
@@ -420,5 +436,6 @@
         });
 
     </script>
+    <script src="../../scripts.js"></script>
 </body>
 </html>

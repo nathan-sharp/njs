@@ -4,29 +4,48 @@
         <title>Demo Applications | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <meta name="description" content="Downloadable reference packages and manifest builder documentation for the Unified Wrapper Unit (.uwu) format.">
+        <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+        <link rel="stylesheet" href="../../../style.css">
     </head>
     <body>
-        <header>
-            <h1>Demo Applications</h1>
-            <p>Try out some demo applications below.</p>
-        </header>
-        <main>
-            <dl>
-                <dt><a href="/uwu/demo-apps/native_hello.uwu" >Hello World</a></dt>
-                <dd>A very simple app to show if the .uwu file is working correctly.</dd>
-            </dl>
-        </main>
-        <footer>
-            <div class="footer-left">
-                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p>Site version: e19b9e7</p>
-            </div>
-            <div class="footer-right">
-                <a href="/about/">About</a>
-                <a href="/other/privacy/">Privacy Policy</a>
-            </div>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>P.A.W.S. Demo Applications Directory</h1>
+                <p>Verify your P.A.W.S. runtime installation and explore how `.uwu` archives bundle executable entrypoints with static resource payloads.</p>
+            </header>
+            <main>
+                <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl);">
+                    <h2>Available Reference Units</h2>
+                    <dl style="margin-top: var(--spacing-md);">
+                        <dt style="font-size: 1.1rem; font-weight: bold;"><a href="/uwu/demo-apps/native_hello.uwu">Hello World (`native_hello.uwu`)</a></dt>
+                        <dd style="margin: 0.5rem 0 0 0; color: var(--text-secondary);">A minimal diagnostic archive (~547 bytes) containing a basic POSIX entry script to verify correct user-space sandbox mounting and P.A.W.S. interpreter registration.</dd>
+                    </dl>
+                </section>
+
+                <section>
+                    <h2>Inside a .UWU Archive & Manifest Structure</h2>
+                    <p>
+                        A `.uwu` file is not a proprietary black box; it follows an open, predictable binary packaging layout structured for zero-overhead execution:
+                    </p>
+                    <ul>
+                        <li><strong>Header Manifest (`manifest.json`):</strong> The leading bytes of every archive contain a JSON manifest defining the unit name, semantic version, minimum required P.A.W.S. API level, and exact execution command (`entrypoint`).</li>
+                        <li><strong>Packaging Automation (`make_native.py`):</strong> Developers can build custom `.uwu` packages using our Python build script (`make_native.py`). The script validates the entrypoint syntax, calculates SHA-256 integrity hashes for all bundled resources, and concatenates the header and tar stream into a single executable artifact.</li>
+                    </ul>
+                </section>
+            </main>
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                    <p>Site version: e19b9e7</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+        <script src="../../../scripts.js"></script>
     </body>
 </html>

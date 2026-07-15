@@ -1,34 +1,51 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Publications | NJS.dev</title>
+        <title>Publications & Academic Templates | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <meta name="description" content="Academic publications repository and technical documentation for Typst markup templates.">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>Publications</h1>
-            <p>Repository of my papers and publications.</p>
-        </header>
-        <main>
-            <dl>
-                <dt><a href="template.pdf">template</a></dt>
-                <dd>
-                    A simple template paper, made with typst.
-                </dd>
-            </dl>
-        </main>
-        <footer>
-            <div class="footer-left">
-                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p>Site version: e19b9e7</p>
-            </div>
-            <div class="footer-right">
-                <a href="/about/">About</a>
-                <a href="/other/privacy/">Privacy Policy</a>
-            </div>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>Publications Repository</h1>
+                <p>Repository of technical papers, academic articles, and open-source typesetting templates developed for engineering research.</p>
+            </header>
+            <main>
+                <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl);">
+                    <h2>Available Manuscripts & Templates</h2>
+                    <dl style="margin-top: var(--spacing-md);">
+                        <dt style="font-size: 1.1rem; font-weight: bold;"><a href="template.pdf">Academic Paper Template (`template.pdf`)</a></dt>
+                        <dd style="margin: 0.5rem 0 0 0; color: var(--text-secondary);">A standardized, publication-ready two-column technical article template compiled directly from structured Typst markup (`template.typ`).</dd>
+                    </dl>
+                </section>
+
+                <section>
+                    <h2>Typesetting Architecture: Typst vs. LaTeX</h2>
+                    <p>
+                        While traditional academic publishing relies heavily on legacy LaTeX distributions (often multi-gigabyte installations with slow single-threaded macro expansion), our research publications are formatted using **Typst**—a modern, Rust-engineered typesetting system:
+                    </p>
+                    <ul>
+                        <li><strong>Incremental Compilation & Performance:</strong> Typst utilizes a deterministic layout engine written in Rust that achieves sub-millisecond compilation times through incremental AST evaluation and memoized layout passes.</li>
+                        <li><strong>Declarative Styling (`conf.typ`):</strong> Instead of complex TeX macro hacking, layout constraints, theorem boxes, and bibliography formatting (`template.bib`) are defined cleanly via functional programming primitives and scoped styling rules.</li>
+                    </ul>
+                </section>
+            </main>
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                    <p>Site version: e19b9e7</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+        <script src="../../scripts.js"></script>
     </body>
 </html>

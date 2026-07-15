@@ -51,6 +51,22 @@
                 </div>
             </main>
             
+            <section style="margin-top: var(--spacing-xl);">
+                <h2>About Angular Measurement Systems</h2>
+                <p>
+                    Angles can be represented in multiple mathematical and engineering conventions depending on the field of study. While general calculators might only convert numbers between units, understanding how these systems behave during precision computations is essential to avoid compounding rounding errors.
+                </p>
+                <ul>
+                    <li><strong>Decimal Degrees (DD):</strong> The standard unit used in geographic information systems (GIS), GPS coordinates, and CAD modeling. By representing fractions of a degree as base-10 decimals, calculations such as spatial interpolation and linear transformations become computationally straightforward.</li>
+                    <li><strong>Degrees, Minutes, and Seconds (DMS):</strong> Originated in Babylonian sexagesimal (base-60) mathematics and remains widely used in land surveying, geodesy, celestial navigation, and precision machining. One degree ($1^\circ$) is divided into 60 arcminutes ($60'$), and each arcminute is divided into 60 arcseconds ($60''$). A single arcsecond corresponds to roughly 30 meters on the Earth's surface or micro-inches on a precision workpiece.</li>
+                    <li><strong>Radians (rad):</strong> The SI derived unit of angular measurement used across pure mathematics, physics, and mechanical engineering. One radian is the angle subtended at the center of a circle by an arc equal in length to the circle's radius. Because radians relate directly to linear distance along an arc ($s = r\theta$), calculus formulas (such as derivatives of trigonometric functions) retain their simplest analytical form without arbitrary conversion constants.</li>
+                </ul>
+                <h3>Practical Engineering Use Cases</h3>
+                <p>
+                    In CNC multi-axis machining and precision metrology, rotary tables and dividing heads often require exact conversion between DMS specifications on mechanical blueprints and Decimal Degrees expected by G-code controllers. Similarly, aerospace kinematics algorithms convert incoming compass and IMU sensor data from degrees into radians before executing quaternion rotation matrices.
+                </p>
+            </section>
+
             <!-- Proof -->
             <section id="proof" aria-labelledby="proof-title" style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-top: var(--spacing-xl);">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">

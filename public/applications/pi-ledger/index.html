@@ -70,6 +70,17 @@
                     </ul>
                 </section>
 
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Numerical Verification & Hardware Benchmarking</h2>
+                    <p>
+                        Beyond historical interest and mathematical curiosity, verifying long sequences of $\pi$ digits plays a foundational role in modern computer science, numerical analysis, and hardware stress testing:
+                    </p>
+                    <ul>
+                        <li><strong>Algorithm Diagnostics:</strong> High-precision numerical libraries (using algorithms like Chudnovsky or Gauss-Legendre) are prone to subtle carry-propagation bugs or rounding truncations across millions of iterations. By comparing generated output against deterministic control ledgers, software engineers verify multi-precision floating point stability and memory integrity.</li>
+                        <li><strong>Processor & RAM Stress Testing:</strong> Computing and sorting millions of digits of irrational numbers stresses CPU execution pipelines, floating-point units (FPUs), and L1/L2 cache coherency. A single bit-flip caused by hardware instability or thermal throttling immediately manifests as an early mismatch during string verification against a control ledger.</li>
+                    </ul>
+                </section>
+
                 <details style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
                     <summary style="font-weight: 500; cursor: pointer; color: var(--text-color);">Privacy and processing</summary>
                     <p style="margin-top: var(--spacing-sm); margin-bottom: 0;">Your file stays on this device. The page reads the text locally, strips out non-digit characters, and performs the match in JavaScript against local control files.</p>

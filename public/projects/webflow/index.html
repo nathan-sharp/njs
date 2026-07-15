@@ -137,6 +137,15 @@
              <div class="text-[10px] text-gray-500 uppercase">Status</div>
              <div id="status-text" class="text-sm font-mono text-yellow-400">Loading...</div>
         </div>
+
+        <!-- Technical Theory & Guide Drawer -->
+        <details class="mt-2 pt-3 border-t border-gray-700 text-xs text-gray-300">
+            <summary class="cursor-pointer font-semibold text-blue-400 hover:text-blue-300 transition">About CFD Mechanics & Streamlines</summary>
+            <div class="mt-2 space-y-2 text-[11px] leading-relaxed text-gray-400">
+                <p><strong class="text-gray-200">Particle Sub-Stepping Physics:</strong> To simulate high-speed potential flow without penetration artifacts, fluid particles perform multiple Euler sub-steps (`subSpeed`) per frame. When a particle enters the bounding volume of an uploaded `.STL` mesh, raycasting (`Raycaster`) checks against triangle faces and calculates immediate deflection (`velocity.sub(normal.multiplyScalar(dot))`) with boundary layer separation.</p>
+                <p><strong class="text-gray-200">Surface Pressure Mapping:</strong> Stagnation zones where surface normals directly oppose the oncoming flow vector ($N_z > 0$) are interpolated to high-pressure red vertex colors, while tangential or wake regions shift toward low-pressure blue gradients.</p>
+            </div>
+        </details>
     </div>
 
     <!-- Loading Overlay -->
@@ -598,5 +607,6 @@
         animate();
 
     </script>
+    <script src="../../scripts.js"></script>
 </body>
 </html>

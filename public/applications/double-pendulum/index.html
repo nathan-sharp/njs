@@ -106,6 +106,52 @@
         </div>
     </div>
 
+    <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #e0e0e0; font-family: sans-serif; line-height: 1.6;">
+        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
+            <h2 style="margin-top: 0; color: #ffffff;">Lagrangian Mechanics & Equations of Motion</h2>
+            <p>
+                The double pendulum is a classic example of a simple mechanical system that exhibits rich, highly non-linear dynamics. While deriving its equations of motion using Newtonian mechanics ($\vec{F} = m\vec{a}$) requires solving complex constraint forces along the rigid rods, the system is elegantly described using <strong>Lagrangian Mechanics</strong>.
+            </p>
+            <p>
+                By defining the Lagrangian $\mathcal{L} = T - V$ (where $T$ is the total kinetic energy of both masses and $V$ is their gravitational potential energy relative to the pivot point), we apply the Euler-Lagrange equations to derive two coupled second-order differential equations for angular accelerations $\ddot{\theta}_1$ and $\ddot{\theta}_2$. Because these equations contain products of angular velocities ($\dot{\theta}_1^2, \dot{\theta}_2^2$) and trigonometric terms ($\sin(\theta_1-\theta_2), \cos(\theta_1-\theta_2)$), analytical closed-form solutions do not exist. Instead, this simulation numerical integrates the system in real time using high-order Runge-Kutta differential algorithms.
+            </p>
+        </section>
+
+        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
+            <h2 style="margin-top: 0; color: #ffffff;">Deterministic Chaos & Sensitivity to Initial Conditions</h2>
+            <p>
+                Despite being completely deterministic governed by classical physics with zero random noise, the double pendulum undergoes transitions from predictable periodic motion at low energies to unpredictable, chaotic motion at higher energies.
+            </p>
+            <ul>
+                <li><strong>The Butterfly Effect (Lyapunov Exponent):</strong> When the pendulum swings with sufficient kinetic energy, any microscopic uncertainty or infinitesimal perturbation in the starting angles ($\Delta\theta$) grows exponentially over time ($\Delta\theta(t) \approx \Delta\theta_0 e^{\lambda t}$, where $\lambda > 0$ is the Lyapunov exponent). Within seconds, two pendulums released from almost identical starting positions will diverge completely into totally different trajectories.</li>
+                <li><strong>Energy Conservation vs. Friction:</strong> When friction is set to $0\%$, the total mechanical energy ($E = T + V$) remains constant, producing perpetual chaotic wandering across phase space. When damping (friction) is introduced, phase space volume contracts over time until the pendulum settles into stable equilibrium or periodic attractors.</li>
+            </ul>
+        </section>
+
+        <section style="background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; margin-bottom: 40px;">
+            <h2 style="margin-top: 0; color: #ffffff;">Understanding Configuration Space ($\theta_1$ vs $\theta_2$)</h2>
+            <p>
+                While the physical simulation shows the rods swinging in Cartesian $(x,y)$ space, the state of a double pendulum at any instant is fully defined by its two generalized coordinates: the top angle $\theta_1$ and bottom angle $\theta_2$.
+            </p>
+            <p>
+                The graph on the right plots the trajectory on a two-dimensional <strong>Configuration Space Torus</strong> ($[-\pi, \pi] \times [-\pi, \pi]$). Periodic orbits appear as repeating closed loops or Lissajous figures on this grid, whereas chaotic trajectories explore the available energy manifold, densely filling bounded regions of configuration space without ever repeating the exact same path twice.
+            </p>
+        </section>
+
+        <footer style="border-top: 1px solid #333; padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: #888;">
+            <div>
+                <p style="margin: 0 0 4px 0;">©2026 Nathan James Sharp. All Rights Reserved.</p>
+                <p style="margin: 0 0 4px 0;">Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                <p style="margin: 0;">Site version: e19b9e7</p>
+            </div>
+            <div>
+                <a href="/about/" style="color: #4CAF50; text-decoration: none; margin-right: 16px;">About</a>
+                <a href="/other/privacy/" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>
+            </div>
+        </footer>
+    </div>
+
     <script src="script.js"></script>
+    <script src="../../scripts.js"></script>
 </body>
 </html>

@@ -105,6 +105,22 @@
         <button id="btn-pause">Resume Simulation</button>
 
         <div id="debug-info" style="font-size: 0.8rem; margin-top: 8px; color: #4CAF50;"></div>
+
+        <details style="margin-top: 12px; font-size: 0.75rem; color: #bbb; border-top: 1px solid #333; padding-top: 8px; line-height: 1.4;">
+            <summary style="cursor: pointer; font-weight: 600; color: #fff;">About Multi-Pendulum Phase Grid</summary>
+            <div style="margin-top: 6px;">
+                <p>This grid simultaneously integrates an array ($N \times N$) of double pendulums initialized across configuration space where the X and Y coordinates correspond to starting angles $\theta_1$ and $\theta_2$.</p>
+                <p><strong>Heatmap RGB Color Mapping:</strong> Each cell's color encodes real-time angular positions ($R \propto \cos\theta_1, G \propto \cos\theta_2, B \propto \cos(\theta_1+\theta_2)$). In Pixel Mode, this reveals intricate fractal boundaries and bifurcations where tiny shifts in initial angle produce completely different color states.</p>
+            </div>
+        </details>
+
+        <div style="margin-top: 10px; font-size: 0.7rem; color: #666; display: flex; justify-content: space-between;">
+            <a href="/double-pendulum/" style="color: #4CAF50; text-decoration: none;">&larr; Main Sim</a>
+            <div>
+                <a href="/about/" style="color: #777; text-decoration: none; margin-right: 6px;">About</a>
+                <a href="/other/privacy/" style="color: #777; text-decoration: none;">Privacy</a>
+            </div>
+        </div>
     </div>
 
     <canvas id="graphCanvas"></canvas>
@@ -369,5 +385,6 @@
     loop();
 
 </script>
+<script src="../../../scripts.js"></script>
 </body>
 </html>

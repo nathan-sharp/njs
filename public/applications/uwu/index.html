@@ -1,69 +1,80 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Unified Wrapper Unit | NJS.dev</title>
+        <title>Unified Wrapper Unit (.uwu) | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <meta name="description" content="Technical specification and setup guide for the Unified Wrapper Unit (.uwu) container runtime and P.A.W.S. interpreter.">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>Unified Wrapper Unit</h1>
-            <p>The Unified Wrapper Unit (.uwu) is a container format designed to solve the "it works on my machine" problem by standardizing the packaging of application logic, assets, and runtime requirements, similar to how Docker solves it. However unlike Docker, which virtualizes an entire OS filesystem, a .uwu file focuses on application portability through a unified interpreter called P.A.W.S. (Platform Agnostic Wrapper Service). </p>
-        </header>
-        <main>
-            <section>
-                <h2>Install the Runtime (P.A.W.S.)</h2>
-                <p>Just like you need a PDF reader to open .pdf files, you need the Platform Agnostic Wrapper Service (PAWS) to open .uwu files.</p>
-                <details>
-                    <summary>Windows Users</summary>
-                    <ol>
-                        <li>Click <a href="/media/paws/">here</a> to download the installer</li>
-                        <li>Run the install script in a terminal or command prompt</li>
-                    </ol>
-                </details>
-                <details>
-                    <summary>Linux and macOS Users</summary>
-                    <ol>
-                        <li>Open your Terminal.</li>
-                        <li>
-                            <p>Run the universal install script:</p>
-                            <code>curl -L https://njs.dev/media/paws/linux_install.sh | bash</code>
-                        </li>
-                    </ol>
-                </details>
-                <p>3. Verify installation by typing <code>paws --version</code>. You should see something like: <code>P.A.W.S. v1.2.0</code></p>
-            </section>
-            <section>
-                <h2>Download Your Unit</h2>
-                <p>Download the application you want to use (e.g., your_app_name.uwu).</p>
-                <p>Note: If the developer provided a "Chonk Build", the file might be larger (50MB+). You do not need to install PAWS for Chonk builds; you can skip directly to Step 3.</p>
-            </section>
-            <section>
-                <h2>Run the Application</h2>
-                <h4>Method A: Double-Click (Recommended)</h4>
-                <p>Once PAWS is installed, your computer recognizes the file type.</p>
-                <ol>
-                    <li>Locate the .uwu file in your file explorer.</li>
-                    <li>Double-click the file.</li>
-                    <li>A terminal window or splash screen may appear briefly while the runtime unpacks the software.</li>
-                </ol>
-            </section>
-            <section>
-                <h2>Demo Applications</h2>
-                <p>Try out some demo applications packaged as .uwu files <a href="/uwu/demo-apps/">here</a>.</p>
-            </section>
-        </main>
-        <footer>
-            <div class="footer-left">
-                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p>Site version: e19b9e7</p>
-            </div>
-            <div class="footer-right">
-                <a href="/about/">About</a>
-                <a href="/other/privacy/">Privacy Policy</a>
-            </div>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>Unified Wrapper Unit (.uwu)</h1>
+                <p>The Unified Wrapper Unit (.uwu) is a lightweight container format designed to solve the "it works on my machine" problem by standardizing the packaging of application logic, static assets, and runtime dependencies. Unlike heavy virtualization engines, a `.uwu` archive achieves cross-platform portability through an embedded user-space interpreter called P.A.W.S. (Platform Agnostic Wrapper Service).</p>
+            </header>
+            <main>
+                <section>
+                    <h2>Install the Runtime (P.A.W.S.)</h2>
+                    <p>Just like you need a PDF reader to open `.pdf` files, your operating system requires the Platform Agnostic Wrapper Service daemon to mount and execute `.uwu` archives.</p>
+                    <details style="margin: var(--spacing-md) 0; padding: var(--spacing-md); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <summary style="font-weight: 600; cursor: pointer;">Windows Users</summary>
+                        <ol style="margin-top: 10px;">
+                            <li>Click <a href="/media/paws/">here</a> to download the `paws-setup.exe` installer.</li>
+                            <li>Run the installer or execute via PowerShell: <code>irm https://njs.dev/media/paws/win_install.ps1 | iex</code></li>
+                        </ol>
+                    </details>
+                    <details style="margin: var(--spacing-md) 0; padding: var(--spacing-md); background: var(--ad-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <summary style="font-weight: 600; cursor: pointer;">Linux and macOS Users</summary>
+                        <ol style="margin-top: 10px;">
+                            <li>Open your terminal application.</li>
+                            <li>
+                                <p>Run the universal POSIX installation script:</p>
+                                <code>curl -L https://njs.dev/media/paws/linux_install.sh | bash</code>
+                            </li>
+                        </ol>
+                    </details>
+                    <p>Verify installation by typing <code>paws --version</code> in your terminal. You should see: <code>P.A.W.S. v1.2.0</code></p>
+                </section>
+
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Download Your Unit & Execution Modes</h2>
+                    <p>Download the application archive you wish to execute (e.g., `application.uwu`). P.A.W.S. supports two distinct packaging distributions depending on deployment constraints:</p>
+                    <ul>
+                        <li><strong>Lean Units (~1MB - 10MB):</strong> Contains only bytecode, assets, and manifest declarations. Requires the P.A.W.S. runtime installed on the host operating system to provide shared standard libraries.</li>
+                        <li><strong>Chonk Builds (~50MB+):</strong> Standalone self-extracting binaries bundled with an embedded micro-PAWS runtime. Chonk builds require zero prior host installation—you can double-click and run directly on completely bare-metal machines.</li>
+                    </ul>
+                </section>
+
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Container Architecture vs. Virtual Machines</h2>
+                    <p>
+                        Understanding how the Unified Wrapper Unit achieves high performance across heterogeneous OS kernels without hypervisor overhead:
+                    </p>
+                    <ul>
+                        <li><strong>User-Space Namespacing:</strong> Instead of emulating virtual CPU hardware or booting an entire guest operating system kernel (like VirtualBox or QEMU), P.A.W.S. utilizes host kernel features—POSIX `chroot` and Linux namespaces on Unix systems, and AppContainer sandboxing on NT kernels—to isolate filesystem access.</li>
+                        <li><strong>Zero-Copy Asset Mounting:</strong> When executed, `.uwu` archives are memory-mapped (`mmap`) directly into virtual address space. Assets and scripts are read read-only from the archive header instantly without extracting temporary files to disk, eliminating startup latency.</li>
+                    </ul>
+                </section>
+
+                <section style="margin-top: var(--spacing-xl);">
+                    <h2>Demo Applications & Verification</h2>
+                    <p>Explore reference implementations and sample packages in the <a href="/uwu/demo-apps/">Demo Applications Directory</a>.</p>
+                </section>
+            </main>
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                    <p>Site version: e19b9e7</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+        <script src="../../scripts.js"></script>
     </body>
 </html>

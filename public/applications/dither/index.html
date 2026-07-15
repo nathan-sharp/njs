@@ -99,6 +99,15 @@
                 Waiting for media...
             </div>
 
+            <details style="margin: 16px 0; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; line-height: 1.5;">
+                <summary style="font-weight: 600; cursor: pointer;">Algorithm Theory & Dithering Guide</summary>
+                <div style="margin-top: 10px;">
+                    <p><strong>Error Diffusion (Floyd-Steinberg, Atkinson, JJN):</strong> Quantizing continuous grayscale pixels ($0\dots255$) down to pure 1-bit binary (black or white) introduces severe quantization error. Error diffusion algorithms calculate this remainder ($e = \text{old\_pixel} - \text{new\_pixel}$) and distribute fractions of $e$ to neighboring unvisited pixels ahead of the scanline. Atkinson dithering (classic early Macintosh style) distributes only $3/4$ of the error, causing highlights and shadows to blow out with crisp, distinct contrast.</p>
+                    <p><strong>Ordered Dithering (Bayer 2x2, 4x4, 8x8):</strong> Unlike error diffusion which processes pixels sequentially, ordered dithering compares each pixel against a fixed threshold matrix ($M_{n\times n}$). Because every pixel is calculated independently of its neighbors, Bayer dithering is extremely fast and produces stable, non-flickering patterns—making it ideal for real-time video feeds.</p>
+                    <p><strong>Lo-Fi Audio PCM Downsampling:</strong> Reducing audio bit depth to 8-bit, 4-bit, or 2-bit introduces characteristic quantization noise and bit-crushed harmonic distortion typical of retro game consoles and vintage digital samplers.</p>
+                </div>
+            </details>
+
             <footer>
                 <div class="footer-left">
                     <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
@@ -118,5 +127,6 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
         <script src="scripts.js"></script>
+        <script src="../../scripts.js"></script>
     </body>
 </html>

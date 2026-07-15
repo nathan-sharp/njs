@@ -1,33 +1,54 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>P.A.W.S. | NJS.dev</title>
+        <title>P.A.W.S. Installation & Source | NJS.dev</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <meta name="description" content="Raw installation scripts, precompiled binaries, and C++ source documentation for the Platform Agnostic Wrapper Service (P.A.W.S.).">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
     </head>
     <body>
-        <header>
-            <h1>P.A.W.S. Installation Files</h1>
-            <p>Below are the raw installation files for (P.A.W.S.). For the easiest install, please refer to the main installation instructions on the <a href="/uwu/">Unified Wrapper Unit</a> page.</p>
-        </header>
-        <main>
-            <h3>Linux Installers</h3>
-            <a href="/media/paws/linux_install.sh">Bash Script</a> | 
-            <a href="/media/paws/linux_runtime_source.cpp">Source Code</a> |
-            <a href="/media/paws/paws_linux">Precompiled Binary</a>
-            <p>The C++ source code is compiled with <code>g++ linux_runtime_source.cpp -o paws_linux</code>.</p>
-        </main>
-        <footer>
-            <div class="footer-left">
-                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
-                <p>Site version: e19b9e7</p>
-            </div>
-            <div class="footer-right">
-                <a href="/about/">About</a>
-                <a href="/other/privacy/">Privacy Policy</a>
-            </div>
-        </footer>
+        <div class="container">
+            <header>
+                <h1>P.A.W.S. Runtime & Binaries</h1>
+                <p>Below are the raw distribution files, installation scripts, and source code for the Platform Agnostic Wrapper Service (P.A.W.S.). For user-friendly setup guides and container overview, please refer to the <a href="/uwu/">Unified Wrapper Unit (.uwu)</a> documentation.</p>
+            </header>
+            <main>
+                <section style="background: var(--ad-bg); padding: var(--spacing-lg); border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: var(--spacing-xl);">
+                    <h2>Distribution Artifacts</h2>
+                    <ul style="margin-top: var(--spacing-md); line-height: 2;">
+                        <li><strong>Bash Installation Script:</strong> <a href="/media/paws/linux_install.sh">`linux_install.sh`</a> (Automates binary placement and `/usr/local/bin` PATH binding)</li>
+                        <li><strong>Precompiled POSIX Binary:</strong> <a href="/media/paws/paws_linux">`paws_linux`</a> (x86_64 ELF executable, statically linked)</li>
+                        <li><strong>Raw C++ Runtime Source:</strong> <a href="/media/paws/linux_runtime_source.cpp">`linux_runtime_source.cpp`</a></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>C++ Compilation & Runtime Sandbox Theory</h2>
+                    <p>
+                        The P.A.W.S. daemon (`paws_linux`) is engineered as a zero-dependency C++17 runtime designed to parse `.uwu` archives and execute embedded payloads inside secure POSIX namespaces:
+                    </p>
+                    <ul>
+                        <li><strong>Manual Compilation (`g++` / `clang++`):</strong> You can compile the raw source directly from terminal using GCC or Clang:
+                            <code style="display: block; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 4px;">g++ -O3 -std=c++17 linux_runtime_source.cpp -o paws_linux -lpthread</code>
+                        </li>
+                        <li><strong>Memory-Mapped Extraction:</strong> Upon execution (`paws run app.uwu`), the daemon maps the archive header into virtual memory, verifies the SHA-256 asset checksums, mounts the embedded filesystem structure via `mmap`, and invokes the designated execution target in an isolated child process.</li>
+                    </ul>
+                </section>
+            </main>
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-07-14T15:46:27</p>
+                    <p>Site version: e19b9e7</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+        <script src="../../scripts.js"></script>
     </body>
 </html>
