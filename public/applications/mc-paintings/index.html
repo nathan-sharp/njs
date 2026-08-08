@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Painting Generator | NJS.dev</title>
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
+    <script src="../../scripts.js"></script>
+    <script src="./jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Minecraft Painting Generator</h1>
+            <p>Create a custom Bedrock Edition painting texture pack entirely in your browser.</p>
+        </header>
+        
+        <main>
+            <div class="dashboard">
+                <div class="settings-panel">
+                    <h3>Instructions</h3>
+                    <p>Click on any painting slot below to upload an image. The image will be automatically scaled to fit the slot. When finished, click "Download Texture Pack" to generate your `.mcpack` file.</p>
+                    
+                    <h3>Pack Settings</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <label for="packName">Pack Name</label>
+                            <input type="text" id="packName" value="Custom Paintings" placeholder="e.g. My Custom Art Pack">
+                        </div>
+                        <div class="control-item">
+                            <label for="packDesc">Pack Description</label>
+                            <input type="text" id="packDesc" value="Generated on NJS.dev" placeholder="e.g. Replaces vanilla paintings">
+                        </div>
+                    </div>
+                    
+                    <div class="main-controls">
+                        <button id="downloadBtn">Download Texture Pack (.mcpack)</button>
+                    </div>
+                </div>
+
+                <div class="main-view">
+                    <!-- The canvas logical size is 256x256, but rendered larger via CSS -->
+                    <canvas id="paintingCanvas" width="256" height="256" style="image-rendering: pixelated; cursor: pointer; max-width: 512px; width: 100%;"></canvas>
+                </div>
+
+                <!-- Hidden file input for uploading images -->
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+        </main>
+        <footer>
+            <div class="footer-left">
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById('paintingCanvas');
+            const ctx = canvas.getContext('2d');
+            const fileInput = document.getElementById('fileInput');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const packNameInput = document.getElementById('packName');
+            const packDescInput = document.getElementById('packDesc');
+
+            // Standard Bedrock vanilla kz.png layout (coordinates in pixels on a 256x256 image)
+            const PAINTINGS = [
+                // 1x1 blocks (16x16 px)
+                { x: 0, y: 0, w: 16, h: 16 }, { x: 16, y: 0, w: 16, h: 16 }, { x: 32, y: 0, w: 16, h: 16 },
+                { x: 48, y: 0, w: 16, h: 16 }, { x: 64, y: 0, w: 16, h: 16 }, { x: 80, y: 0, w: 16, h: 16 }, { x: 96, y: 0, w: 16, h: 16 },
+                // 2x1 blocks (32x16 px)
+                { x: 0, y: 32, w: 32, h: 16 }, { x: 32, y: 32, w: 32, h: 16 }, { x: 64, y: 32, w: 32, h: 16 },
+                { x: 96, y: 32, w: 32, h: 16 }, { x: 128, y: 32, w: 32, h: 16 },
+                // 1x2 blocks (16x32 px)
+                { x: 0, y: 64, w: 16, h: 32 }, { x: 16, y: 64, w: 16, h: 32 },
+                // 2x2 blocks (32x32 px)
+                { x: 0, y: 96, w: 32, h: 32 }, { x: 32, y: 96, w: 32, h: 32 }, { x: 64, y: 96, w: 32, h: 32 },
+                { x: 96, y: 96, w: 32, h: 32 }, { x: 128, y: 96, w: 32, h: 32 }, { x: 160, y: 96, w: 32, h: 32 },
+                // 4x2 blocks (64x32 px)
+                { x: 0, y: 128, w: 64, h: 32 },
+                // 4x3 blocks (64x48 px)
+                { x: 0, y: 160, w: 64, h: 48 }, { x: 64, y: 160, w: 64, h: 48 },
+                // 4x4 blocks (64x64 px)
+                { x: 0, y: 192, w: 64, h: 64 }, { x: 64, y: 192, w: 64, h: 64 }, { x: 128, y: 192, w: 64, h: 64 }
+            ];
+
+            let selectedPainting = null;
+            let backgroundImage = new Image();
+            backgroundImage.crossOrigin = "Anonymous";
+            backgroundImage.src = 'kz_template.png';
+
+            // Store uploaded images: { paintingIndex: Image }
+            const uploadedImages = {};
+
+            backgroundImage.onload = () => {
+                redrawCanvas(true);
+            };
+
+            function redrawCanvas(showGrid) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(backgroundImage, 0, 0);
+
+                // Draw uploaded images
+                PAINTINGS.forEach((p, index) => {
+                    if (uploadedImages[index]) {
+                        // Optional: Fill black background
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(p.x, p.y, p.w, p.h);
+                        ctx.drawImage(uploadedImages[index], p.x, p.y, p.w, p.h);
+                    }
+                    if (showGrid) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(p.x, p.y, p.w, p.h);
+                    }
+                });
+            }
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+
+                const index = PAINTINGS.findIndex(p => 
+                    x >= p.x && x <= (p.x + p.w) &&
+                    y >= p.y && y <= (p.y + p.h)
+                );
+
+                if (index !== -1) {
+                    selectedPainting = index;
+                    fileInput.click();
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (!e.target.files.length || selectedPainting === null) return;
+                
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        uploadedImages[selectedPainting] = img;
+                        redrawCanvas(true);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                e.target.value = '';
+            });
+
+            function uuidv4() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    const r = Math.random() * 16 | 0;
+                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            downloadBtn.addEventListener('click', () => {
+                if (typeof JSZip === 'undefined') {
+                    alert('JSZip library failed to load.');
+                    return;
+                }
+
+                const name = packNameInput.value.trim() || 'Custom Paintings';
+                const desc = packDescInput.value.trim() || 'Generated on NJS.dev';
+
+                const manifest = {
+                    format_version: 2,
+                    header: {
+                        name: name,
+                        description: desc,
+                        uuid: uuidv4(),
+                        version: [1, 0, 0],
+                        min_engine_version: [1, 16, 0]
+                    },
+                    modules: [
+                        {
+                            type: "resources",
+                            uuid: uuidv4(),
+                            version: [1, 0, 0]
+                        }
+                    ]
+                };
+
+                // Redraw without grid to get clean image
+                redrawCanvas(false);
+                
+                // Get image data
+                const dataUrl = canvas.toDataURL('image/png');
+                const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+
+                // Build ZIP
+                const zip = new JSZip();
+                zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+                const textures = zip.folder("textures");
+                const painting = textures.folder("painting");
+                painting.file("kz.png", base64Data, {base64: true});
+
+                // Generate and download
+                zip.generateAsync({type:"blob"}).then(function(content) {
+                    const url = URL.createObjectURL(content);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.mcpack';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 0);
+                    
+                    // Redraw grid for further editing
+                    redrawCanvas(true);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
