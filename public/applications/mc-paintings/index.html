@@ -32,6 +32,13 @@
                             <label for="packDesc">Pack Description</label>
                             <input type="text" id="packDesc" value="Generated on NJS.dev" placeholder="e.g. Replaces vanilla paintings">
                         </div>
+                        <div class="control-item">
+                            <label for="packIconInput">Pack Thumbnail (Optional)</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                                <input type="file" id="packIconInput" accept="image/*" style="padding: 0.25rem; width: 100%;">
+                                <img id="packIconPreview" style="display: block; width: 64px; height: 64px; border-radius: 4px; border: 1px solid var(--border-color); object-fit: cover; image-rendering: pixelated;">
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="main-controls">
@@ -69,6 +76,49 @@
             const downloadBtn = document.getElementById('downloadBtn');
             const packNameInput = document.getElementById('packName');
             const packDescInput = document.getElementById('packDesc');
+            const packIconInput = document.getElementById('packIconInput');
+            const packIconPreview = document.getElementById('packIconPreview');
+            let currentThumbnailBlob = null;
+
+            function pixelateThumbnail(imageSrc) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.onload = () => {
+                        const thumbCanvas = document.createElement('canvas');
+                        thumbCanvas.width = 16;
+                        thumbCanvas.height = 16;
+                        const tctx = thumbCanvas.getContext('2d');
+                        tctx.imageSmoothingEnabled = false;
+                        tctx.drawImage(img, 0, 0, 16, 16);
+                        thumbCanvas.toBlob(resolve, 'image/png');
+                    };
+                    img.src = imageSrc;
+                });
+            }
+
+            async function setThumbnail(src) {
+                if (currentThumbnailBlob) {
+                    URL.revokeObjectURL(packIconPreview.src);
+                }
+                currentThumbnailBlob = await pixelateThumbnail(src);
+                packIconPreview.src = URL.createObjectURL(currentThumbnailBlob);
+            }
+
+            // On load
+            setThumbnail('default_icon.png');
+
+            packIconInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setThumbnail(event.target.result);
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                } else {
+                    setThumbnail('default_icon.png');
+                }
+            });
 
             // Standard Bedrock vanilla kz.png layout (coordinates in pixels on a 256x256 image)
             const PAINTINGS = [
@@ -169,7 +219,7 @@
                 });
             }
 
-            downloadBtn.addEventListener('click', () => {
+            downloadBtn.addEventListener('click', async () => {
                 if (typeof JSZip === 'undefined') {
                     alert('JSZip library failed to load.');
                     return;
@@ -206,6 +256,11 @@
                 // Build ZIP
                 const zip = new JSZip();
                 zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+                
+                if (currentThumbnailBlob) {
+                    zip.file("pack_icon.png", currentThumbnailBlob);
+                }
+
                 const textures = zip.folder("textures");
                 const painting = textures.folder("painting");
                 painting.file("kz.png", base64Data, {base64: true});
