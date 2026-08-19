@@ -8,6 +8,7 @@ export class TDMSParser {
     constructor() {
         this.file = { path: '/', properties: {}, groups: new Map() };
         this.activeRawSpecs = new Map(); // path -> { dataType, dimension, count, totalBytes }
+        this.lastKnownSpecs = new Map();
     }
 
     /**
@@ -91,8 +92,10 @@ export class TDMSParser {
                         // No raw data assigned in this segment
                     } else if (rawIndex === 0x00000000) {
                         // Matches previous segment
-                        if (!this.activeRawSpecs.has(path)) {
+                        if (!this.lastKnownSpecs.has(path)) {
                             console.warn(`Raw index 0 for ${path} but no previous spec exists.`);
+                        } else {
+                            this.activeRawSpecs.set(path, this.lastKnownSpecs.get(path));
                         }
                     } else {
                         // New raw data spec
@@ -111,6 +114,7 @@ export class TDMSParser {
 
                         const spec = { dataType, dimension, count: Number(count), totalBytes: Number(totalBytes) };
                         this.activeRawSpecs.set(path, spec);
+                        this.lastKnownSpecs.set(path, spec);
                         obj.dataType = dataType;
                     }
 
@@ -139,25 +143,63 @@ export class TDMSParser {
             if (kTocRawData && rawDataStart < nextSegmentStart) {
                 let currentRawOffset = rawDataStart;
                 
-                if (!kTocInterleavedData) {
-                    for (const [path, spec] of this.activeRawSpecs.entries()) {
-                        const obj = this.getOrCreateObject(path);
-                        if (!obj.data) obj.data = [];
+                let chunkSize = 0;
+                for (const spec of this.activeRawSpecs.values()) {
+                    if (spec.dataType === 0x20) {
+                        chunkSize += spec.totalBytes; // String total bytes
+                    } else {
+                        chunkSize += spec.count * this.getTypeSize(spec.dataType);
+                    }
+                }
+                
+                let numChunks = 1;
+                if (chunkSize > 0) {
+                    const rawDataSize = nextSegmentStart - rawDataStart;
+                    numChunks = Math.floor(rawDataSize / chunkSize);
+                    if (rawDataSize % chunkSize !== 0) {
+                        console.warn(`Segment trailing partial chunk detected and ignored (Raw size: ${rawDataSize}, Chunk size: ${chunkSize})`);
+                    }
+                }
 
-                        const bytesConsumed = this.readRawDataChunk(view, buffer, currentRawOffset, spec, obj.data, littleEndian);
-                        currentRawOffset += bytesConsumed;
+                const MAX_POINTS = 500000;
+                let decimationFactor = 1;
+                if (numChunks > MAX_POINTS) {
+                    decimationFactor = Math.ceil(numChunks / MAX_POINTS);
+                }
+                
+                if (!kTocInterleavedData) {
+                    for (let chunk = 0; chunk < numChunks; chunk++) {
+                        const skipChunk = (chunk % decimationFactor !== 0);
+                        if (skipChunk) {
+                            currentRawOffset += chunkSize;
+                            continue;
+                        }
+                        for (const [path, spec] of this.activeRawSpecs.entries()) {
+                            const obj = this.getOrCreateObject(path);
+                            if (!obj.data) obj.data = [];
+
+                            const bytesConsumed = this.readRawDataChunk(view, buffer, currentRawOffset, spec, obj.data, littleEndian);
+                            currentRawOffset += bytesConsumed;
+                        }
                     }
                 } else {
                     // Interleaved data handling (for standard numeric channels of equal length)
-                    const specs = Array.from(this.activeRawSpecs.entries());
-                    if (specs.length > 0) {
-                        const numPoints = specs[0][1].count;
-                        for (let pt = 0; pt < numPoints; pt++) {
-                            for (const [path, spec] of specs) {
-                                const obj = this.getOrCreateObject(path);
-                                if (!obj.data) obj.data = [];
-                                const bytesConsumed = this.readRawDataChunk(view, buffer, currentRawOffset, { ...spec, count: 1 }, obj.data, littleEndian);
-                                currentRawOffset += bytesConsumed;
+                    for (let chunk = 0; chunk < numChunks; chunk++) {
+                        const skipChunk = (chunk % decimationFactor !== 0);
+                        if (skipChunk) {
+                            currentRawOffset += chunkSize;
+                            continue;
+                        }
+                        const specs = Array.from(this.activeRawSpecs.entries());
+                        if (specs.length > 0) {
+                            const numPoints = specs[0][1].count;
+                            for (let pt = 0; pt < numPoints; pt++) {
+                                for (const [path, spec] of specs) {
+                                    const obj = this.getOrCreateObject(path);
+                                    if (!obj.data) obj.data = [];
+                                    const bytesConsumed = this.readRawDataChunk(view, buffer, currentRawOffset, { ...spec, count: 1 }, obj.data, littleEndian);
+                                    currentRawOffset += bytesConsumed;
+                                }
                             }
                         }
                     }
@@ -209,9 +251,39 @@ export class TDMSParser {
         return this.file;
     }
 
+    getTypeSize(dataType) {
+        switch (dataType) {
+            case 0x01: case 0x05: case 0x21: return 1;
+            case 0x02: case 0x06: return 2;
+            case 0x03: case 0x07: case 0x09: return 4;
+            case 0x04: case 0x08: case 0x0A: return 8;
+            case 0x44: return 16;
+            default: return 0;
+        }
+    }
+
     readRawDataChunk(view, buffer, offset, spec, outArray, littleEndian) {
         const { dataType, count } = spec;
         let bytesRead = 0;
+
+        if (dataType === 0x20) {
+            const offsets = [];
+            let strOffset = offset;
+            for (let j = 0; j < count; j++) {
+                if (strOffset + 4 > buffer.byteLength) break;
+                offsets.push(view.getUint32(strOffset, littleEndian));
+                strOffset += 4;
+            }
+            let prevOff = 0;
+            for (let j = 0; j < offsets.length; j++) {
+                const strLen = offsets[j] - prevOff;
+                if (strOffset + strLen > buffer.byteLength) break;
+                outArray.push(this.readString(buffer, strOffset, strLen));
+                strOffset += strLen;
+                prevOff = offsets[j];
+            }
+            return strOffset - offset;
+        }
 
         for (let i = 0; i < count; i++) {
             if (offset + bytesRead >= buffer.byteLength) break;
