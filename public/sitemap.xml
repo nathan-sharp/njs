@@ -156,6 +156,11 @@
         <priority>0.8</priority>
     </url>
     <url>
+        <loc>https://njs.dev/projects/byos/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://njs.dev/projects/open-cad/</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
