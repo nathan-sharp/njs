@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BYOS (Bring Your Own Storage) | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+        <link rel="stylesheet" href="../../style.css">
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Bring Your Own Storage (BYOS)</h1>
+                <p>Zero-infrastructure app backends powered by personal cloud accounts.</p>
+            </header>
+            
+            <main>
+                <section>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        "Bring Your Own Storage" (BYOS), also known as the "Unhosted Web Apps" architecture, is a paradigm where web applications rely entirely on the user's existing cloud storage accounts (such as Google Drive, Microsoft OneDrive, or Apple iCloud) to store application state, settings, and user data. This eliminates the need for developers to provision, manage, and scale backend databases.
+                    </p>
+                    
+                    <section style="margin-top: var(--spacing-xl);">
+                        <h2>Core Advantages</h2>
+                        <ul>
+                            <li><strong>Zero Server Costs:</strong> Developers do not pay for database hosting, storage, or bandwidth for user data.</li>
+                            <li><strong>Reduced Liability:</strong> The app never stores user data on its own servers, significantly reducing the impact and liability of a data breach.</li>
+                            <li><strong>Data Sovereignty & Privacy:</strong> Users retain full ownership of their data within a cloud provider they already trust. They don't need to create new accounts or manage new passwords.</li>
+                        </ul>
+                    </section>
+                    
+                    <section style="margin-top: var(--spacing-xl);">
+                        <h2>Implementation Guide</h2>
+                        <p>
+                            To implement a BYOS architecture, the application typically operates as a Single Page Application (SPA) utilizing <strong>OAuth 2.0 with PKCE (Proof Key for Code Exchange)</strong> to securely authenticate the user directly from the browser without a backend.
+                        </p>
+                        
+                        <h3 style="margin-top: var(--spacing-md);">1. Google Drive (Application Data Folder)</h3>
+                        <p>
+                            Google Drive provides a hidden space specifically for application data. By requesting the <code>https://www.googleapis.com/auth/drive.appdata</code> OAuth scope, your application can read and write files to this hidden directory. 
+                        </p>
+                        <ul>
+                            <li>Files stored here do not clutter the user's main Drive interface.</li>
+                            <li>Users cannot accidentally delete or modify these application configuration files.</li>
+                            <li>When the user uninstalls or disconnects the app, the data can be automatically purged (depending on user action).</li>
+                        </ul>
+                        
+                        <h3 style="margin-top: var(--spacing-md);">2. Microsoft OneDrive (App Root)</h3>
+                        <p>
+                            Through the Microsoft Graph API, applications can access a Special Folder known as the "App Root" (<code>/drive/special/approot</code>).
+                        </p>
+                        <ul>
+                            <li>The application requests the <code>Files.ReadWrite.AppFolder</code> permission.</li>
+                            <li>Upon the first access attempt, OneDrive automatically provisions a dedicated folder with your app's registered name inside an <code>Apps</code> directory.</li>
+                            <li>This provides a clean, sandboxed environment for your application's JSON state or binary files.</li>
+                        </ul>
+                        
+                        <h3 style="margin-top: var(--spacing-md);">3. Apple iCloud (CloudKit)</h3>
+                        <p>
+                            For web applications, Apple provides <strong>CloudKit JS</strong>, which interfaces with iCloud.
+                        </p>
+                        <ul>
+                            <li><strong>Private Databases:</strong> Use these for syncing user-specific application state across devices. Only the authenticated user can access this data.</li>
+                            <li><strong>iCloud Key-Value Storage:</strong> Ideal for lightweight configuration parameters and settings.</li>
+                        </ul>
+                    </section>
+
+                    <section style="margin-top: var(--spacing-xl);">
+                        <h2>Architectural Challenges</h2>
+                        <p>While BYOS provides tremendous benefits, it shifts complexity to the frontend client:</p>
+                        <ul>
+                            <li><strong>Token Lifecycle Management:</strong> The SPA must securely handle OAuth access tokens, refresh tokens, and session expiration gracefully.</li>
+                            <li><strong>Conflict Resolution & Sync:</strong> If a user operates the app simultaneously on a laptop and a mobile device, the frontend must merge state changes and handle network latency.</li>
+                            <li><strong>Multi-user Collaboration:</strong> Sharing data between different users requires navigating complex sharing permissions via the cloud provider's API, rather than simple cross-tenant database queries.</li>
+                        </ul>
+                    </section>
+                </section>
+            </main>
+            
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-08-29T08:15:00</p>
+                    <p>Site version: 77965ec</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+        
+        <script src="../../scripts.js"></script>
+    </body>
+</html>
+
