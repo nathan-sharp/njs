@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft Painting Generator | NJS.dev</title>
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../../style.css?v=20260831b">
     <script src="../../scripts.js"></script>
     <script src="./jszip.min.js"></script>
 </head>
@@ -13,52 +13,60 @@
     <div class="container">
         <header>
             <h1>Minecraft Painting Generator</h1>
-            <p>Create a custom Bedrock Edition painting texture pack entirely in your browser.</p>
+            <p>Create a custom Bedrock Edition painting texture pack for classic and 1.21+ paintings entirely in your browser.</p>
         </header>
         
         <main>
             <div class="dashboard">
                 <div class="settings-panel">
                     <h3>Instructions</h3>
-                    <p>Click on any painting slot below to upload an image. The image will be automatically scaled to fit the slot. When finished, click "Download Texture Pack" to generate your `.mcpack` file.</p>
+                    <p>Select any painting slot below to upload an image. The generator center-crops and scales images to vanilla pixel resolutions. Click "Download Texture Pack" to generate your `.mcpack` file.</p>
                     
                     <h3>Pack Settings</h3>
                     <div class="control-grid">
                         <div class="control-item">
-                            <label for="packName">Pack Name</label>
+                            <label for="packName"><span>Pack Name</span></label>
                             <input type="text" id="packName" value="Custom Paintings" placeholder="e.g. My Custom Art Pack">
                         </div>
                         <div class="control-item">
-                            <label for="packDesc">Pack Description</label>
+                            <label for="packDesc"><span>Pack Description</span></label>
                             <input type="text" id="packDesc" value="Generated on NJS.dev" placeholder="e.g. Replaces vanilla paintings">
                         </div>
                         <div class="control-item">
-                            <label for="packIconInput">Pack Thumbnail (Optional)</label>
-                            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
-                                <input type="file" id="packIconInput" accept="image/*" style="padding: 0.25rem; width: 100%;">
-                                <img id="packIconPreview" style="display: block; width: 64px; height: 64px; border-radius: 4px; border: 1px solid var(--border-color); object-fit: cover; image-rendering: pixelated;">
-                            </div>
+                            <label for="packIconInput"><span>Pack Thumbnail</span></label>
+                            <input type="file" id="packIconInput" accept="image/*">
                         </div>
+                        <div class="control-item">
+                            <label for="packIconPreview"><span>Thumbnail Preview (16x16)</span></label>
+                            <canvas id="packIconPreview" width="16" height="16" class="pixelated"></canvas>
+                        </div>
+                    </div>
+
+                    <h3>Gallery Filter</h3>
+                    <div class="main-controls">
+                        <button type="button" id="filterBtnAll">All Paintings (51)</button>
+                        <button type="button" class="secondary" id="filterBtnClassic">Classic Atlas (30)</button>
+                        <button type="button" class="secondary" id="filterBtnNew">1.21+ Standalone (21)</button>
+                        <button type="button" class="secondary" id="resetAllBtn">Reset All</button>
                     </div>
                     
                     <div class="main-controls">
-                        <button id="downloadBtn">Download Texture Pack (.mcpack)</button>
+                        <button type="button" id="downloadBtn">Download Texture Pack (.mcpack)</button>
                     </div>
                 </div>
 
-                <div class="main-view">
-                    <!-- The canvas logical size is 256x256, but rendered larger via CSS -->
-                    <canvas id="paintingCanvas" width="256" height="256" style="image-rendering: pixelated; cursor: pointer; max-width: 512px; width: 100%;"></canvas>
+                <div class="settings-panel" id="galleryContainer">
+                    <!-- Dynamic painting sections rendered by JavaScript -->
                 </div>
 
-                <!-- Hidden file input for uploading images -->
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <!-- Hidden file input for uploading individual painting images -->
+                <input type="file" id="paintingFileInput" accept="image/*" hidden>
             </div>
         </main>
         <footer>
             <div class="footer-left">
                 <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-08-10T19:24:15</p>
+                <p>Page last updated by nathan-sharp at 2026-08-31T19:45:00</p>
                 <p>Site version: 726dfd7</p>
             </div>
             <div class="footer-right">
@@ -70,155 +78,358 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const canvas = document.getElementById('paintingCanvas');
-            const ctx = canvas.getContext('2d');
-            const fileInput = document.getElementById('fileInput');
-            const downloadBtn = document.getElementById('downloadBtn');
             const packNameInput = document.getElementById('packName');
             const packDescInput = document.getElementById('packDesc');
             const packIconInput = document.getElementById('packIconInput');
             const packIconPreview = document.getElementById('packIconPreview');
+            const iconCtx = packIconPreview.getContext('2d');
+            const paintingFileInput = document.getElementById('paintingFileInput');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const resetAllBtn = document.getElementById('resetAllBtn');
+            const galleryContainer = document.getElementById('galleryContainer');
+
+            const filterBtnAll = document.getElementById('filterBtnAll');
+            const filterBtnClassic = document.getElementById('filterBtnClassic');
+            const filterBtnNew = document.getElementById('filterBtnNew');
+
+            let currentFilter = 'all'; // 'all', 'classic', 'new'
+            let selectedPaintingId = null;
             let currentThumbnailBlob = null;
 
-            function pixelateThumbnail(imageSrc) {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = "Anonymous";
-                    img.onload = () => {
-                        const thumbCanvas = document.createElement('canvas');
-                        thumbCanvas.width = 16;
-                        thumbCanvas.height = 16;
-                        const tctx = thumbCanvas.getContext('2d');
-                        tctx.imageSmoothingEnabled = false;
-                        tctx.drawImage(img, 0, 0, 16, 16);
-                        thumbCanvas.toBlob(resolve, 'image/png');
-                    };
-                    img.src = imageSrc;
-                });
+            // Painting Registry: 30 Classic (kz.png) + 21 Standalone 1.21+
+            const PAINTINGS = [
+                // 1x1 Blocks (16x16 px)
+                { id: 'kebab', name: 'Kebab', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 0, y: 0 },
+                { id: 'aztec', name: 'Aztec', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 16, y: 0 },
+                { id: 'alban', name: 'Alban', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 32, y: 0 },
+                { id: 'aztec2', name: 'Aztec 2', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 48, y: 0 },
+                { id: 'bomb', name: 'Bomb', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 64, y: 0 },
+                { id: 'plant', name: 'Plant', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 80, y: 0 },
+                { id: 'wasteland', name: 'Wasteland', type: 'classic', blocks: '1x1', w: 16, h: 16, x: 96, y: 0 },
+                { id: 'meditative', name: 'Meditative', type: 'new', blocks: '1x1', w: 16, h: 16, file: 'meditative.png' },
+
+                // 1x2 Blocks (16x32 px)
+                { id: 'wanderer', name: 'Wanderer', type: 'classic', blocks: '1x2', w: 16, h: 32, x: 0, y: 64 },
+                { id: 'graham', name: 'Graham', type: 'classic', blocks: '1x2', w: 16, h: 32, x: 16, y: 64 },
+                { id: 'prairie_ride', name: 'Prairie Ride', type: 'new', blocks: '1x2', w: 16, h: 32, file: 'prairie_ride.png' },
+
+                // 2x1 Blocks (32x16 px)
+                { id: 'pool', name: 'Pool', type: 'classic', blocks: '2x1', w: 32, h: 16, x: 0, y: 32 },
+                { id: 'courbet', name: 'Courbet', type: 'classic', blocks: '2x1', w: 32, h: 16, x: 32, y: 32 },
+                { id: 'sunset', name: 'Sunset', type: 'classic', blocks: '2x1', w: 32, h: 16, x: 64, y: 32 },
+                { id: 'sea', name: 'Sea', type: 'classic', blocks: '2x1', w: 32, h: 16, x: 96, y: 32 },
+                { id: 'creebet', name: 'Creebet', type: 'classic', blocks: '2x1', w: 32, h: 16, x: 128, y: 32 },
+
+                // 2x2 Blocks (32x32 px)
+                { id: 'match', name: 'Match', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 0, y: 128 },
+                { id: 'bust', name: 'Bust', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 32, y: 128 },
+                { id: 'stage', name: 'Stage', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 64, y: 128 },
+                { id: 'void', name: 'Void', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 96, y: 128 },
+                { id: 'skull_and_roses', name: 'Skull and Roses', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 128, y: 128 },
+                { id: 'wither', name: 'Wither', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 160, y: 128 },
+                { id: 'earth', name: 'Earth', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 0, y: 160 },
+                { id: 'wind', name: 'Wind', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 32, y: 160 },
+                { id: 'water', name: 'Water', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 64, y: 160 },
+                { id: 'fire', name: 'Fire', type: 'classic', blocks: '2x2', w: 32, h: 32, x: 96, y: 160 },
+                { id: 'baroque', name: 'Baroque', type: 'new', blocks: '2x2', w: 32, h: 32, file: 'baroque.png' },
+                { id: 'humble', name: 'Humble', type: 'new', blocks: '2x2', w: 32, h: 32, file: 'humble.png' },
+
+                // 4x2 Blocks (64x32 px)
+                { id: 'fighters', name: 'Fighters', type: 'classic', blocks: '4x2', w: 64, h: 32, x: 0, y: 96 },
+                { id: 'changing', name: 'Changing', type: 'new', blocks: '4x2', w: 64, h: 32, file: 'changing.png' },
+                { id: 'finding', name: 'Finding', type: 'new', blocks: '4x2', w: 64, h: 32, file: 'finding.png' },
+                { id: 'lowmist', name: 'Lowmist', type: 'new', blocks: '4x2', w: 64, h: 32, file: 'lowmist.png' },
+                { id: 'passage', name: 'Passage', type: 'new', blocks: '4x2', w: 64, h: 32, file: 'passage.png' },
+
+                // 4x3 Blocks (64x48 px)
+                { id: 'skeleton', name: 'Skeleton', type: 'classic', blocks: '4x3', w: 64, h: 48, x: 192, y: 64 },
+                { id: 'donkey_kong', name: 'Donkey Kong', type: 'classic', blocks: '4x3', w: 64, h: 48, x: 192, y: 112 },
+
+                // 3x3 Blocks (48x48 px) - 1.21+ New
+                { id: 'bouquet', name: 'Bouquet', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'bouquet.png' },
+                { id: 'cavebird', name: 'Cavebird', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'cavebird.png' },
+                { id: 'cotan', name: 'Cotan', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'cotan.png' },
+                { id: 'dennis', name: 'Dennis', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'dennis.png' },
+                { id: 'endboss', name: 'Endboss', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'endboss.png' },
+                { id: 'fern', name: 'Fern', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'fern.png' },
+                { id: 'owlemons', name: 'Owlemons', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'owlemons.png' },
+                { id: 'sunflowers', name: 'Sunflowers', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'sunflowers.png' },
+                { id: 'tides', name: 'Tides', type: 'new', blocks: '3x3', w: 48, h: 48, file: 'tides.png' },
+
+                // 3x4 Blocks (48x64 px) - 1.21+ New
+                { id: 'backyard', name: 'Backyard', type: 'new', blocks: '3x4', w: 48, h: 64, file: 'backyard.png' },
+                { id: 'pond', name: 'Pond', type: 'new', blocks: '3x4', w: 48, h: 64, file: 'pond.png' },
+
+                // 4x4 Blocks (64x64 px)
+                { id: 'pointer', name: 'Pointer', type: 'classic', blocks: '4x4', w: 64, h: 64, x: 0, y: 192 },
+                { id: 'pigscene', name: 'Pigscene', type: 'classic', blocks: '4x4', w: 64, h: 64, x: 64, y: 192 },
+                { id: 'burning_skull', name: 'Burning Skull', type: 'classic', blocks: '4x4', w: 64, h: 64, x: 128, y: 192 },
+                { id: 'orb', name: 'Orb', type: 'new', blocks: '4x4', w: 64, h: 64, file: 'orb.png' },
+                { id: 'unpacked', name: 'Unpacked', type: 'new', blocks: '4x4', w: 64, h: 64, file: 'unpacked.png' }
+            ];
+
+            // User upload cache: { [paintingId]: Image }
+            const uploadedImages = {};
+
+            // Classic atlas base template image
+            const kzTemplateImage = new Image();
+            kzTemplateImage.crossOrigin = "Anonymous";
+            kzTemplateImage.src = 'kz_template.png';
+
+            let kzTemplateLoaded = false;
+            kzTemplateImage.onload = () => {
+                kzTemplateLoaded = true;
+                renderGallery();
+            };
+
+            // Vanilla 1.21+ standalone images cache
+            const vanillaImages = {};
+            PAINTINGS.filter(p => p.type === 'new').forEach(p => {
+                const vImg = new Image();
+                vImg.crossOrigin = "Anonymous";
+                vImg.onload = () => {
+                    vanillaImages[p.id] = vImg;
+                    const canvas = document.querySelector(`canvas[data-painting-id="${p.id}"]`);
+                    if (canvas && !uploadedImages[p.id]) {
+                        drawPaintingSlot(canvas, p);
+                    }
+                };
+                vImg.src = `vanilla_paintings/${p.file}`;
+            });
+
+            // Thumbnail Management
+            function setThumbnailFromSource(src) {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.onload = () => {
+                    iconCtx.clearRect(0, 0, 16, 16);
+                    iconCtx.imageSmoothingEnabled = false;
+                    iconCtx.drawImage(img, 0, 0, 16, 16);
+                    packIconPreview.toBlob((blob) => {
+                        currentThumbnailBlob = blob;
+                    }, 'image/png');
+                };
+                img.src = src;
             }
 
-            async function setThumbnail(src) {
-                if (currentThumbnailBlob) {
-                    URL.revokeObjectURL(packIconPreview.src);
-                }
-                currentThumbnailBlob = await pixelateThumbnail(src);
-                packIconPreview.src = URL.createObjectURL(currentThumbnailBlob);
-            }
-
-            // On load
-            setThumbnail('default_icon.png');
+            setThumbnailFromSource('default_icon.png');
 
             packIconInput.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        setThumbnail(event.target.result);
+                        setThumbnailFromSource(event.target.result);
                     };
                     reader.readAsDataURL(e.target.files[0]);
                 } else {
-                    setThumbnail('default_icon.png');
+                    setThumbnailFromSource('default_icon.png');
                 }
             });
 
-            // Standard Bedrock vanilla kz.png layout (coordinates in pixels on a 256x256 image)
-            const PAINTINGS = [
-                // 1x1 blocks (16x16 px)
-                { x: 0, y: 0, w: 16, h: 16 }, { x: 16, y: 0, w: 16, h: 16 }, { x: 32, y: 0, w: 16, h: 16 },
-                { x: 48, y: 0, w: 16, h: 16 }, { x: 64, y: 0, w: 16, h: 16 }, { x: 80, y: 0, w: 16, h: 16 }, { x: 96, y: 0, w: 16, h: 16 },
-                // 2x1 blocks (32x16 px)
-                { x: 0, y: 32, w: 32, h: 16 }, { x: 32, y: 32, w: 32, h: 16 }, { x: 64, y: 32, w: 32, h: 16 },
-                { x: 96, y: 32, w: 32, h: 16 }, { x: 128, y: 32, w: 32, h: 16 },
-                // 1x2 blocks (16x32 px)
-                { x: 0, y: 64, w: 16, h: 32 }, { x: 16, y: 64, w: 16, h: 32 },
-                // 4x2 blocks (64x32 px) - Fighters
-                { x: 0, y: 96, w: 64, h: 32 },
-                // 2x2 blocks (32x32 px)
-                { x: 0, y: 128, w: 32, h: 32 }, { x: 32, y: 128, w: 32, h: 32 }, { x: 64, y: 128, w: 32, h: 32 },
-                { x: 96, y: 128, w: 32, h: 32 }, { x: 128, y: 128, w: 32, h: 32 }, { x: 160, y: 128, w: 32, h: 32 },
-                // 2x2 blocks (32x32 px) - Elemental (Earth, Wind, Fire, Water)
-                { x: 0, y: 160, w: 32, h: 32 }, { x: 32, y: 160, w: 32, h: 32 }, { x: 64, y: 160, w: 32, h: 32 }, { x: 96, y: 160, w: 32, h: 32 },
-                // 4x3 blocks (64x48 px) - Skeleton and Donkey Kong
-                { x: 192, y: 64, w: 64, h: 48 }, { x: 192, y: 112, w: 64, h: 48 },
-                // 4x4 blocks (64x64 px)
-                { x: 0, y: 192, w: 64, h: 64 }, { x: 64, y: 192, w: 64, h: 64 }, { x: 128, y: 192, w: 64, h: 64 }
+            // Center-crop and scale utility (vanilla pixel art preserving aspect ratio)
+            function drawCenterCrop(ctx, img, targetW, targetH) {
+                ctx.imageSmoothingEnabled = false;
+                ctx.fillStyle = '#111111';
+                ctx.fillRect(0, 0, targetW, targetH);
+
+                const srcRatio = img.width / img.height;
+                const targetRatio = targetW / targetH;
+
+                let drawW, drawH, drawX, drawY;
+
+                if (srcRatio > targetRatio) {
+                    drawH = targetH;
+                    drawW = img.width * (targetH / img.height);
+                    drawX = (targetW - drawW) / 2;
+                    drawY = 0;
+                } else {
+                    drawW = targetW;
+                    drawH = img.height * (targetW / img.width);
+                    drawX = 0;
+                    drawY = (targetH - drawH) / 2;
+                }
+
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            }
+
+            // Draw default placeholder or vanilla texture for a painting slot
+            function drawPaintingSlot(canvas, painting) {
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                ctx.clearRect(0, 0, painting.w, painting.h);
+
+                if (uploadedImages[painting.id]) {
+                    drawCenterCrop(ctx, uploadedImages[painting.id], painting.w, painting.h);
+                    return;
+                }
+
+                if (painting.type === 'classic' && kzTemplateLoaded) {
+                    ctx.drawImage(
+                        kzTemplateImage,
+                        painting.x, painting.y, painting.w, painting.h,
+                        0, 0, painting.w, painting.h
+                    );
+                } else if (painting.type === 'new' && vanillaImages[painting.id] && vanillaImages[painting.id].complete) {
+                    ctx.drawImage(vanillaImages[painting.id], 0, 0, painting.w, painting.h);
+                } else {
+                    // Placeholder background for unedited 1.21+ paintings
+                    ctx.fillStyle = '#222222';
+                    ctx.fillRect(0, 0, painting.w, painting.h);
+                    ctx.strokeStyle = '#444444';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(0, 0, painting.w, painting.h);
+
+                    ctx.fillStyle = '#888888';
+                    ctx.font = '6px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(painting.blocks, painting.w / 2, painting.h / 2);
+                }
+            }
+
+            // Group definitions by dimension categories
+            const SIZE_GROUPS = [
+                { title: '1x1 Paintings (16x16 px)', blocks: '1x1' },
+                { title: '1x2 Paintings (16x32 px)', blocks: '1x2' },
+                { title: '2x1 Paintings (32x16 px)', blocks: '2x1' },
+                { title: '2x2 Paintings (32x32 px)', blocks: '2x2' },
+                { title: '4x2 Paintings (64x32 px)', blocks: '4x2' },
+                { title: '4x3 Paintings (64x48 px)', blocks: '4x3' },
+                { title: '3x3 Paintings (48x48 px)', blocks: '3x3' },
+                { title: '3x4 Paintings (48x64 px)', blocks: '3x4' },
+                { title: '4x4 Paintings (64x64 px)', blocks: '4x4' }
             ];
 
-            let selectedPainting = null;
-            let backgroundImage = new Image();
-            backgroundImage.crossOrigin = "Anonymous";
-            backgroundImage.src = 'kz_template.png';
+            function renderGallery() {
+                galleryContainer.innerHTML = '';
 
-            // Store uploaded images: { paintingIndex: Image }
-            const uploadedImages = {};
+                SIZE_GROUPS.forEach(group => {
+                    const matchingPaintings = PAINTINGS.filter(p => {
+                        if (p.blocks !== group.blocks) return false;
+                        if (currentFilter === 'classic') return p.type === 'classic';
+                        if (currentFilter === 'new') return p.type === 'new';
+                        return true;
+                    });
 
-            backgroundImage.onload = () => {
-                redrawCanvas(true);
-            };
+                    if (matchingPaintings.length === 0) return;
 
-            function redrawCanvas(showGrid) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(backgroundImage, 0, 0);
+                    const sectionTitle = document.createElement('h3');
+                    sectionTitle.textContent = group.title;
+                    galleryContainer.appendChild(sectionTitle);
 
-                // Draw uploaded images
-                PAINTINGS.forEach((p, index) => {
-                    if (uploadedImages[index]) {
-                        // Optional: Fill black background
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(p.x, p.y, p.w, p.h);
-                        ctx.drawImage(uploadedImages[index], p.x, p.y, p.w, p.h);
-                    }
-                    if (showGrid) {
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(p.x, p.y, p.w, p.h);
-                    }
+                    const grid = document.createElement('div');
+                    grid.className = 'control-grid';
+
+                    matchingPaintings.forEach(painting => {
+                        const item = document.createElement('div');
+                        item.className = 'control-item';
+
+                        const label = document.createElement('label');
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = painting.name;
+
+                        const tagSpan = document.createElement('span');
+                        tagSpan.textContent = painting.type === 'classic' ? 'Classic' : '1.21+';
+
+                        label.appendChild(nameSpan);
+                        label.appendChild(tagSpan);
+                        item.appendChild(label);
+
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'pixelated';
+                        canvas.width = painting.w;
+                        canvas.height = painting.h;
+                        canvas.dataset.paintingId = painting.id;
+                        drawPaintingSlot(canvas, painting);
+                        item.appendChild(canvas);
+
+                        const btnGroup = document.createElement('div');
+                        btnGroup.className = 'main-controls';
+
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.type = 'button';
+                        uploadBtn.textContent = uploadedImages[painting.id] ? 'Replace Image' : 'Upload Image';
+                        uploadBtn.addEventListener('click', () => {
+                            selectedPaintingId = painting.id;
+                            paintingFileInput.click();
+                        });
+                        btnGroup.appendChild(uploadBtn);
+
+                        if (uploadedImages[painting.id]) {
+                            const clearBtn = document.createElement('button');
+                            clearBtn.type = 'button';
+                            clearBtn.className = 'secondary';
+                            clearBtn.textContent = 'Reset';
+                            clearBtn.addEventListener('click', () => {
+                                delete uploadedImages[painting.id];
+                                renderGallery();
+                            });
+                            btnGroup.appendChild(clearBtn);
+                        }
+
+                        item.appendChild(btnGroup);
+                        grid.appendChild(item);
+                    });
+
+                    galleryContainer.appendChild(grid);
                 });
             }
 
-            canvas.addEventListener('click', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const x = (e.clientX - rect.left) * scaleX;
-                const y = (e.clientY - rect.top) * scaleY;
+            // File Upload Listener
+            paintingFileInput.addEventListener('change', (e) => {
+                if (!e.target.files.length || !selectedPaintingId) return;
 
-                const index = PAINTINGS.findIndex(p => 
-                    x >= p.x && x <= (p.x + p.w) &&
-                    y >= p.y && y <= (p.y + p.h)
-                );
-
-                if (index !== -1) {
-                    selectedPainting = index;
-                    fileInput.click();
-                }
-            });
-
-            fileInput.addEventListener('change', (e) => {
-                if (!e.target.files.length || selectedPainting === null) return;
-                
                 const file = e.target.files[0];
                 const reader = new FileReader();
-                
+
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
-                        uploadedImages[selectedPainting] = img;
-                        redrawCanvas(true);
+                        uploadedImages[selectedPaintingId] = img;
+                        renderGallery();
                     };
                     img.src = event.target.result;
                 };
+
                 reader.readAsDataURL(file);
                 e.target.value = '';
             });
 
-            function uuidv4() {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    const r = Math.random() * 16 | 0;
-                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
+            // Filter Buttons Event Listeners
+            function updateFilterButtons(activeFilter) {
+                currentFilter = activeFilter;
+                filterBtnAll.className = activeFilter === 'all' ? '' : 'secondary';
+                filterBtnClassic.className = activeFilter === 'classic' ? '' : 'secondary';
+                filterBtnNew.className = activeFilter === 'new' ? '' : 'secondary';
+                renderGallery();
             }
 
+            filterBtnAll.addEventListener('click', () => updateFilterButtons('all'));
+            filterBtnClassic.addEventListener('click', () => updateFilterButtons('classic'));
+            filterBtnNew.addEventListener('click', () => updateFilterButtons('new'));
+
+            // Reset All Customizations
+            resetAllBtn.addEventListener('click', () => {
+                for (const key in uploadedImages) {
+                    delete uploadedImages[key];
+                }
+                renderGallery();
+            });
+
+            // CSPRNG UUID Generator
+            function generateUUID() {
+                if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+                    return crypto.randomUUID();
+                }
+                const bytes = new Uint8Array(16);
+                crypto.getRandomValues(bytes);
+                bytes[6] = (bytes[6] & 0x0f) | 0x40;
+                bytes[8] = (bytes[8] & 0x3f) | 0x80;
+                const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+                return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+            }
+
+            // Download Texture Pack (.mcpack)
             downloadBtn.addEventListener('click', async () => {
                 if (typeof JSZip === 'undefined') {
                     alert('JSZip library failed to load.');
@@ -233,54 +444,82 @@
                     header: {
                         name: name,
                         description: desc,
-                        uuid: uuidv4(),
+                        uuid: generateUUID(),
                         version: [1, 0, 0],
-                        min_engine_version: [1, 16, 0]
+                        min_engine_version: [1, 21, 0]
                     },
                     modules: [
                         {
                             type: "resources",
-                            uuid: uuidv4(),
+                            uuid: generateUUID(),
                             version: [1, 0, 0]
                         }
                     ]
                 };
 
-                // Redraw without grid to get clean image
-                redrawCanvas(false);
-                
-                // Get image data
-                const dataUrl = canvas.toDataURL('image/png');
-                const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
-
-                // Build ZIP
                 const zip = new JSZip();
                 zip.file("manifest.json", JSON.stringify(manifest, null, 2));
-                
+
                 if (currentThumbnailBlob) {
                     zip.file("pack_icon.png", currentThumbnailBlob);
                 }
 
-                const textures = zip.folder("textures");
-                const painting = textures.folder("painting");
-                painting.file("kz.png", base64Data, {base64: true});
+                const texturesFolder = zip.folder("textures");
+                const paintingFolder = texturesFolder.folder("painting");
 
-                // Generate and download
-                zip.generateAsync({type:"blob"}).then(function(content) {
-                    const url = URL.createObjectURL(content);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.mcpack';
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 0);
-                    
-                    // Redraw grid for further editing
-                    redrawCanvas(true);
+                // 1. Composite Classic Atlas (kz.png)
+                const atlasCanvas = document.createElement('canvas');
+                atlasCanvas.width = 256;
+                atlasCanvas.height = 256;
+                const atlasCtx = atlasCanvas.getContext('2d');
+                atlasCtx.imageSmoothingEnabled = false;
+
+                if (kzTemplateLoaded) {
+                    atlasCtx.drawImage(kzTemplateImage, 0, 0);
+                }
+
+                PAINTINGS.filter(p => p.type === 'classic').forEach(p => {
+                    if (uploadedImages[p.id]) {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = p.w;
+                        tempCanvas.height = p.h;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        drawCenterCrop(tempCtx, uploadedImages[p.id], p.w, p.h);
+                        atlasCtx.drawImage(tempCanvas, p.x, p.y);
+                    }
                 });
+
+                const atlasDataUrl = atlasCanvas.toDataURL('image/png');
+                const atlasBase64 = atlasDataUrl.replace(/^data:image\/png;base64,/, "");
+                paintingFolder.file("kz.png", atlasBase64, { base64: true });
+
+                // 2. Export 1.21+ Standalone Paintings
+                const newPaintings = PAINTINGS.filter(p => p.type === 'new' && uploadedImages[p.id]);
+                newPaintings.forEach(p => {
+                    const standaloneCanvas = document.createElement('canvas');
+                    standaloneCanvas.width = p.w;
+                    standaloneCanvas.height = p.h;
+                    const sCtx = standaloneCanvas.getContext('2d');
+                    drawCenterCrop(sCtx, uploadedImages[p.id], p.w, p.h);
+
+                    const sDataUrl = standaloneCanvas.toDataURL('image/png');
+                    const sBase64 = sDataUrl.replace(/^data:image\/png;base64,/, "");
+                    paintingFolder.file(p.file, sBase64, { base64: true });
+                });
+
+                // 3. Generate and trigger download
+                const content = await zip.generateAsync({ type: "blob" });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.mcpack';
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 0);
             });
         });
     </script>

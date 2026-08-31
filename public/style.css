@@ -343,6 +343,16 @@ canvas {
   margin: 0 auto;
 }
 
+canvas.pixelated,
+.pixelated,
+.dashboard canvas.pixelated {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 .setting {
   margin-bottom: var(--spacing-md);
 }
@@ -436,6 +446,14 @@ canvas {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.dashboard canvas.pixelated {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .settings-panel {
