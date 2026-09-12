@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>3D CAD Model Viewer | NJS.dev</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
+    <!-- Third-Party CAD & WebGL Libraries (UMD for universal browser compatibility) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.22/dist/occt-import-js.js"></script>
+    <script src="../../scripts.js"></script>
+    <script src="./viewer.js" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>3D CAD Model Viewer</h1>
+            <p>Fast client-side 3D model viewer for STL and STEP files. Inspect engineering geometries directly in your browser without desktop CAD software.</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Load 3D CAD Model</h2>
+                <p>
+                    Select or drag and drop an STL (Stereolithography) or STEP (ISO 10303-21) file. Parsing and rendering execute entirely inside your local browser. Zero bytes leave your device.
+                </p>
+
+                <div class="settings-panel" id="upload-card">
+                    <div class="form-group">
+                        <label for="file-input">Select a local .stl, .stp, or .step file:</label>
+                        <input id="file-input" type="file" accept=".stl,.stp,.step">
+                    </div>
+                    <div class="main-controls">
+                        <button type="button" class="secondary" id="btn-sample-specimen">Reset to Calibration Specimen</button>
+                    </div>
+                    <p id="disp-status">Ready. Showing sample model below.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>3D Viewport</h2>
+                <p>Use left mouse button to rotate, right mouse button to pan, and scroll wheel to zoom.</p>
+
+                <div class="dashboard">
+                    <div class="main-view">
+                        <canvas id="viewer-canvas" width="800" height="500"></canvas>
+                        <button type="button" class="viewport-fullscreen-btn" id="btn-fullscreen" title="Toggle Fullscreen View">⛶ Fullscreen</button>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Model Telemetry</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Telemetry Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>File Name</td>
+                            <td id="disp-filename">—</td>
+                        </tr>
+                        <tr>
+                            <td>Format Specification</td>
+                            <td id="disp-format">—</td>
+                        </tr>
+                        <tr>
+                            <td>File Size</td>
+                            <td id="disp-filesize">—</td>
+                        </tr>
+                        <tr>
+                            <td>Triangle Count</td>
+                            <td id="disp-triangles">—</td>
+                        </tr>
+                        <tr>
+                            <td>Vertex Count</td>
+                            <td id="disp-vertices">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>Format Specifications: STL vs. STEP</h2>
+                <p>
+                    Computer-Aided Design (CAD) and additive manufacturing rely on distinct interchange standards for 3D representation:
+                </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Specification Metric</th>
+                            <th>STL (Stereolithography)</th>
+                            <th>STEP (ISO 10303-21)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Geometry Type</td>
+                            <td>Tessellated triangular mesh</td>
+                            <td>Boundary Representation (B-Rep) & NURBS</td>
+                        </tr>
+                        <tr>
+                            <td>Curved Surface Precision</td>
+                            <td>Approximated by discrete planar facets</td>
+                            <td>Exact mathematical analytical surfaces</td>
+                        </tr>
+                        <tr>
+                            <td>Color & Body Metadata</td>
+                            <td>Typically monochrome mesh only</td>
+                            <td>Supports assembly hierarchy, body colors, and layers</td>
+                        </tr>
+                        <tr>
+                            <td>Primary Industry Use</td>
+                            <td>3D printing, CAM toolpaths, rapid prototyping</td>
+                            <td>CAD interchange, CNC machining, mechanical engineering</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-left">
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                <p>Page last updated by nathan-sharp at 2026-09-12T18:40:00</p>
+                <p>Site version: fdd7358</p>
+            </div>
+            <div class="footer-right">
+                <a href="/about/">About</a>
+                <a href="/other/privacy/">Privacy Policy</a>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

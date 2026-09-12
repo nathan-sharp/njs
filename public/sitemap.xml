@@ -101,6 +101,11 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://njs.dev/applications/model-viewer/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://njs.dev/applications/threadmate/</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
