@@ -1,6 +1,6 @@
 import { TDMSParser } from './tdms-parser.js';
 import { TDMSGenerator } from './tdms-generator.js';
-import { TelemetryChart } from './chart.js';
+import { TelemetryChart, formatDuration } from './chart.js';
 
 let parser = new TDMSParser();
 let chart = null;
@@ -10,6 +10,8 @@ let currentFileName = "engine_telemetry_demo.tdms";
 let selectedGroupIndex = 0;
 let activeChannels = [];
 let xChannel = null;
+
+let virtualTimeChannels = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('telemetry-canvas');
@@ -108,10 +110,13 @@ function setupEventListeners() {
         const val = e.target.value;
         if (val === 'index') {
             xChannel = null;
+        } else if (val.startsWith('wf_')) {
+            xChannel = virtualTimeChannels.find(vc => vc.id === val) || null;
         } else {
             xChannel = activeChannels.find(c => c.name === val) || null;
         }
         chart.setChannels(activeChannels, xChannel);
+        populateDataTable();
         chart.render();
     });
 }
@@ -254,25 +259,32 @@ function updateGroupView() {
 
     activeChannels = group.channels.map(c => ({
         name: c.name,
-        unit: c.properties?.unit_string || "",
+        unit: c.properties?.unit_string || c.properties?.NI_UnitDescription || "",
         desc: c.properties?.description || "",
         data: c.data || [],
-        stats: c.stats || {}
+        stats: c.stats || {},
+        waveform: c.waveform || null,
+        properties: c.properties || {}
     }));
 
-    const timeChan = activeChannels.find(c => c.name.toLowerCase().includes('time') || c.name.toLowerCase().includes('date'));
-    xChannel = timeChan || null;
+    virtualTimeChannels = generateVirtualTimeChannels(group);
 
-    const xSelect = document.getElementById('xaxis-selector');
-    xSelect.innerHTML = `<option value="index">Sample Index (0, 1, 2...)</option>`;
-    activeChannels.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.name;
-        opt.textContent = `${c.name} (${c.unit || 'no unit'})`;
-        if (xChannel && xChannel.name === c.name) opt.selected = true;
-        xSelect.appendChild(opt);
+    const explicitTimeChan = activeChannels.find(c => {
+        const name = c.name.toLowerCase();
+        return name === 'time' || name === 'date' || name.startsWith('time ') || name.endsWith(' time') || name.includes('time') || name.includes('date');
     });
 
+    const waveformElapsedChan = virtualTimeChannels.find(c => c.id === 'wf_elapsed');
+
+    if (explicitTimeChan) {
+        xChannel = explicitTimeChan;
+    } else if (waveformElapsedChan) {
+        xChannel = waveformElapsedChan;
+    } else {
+        xChannel = null;
+    }
+
+    populateXAxisSelector();
     chart.setChannels(activeChannels, xChannel);
 
     populateChannelToggles();
@@ -280,6 +292,92 @@ function updateGroupView() {
     populateDataTable();
 
     chart.render();
+}
+
+function generateVirtualTimeChannels(group) {
+    const channels = group.channels || [];
+    if (channels.length === 0) return [];
+
+    const wfChan = channels.find(c => c.waveform && c.waveform.isWaveform && c.waveform.dt > 0);
+    if (!wfChan) return [];
+
+    const numPoints = wfChan.data ? wfChan.data.length : 0;
+    if (numPoints === 0) return [];
+
+    const { dt, t0, startTime, samplingFrequency, totalDuration } = wfChan.waveform;
+    const vChannels = [];
+
+    const elapsedData = new Float64Array(numPoints);
+    for (let i = 0; i < numPoints; i++) {
+        elapsedData[i] = t0 + i * dt;
+    }
+
+    vChannels.push({
+        id: 'wf_elapsed',
+        name: 'Time (Elapsed)',
+        unit: 's',
+        desc: `Elapsed time (Δt = ${dt} s, fs = ${samplingFrequency.toFixed(2)} Hz, duration = ${totalDuration.toFixed(2)} s)`,
+        data: elapsedData,
+        isVirtual: true,
+        properties: { unit_string: 's', wf_increment: dt }
+    });
+
+    if (startTime) {
+        const startDate = new Date(startTime);
+        if (!isNaN(startDate.getTime())) {
+            const startEpochMs = startDate.getTime() + (t0 * 1000);
+            const timestampData = new Array(numPoints);
+            for (let i = 0; i < numPoints; i++) {
+                const pointDate = new Date(startEpochMs + (i * dt * 1000));
+                timestampData[i] = pointDate.toISOString().replace('T', ' ').replace('Z', ' UTC');
+            }
+
+            vChannels.push({
+                id: 'wf_absolute',
+                name: 'Time (Absolute UTC)',
+                unit: 'UTC',
+                desc: `Absolute acquisition time starting at ${startTime}`,
+                data: timestampData,
+                isVirtual: true,
+                properties: { unit_string: 'UTC' }
+            });
+        }
+    }
+
+    return vChannels;
+}
+
+function populateXAxisSelector() {
+    const xSelect = document.getElementById('xaxis-selector');
+    xSelect.innerHTML = '';
+
+    virtualTimeChannels.forEach(vc => {
+        const opt = document.createElement('option');
+        opt.value = vc.id;
+        opt.textContent = `${vc.name} [${vc.unit}]`;
+        if (xChannel && (xChannel === vc || xChannel.id === vc.id)) {
+            opt.selected = true;
+        }
+        xSelect.appendChild(opt);
+    });
+
+    const idxOpt = document.createElement('option');
+    idxOpt.value = 'index';
+    idxOpt.textContent = 'Sample Index (0, 1, 2...)';
+    if (!xChannel) {
+        idxOpt.selected = true;
+    }
+    xSelect.appendChild(idxOpt);
+
+    activeChannels.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = `${c.name} (${c.unit || 'no unit'})`;
+        if (xChannel && xChannel.name === c.name && !xChannel.isVirtual) {
+            opt.selected = true;
+        }
+        xSelect.appendChild(opt);
+    });
 }
 
 function populateChannelToggles() {
@@ -338,6 +436,9 @@ function populateDataTable() {
     const tableBody = document.querySelector('#data-table tbody');
     
     tableHead.innerHTML = `<th>Index</th>`;
+    if (xChannel && xChannel.isVirtual) {
+        tableHead.innerHTML += `<th>${xChannel.name} (${xChannel.unit})</th>`;
+    }
     activeChannels.forEach(c => {
         tableHead.innerHTML += `<th>${c.name} ${c.unit ? `(${c.unit})` : ''}</th>`;
     });
@@ -350,6 +451,18 @@ function populateDataTable() {
     for (let i = 0; i < maxRows; i++) {
         const tr = document.createElement('tr');
         let rowHtml = `<td><code>${i}</code></td>`;
+        if (xChannel && xChannel.isVirtual) {
+            const xVal = xChannel.data[i];
+            let displayX = xVal;
+            if (typeof xVal === 'number') {
+                if (xChannel.unit === 's') {
+                    displayX = `${formatDuration(xVal, null, true)} (${xVal.toFixed(3)}s)`;
+                } else {
+                    displayX = xVal.toFixed(4);
+                }
+            }
+            rowHtml += `<td><code>${displayX}</code></td>`;
+        }
         activeChannels.forEach(c => {
             const val = c.data[i];
             rowHtml += `<td>${typeof val === 'number' ? val.toFixed(4) : val}</td>`;
@@ -373,13 +486,38 @@ function exportCSV() {
     if (!activeChannels || activeChannels.length === 0) return;
 
     const numPoints = activeChannels[0].data.length;
-    let csv = `Sample Index,` + activeChannels.map(c => `"${c.name} ${c.unit ? `(${c.unit})` : ''}"`).join(',') + `\r\n`;
+    let headers = ['Sample Index'];
+    if (xChannel && xChannel.isVirtual) {
+        if (xChannel.unit === 's') {
+            headers.push(`"${xChannel.name} (s)"`, `"${xChannel.name} (Formatted)"`);
+        } else {
+            headers.push(`"${xChannel.name} (${xChannel.unit})"`);
+        }
+    }
+    activeChannels.forEach(c => {
+        headers.push(`"${c.name} ${c.unit ? `(${c.unit})` : ''}"`);
+    });
+
+    let csv = headers.join(',') + `\r\n`;
 
     for (let i = 0; i < numPoints; i++) {
-        const row = [i, ...activeChannels.map(c => {
+        const row = [i];
+        if (xChannel && xChannel.isVirtual) {
+            const xVal = xChannel.data[i];
+            if (typeof xVal === 'number') {
+                if (xChannel.unit === 's') {
+                    row.push(xVal, `"${formatDuration(xVal, null, true)}"`);
+                } else {
+                    row.push(xVal);
+                }
+            } else {
+                row.push(`"${xVal}"`);
+            }
+        }
+        activeChannels.forEach(c => {
             const val = c.data[i];
-            return typeof val === 'number' ? val : `"${val}"`;
-        })];
+            row.push(typeof val === 'number' ? val : `"${val}"`);
+        });
         csv += row.join(',') + `\r\n`;
     }
 

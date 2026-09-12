@@ -52,7 +52,7 @@ export class TelemetryChart {
         if (xChannel && xChannel.data && xChannel.data.length > 0) {
             this.xData = xChannel.data;
             this.xName = xChannel.name;
-            this.xUnit = xChannel.properties?.unit_string || "";
+            this.xUnit = xChannel.unit || xChannel.properties?.unit_string || "";
         } else {
             this.xData = null;
             this.xName = "Sample Index";
@@ -383,6 +383,9 @@ export class TelemetryChart {
         this.ctx.textAlign = 'center';
         this.ctx.lineWidth = 1;
 
+        const isTimeInSeconds = (this.xUnit === 's' || this.xName.toLowerCase().includes('time') || this.xName.toLowerCase().includes('elapsed')) && this.xData && typeof this.xData[startIdx] === 'number';
+        const visibleSpan = isTimeInSeconds && this.xData ? Math.abs(this.xData[endIdx] - this.xData[startIdx]) : null;
+
         for (let i = 0; i <= numTicks; i++) {
             const norm = i / numTicks;
             const x = plotLeft + norm * plotWidth;
@@ -398,7 +401,25 @@ export class TelemetryChart {
             let labelText = `${dataIdx}`;
             if (this.xData && this.xData[dataIdx] !== undefined) {
                 const val = this.xData[dataIdx];
-                labelText = typeof val === 'number' ? val.toFixed(2) : String(val);
+                if (typeof val === 'number') {
+                    if (isTimeInSeconds) {
+                        labelText = this.formatDuration(val, visibleSpan, false);
+                    } else if (Math.abs(val) >= 10000) {
+                        labelText = val.toFixed(1);
+                    } else if (Math.abs(val) < 0.01 && val !== 0) {
+                        labelText = val.toExponential(2);
+                    } else {
+                        labelText = val.toFixed(2);
+                    }
+                } else {
+                    const str = String(val);
+                    if (str.includes(' ') && str.includes(':')) {
+                        const parts = str.split(' ');
+                        labelText = parts[1] || str;
+                    } else {
+                        labelText = str;
+                    }
+                }
             }
 
             this.ctx.fillText(labelText, x, plotBottom + 16);
@@ -407,8 +428,25 @@ export class TelemetryChart {
         // X Axis Title
         this.ctx.fillStyle = '#1a1a1a';
         this.ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        const xTitle = `${this.xName}${this.xUnit ? ` (${this.xUnit})` : ''}`;
+        let xTitle = `${this.xName}`;
+        if (isTimeInSeconds) {
+            xTitle += ` [${this.getDurationFormatLabel(visibleSpan)}]`;
+        } else if (this.xUnit) {
+            xTitle += ` (${this.xUnit})`;
+        }
         this.ctx.fillText(xTitle, plotLeft + plotWidth / 2, plotBottom + 34);
+    }
+
+    formatDuration(seconds, visibleSpan = null, includeHighPrecision = false) {
+        return formatDuration(seconds, visibleSpan, includeHighPrecision);
+    }
+
+    getDurationFormatLabel(span) {
+        if (span === null) return 's';
+        if (span >= 86400) return 'dd:hh:mm:ss';
+        if (span >= 3600) return 'hh:mm:ss';
+        if (span >= 60) return 'mm:ss.s';
+        return 'ss.sss';
     }
 
     drawYLabels(minVal, maxVal, top, bottom, plotLeft, color, unit) {
@@ -469,7 +507,16 @@ export class TelemetryChart {
         let xValStr = `${dataIdx}`;
         if (this.xData && this.xData[dataIdx] !== undefined) {
             const val = this.xData[dataIdx];
-            xValStr = typeof val === 'number' ? val.toFixed(4) + (this.xUnit ? ` ${this.xUnit}` : '') : String(val);
+            const isTimeInSeconds = (this.xUnit === 's' || this.xName.toLowerCase().includes('time') || this.xName.toLowerCase().includes('elapsed')) && typeof val === 'number';
+            if (typeof val === 'number') {
+                if (isTimeInSeconds) {
+                    xValStr = `${this.formatDuration(val, null, true)} (${val.toFixed(3)}s)`;
+                } else {
+                    xValStr = val.toFixed(4) + (this.xUnit ? ` ${this.xUnit}` : '');
+                }
+            } else {
+                xValStr = String(val);
+            }
         }
 
         let html = `<div style="border-bottom: 1px solid #e5e5e5; padding-bottom: 0.35rem; margin-bottom: 0.35rem; font-size: 0.85rem;"><strong style="color: #1a1a1a;">${this.xName}:</strong> ${xValStr} <span style="color: #555555; font-size: 0.75rem;">(idx: ${dataIdx})</span></div>`;
@@ -501,4 +548,63 @@ export class TelemetryChart {
         this.tooltip.style.left = `${left}px`;
         this.tooltip.style.top = `${top}px`;
     }
+}
+
+export function formatDuration(seconds, visibleSpan = null, includeHighPrecision = false) {
+    if (typeof seconds !== 'number' || !isFinite(seconds)) {
+        return String(seconds);
+    }
+
+    const isNegative = seconds < 0;
+    const absSec = Math.abs(seconds);
+
+    const span = visibleSpan !== null ? visibleSpan : absSec;
+
+    let fracDigits = 1;
+    if (includeHighPrecision) {
+        fracDigits = 3;
+    } else if (span < 0.1) {
+        fracDigits = 4;
+    } else if (span < 2) {
+        fracDigits = 3;
+    } else if (span < 60) {
+        fracDigits = 2;
+    } else if (span < 3600) {
+        fracDigits = 1;
+    } else {
+        fracDigits = 0;
+    }
+
+    const factor = Math.pow(10, fracDigits);
+    const totalUnits = Math.round(absSec * factor);
+    const wholeSecTotal = Math.floor(totalUnits / factor);
+    const fracVal = totalUnits % factor;
+
+    const days = Math.floor(wholeSecTotal / 86400);
+    const remAfterDays = wholeSecTotal % 86400;
+
+    const hours = Math.floor(remAfterDays / 3600);
+    const remAfterHours = remAfterDays % 3600;
+
+    const minutes = Math.floor(remAfterHours / 60);
+    const secondsVal = remAfterHours % 60;
+
+    const pad2 = (n) => n.toString().padStart(2, '0');
+
+    let secStr = pad2(secondsVal);
+    if (fracDigits > 0) {
+        const fracStr = fracVal.toString().padStart(fracDigits, '0');
+        secStr += `.${fracStr}`;
+    }
+
+    let result = '';
+    if (days > 0 || (visibleSpan !== null && visibleSpan >= 86400)) {
+        result = `${days}d ${pad2(hours)}:${pad2(minutes)}:${secStr}`;
+    } else if (hours > 0 || (visibleSpan !== null && visibleSpan >= 3600)) {
+        result = `${pad2(hours)}:${pad2(minutes)}:${secStr}`;
+    } else {
+        result = `${pad2(minutes)}:${secStr}`;
+    }
+
+    return isNegative ? `-${result}` : result;
 }

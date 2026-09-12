@@ -434,6 +434,7 @@ export class TDMSParser {
             for (const [chanName, chanData] of groupData.channels.entries()) {
                 const dataArray = chanData.data || [];
                 const stats = this.computeStats(dataArray);
+                const waveform = this.extractWaveformInfo(chanData.properties, dataArray.length);
                 
                 channels.push({
                     name: chanName,
@@ -441,7 +442,8 @@ export class TDMSParser {
                     properties: chanData.properties,
                     dataType: chanData.dataType,
                     data: dataArray,
-                    stats
+                    stats,
+                    waveform
                 });
             }
 
@@ -454,6 +456,31 @@ export class TDMSParser {
         }
 
         return result;
+    }
+
+    extractWaveformInfo(properties, pointCount) {
+        if (!properties) return null;
+
+        const dt = properties.wf_increment ?? properties.NI_wf_increment ?? properties.dt ?? properties.increment ?? null;
+        if (typeof dt !== 'number' || dt <= 0 || !isFinite(dt)) {
+            return null;
+        }
+
+        const t0 = (typeof properties.wf_start_offset === 'number' && isFinite(properties.wf_start_offset)) ? properties.wf_start_offset : 0;
+        const startTime = properties.wf_start_time || properties.NI_wf_start_time || null;
+        const samplesPerBlock = properties.wf_samples ?? properties.NI_wf_samples ?? 1;
+        const samplingFrequency = 1 / dt;
+        const totalDuration = pointCount > 0 ? (pointCount - 1) * dt : 0;
+
+        return {
+            isWaveform: true,
+            dt,
+            t0,
+            startTime,
+            samplesPerBlock,
+            samplingFrequency,
+            totalDuration
+        };
     }
 
     computeStats(dataArray) {
