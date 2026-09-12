@@ -1,6 +1,7 @@
 /**
  * 3D CAD Model Viewer Controller
  * Safety-Critical Architecture adhering to ISO/IEC 25010 & Power of 10
+ * Supported Formats: STL (.stl), STEP (.stp, .step), OBJ (.obj), PLY (.ply), GLTF/GLB (.gltf, .glb)
  */
 
 // Application State
@@ -135,7 +136,7 @@ function displayMeshes(meshes) {
         geometry.computeBoundingBox();
         combinedBox.union(geometry.boundingBox);
 
-        let material = defaultMaterial;
+        let material = meshData.material || defaultMaterial;
         if (meshData.color && Array.isArray(meshData.color) && meshData.color.length >= 3) {
             material = new THREE.MeshStandardMaterial({
                 color: new THREE.Color(meshData.color[0], meshData.color[1], meshData.color[2]),
@@ -155,7 +156,7 @@ function displayMeshes(meshes) {
             const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
             mesh.add(edgeLines);
         } catch (e) {
-            // Ignore edge generation failure on non-indexed geometry
+            // Ignore edge generation failure on non-manifold geometry
         }
 
         modelGroup.add(mesh);
@@ -323,6 +324,232 @@ function parseAsciiSTL(buffer) {
 }
 
 /**
+ * Parse Wavefront OBJ file
+ * @param {ArrayBuffer} buffer
+ * @returns {Object}
+ */
+function parseOBJ(buffer) {
+    const decoder = new TextDecoder('utf-8');
+    const text = decoder.decode(buffer);
+    const lines = text.split(/\r?\n/);
+
+    const rawV = [];
+    const rawVN = [];
+    const positions = [];
+    const normals = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith('#')) continue;
+        const parts = line.split(/\s+/);
+        const tag = parts[0];
+
+        if (tag === 'v') {
+            rawV.push([parseFloat(parts[1]) || 0, parseFloat(parts[2]) || 0, parseFloat(parts[3]) || 0]);
+        } else if (tag === 'vn') {
+            rawVN.push([parseFloat(parts[1]) || 0, parseFloat(parts[2]) || 0, parseFloat(parts[3]) || 0]);
+        } else if (tag === 'f') {
+            const faceVerts = [];
+            for (let j = 1; j < parts.length; j++) {
+                const sub = parts[j].split('/');
+                let vIdx = parseInt(sub[0], 10);
+                if (vIdx < 0) vIdx = rawV.length + vIdx + 1;
+                let vnIdx = sub.length >= 3 && sub[2] ? parseInt(sub[2], 10) : 0;
+                if (vnIdx < 0) vnIdx = rawVN.length + vnIdx + 1;
+                faceVerts.push({ v: vIdx - 1, vn: vnIdx - 1 });
+            }
+            // Convex polygon fan triangulation
+            for (let j = 1; j < faceVerts.length - 1; j++) {
+                const tri = [faceVerts[0], faceVerts[j], faceVerts[j + 1]];
+                for (let k = 0; k < 3; k++) {
+                    const vert = rawV[tri[k].v] || [0, 0, 0];
+                    positions.push(...vert);
+                    if (tri[k].vn >= 0 && rawVN[tri[k].vn]) {
+                        normals.push(...rawVN[tri[k].vn]);
+                    }
+                }
+            }
+        }
+    }
+
+    const posArray = new Float32Array(positions);
+    const normArray = normals.length === positions.length ? new Float32Array(normals) : null;
+
+    return {
+        meshes: [{
+            positions: posArray,
+            normals: normArray,
+            indices: null,
+            color: null,
+            name: 'OBJ_Model'
+        }],
+        triangleCount: posArray.length / 9,
+        vertexCount: posArray.length / 3
+    };
+}
+
+/**
+ * Parse Stanford PLY file (ASCII & Binary Little Endian)
+ * @param {ArrayBuffer} buffer
+ * @returns {Object}
+ */
+function parsePLY(buffer) {
+    const textDecoder = new TextDecoder('utf-8');
+    const headerBytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 4096));
+    const headerText = textDecoder.decode(headerBytes);
+    const endHeaderMatch = headerText.match(/end_header\r?\n/);
+
+    if (!endHeaderMatch) {
+        throw new Error('Invalid PLY file: end_header delimiter not found.');
+    }
+
+    const headerEndOffset = endHeaderMatch.index + endHeaderMatch[0].length;
+    const headerLines = headerText.substring(0, endHeaderMatch.index).split(/\r?\n/);
+
+    let isBinary = false;
+    let vertexCount = 0;
+    let faceCount = 0;
+
+    for (const line of headerLines) {
+        const parts = line.trim().split(/\s+/);
+        if (parts[0] === 'format') {
+            if (parts[1].startsWith('binary')) {
+                isBinary = true;
+            }
+        } else if (parts[0] === 'element') {
+            if (parts[1] === 'vertex') {
+                vertexCount = parseInt(parts[2], 10);
+            } else if (parts[1] === 'face') {
+                faceCount = parseInt(parts[2], 10);
+            }
+        }
+    }
+
+    const positions = [];
+
+    if (!isBinary) {
+        const fullText = textDecoder.decode(buffer);
+        const bodyLines = fullText.substring(headerEndOffset).trim().split(/\r?\n/);
+        let lineIdx = 0;
+
+        const verts = [];
+        for (let i = 0; i < vertexCount && lineIdx < bodyLines.length; i++) {
+            const parts = bodyLines[lineIdx++].trim().split(/\s+/);
+            verts.push([parseFloat(parts[0]) || 0, parseFloat(parts[1]) || 0, parseFloat(parts[2]) || 0]);
+        }
+
+        for (let i = 0; i < faceCount && lineIdx < bodyLines.length; i++) {
+            const parts = bodyLines[lineIdx++].trim().split(/\s+/);
+            const count = parseInt(parts[0], 10);
+            const fVerts = [];
+            for (let j = 1; j <= count; j++) {
+                fVerts.push(parseInt(parts[j], 10));
+            }
+            for (let j = 1; j < fVerts.length - 1; j++) {
+                const tri = [fVerts[0], fVerts[j], fVerts[j + 1]];
+                for (let k = 0; k < 3; k++) {
+                    positions.push(...(verts[tri[k]] || [0, 0, 0]));
+                }
+            }
+        }
+    } else {
+        const view = new DataView(buffer);
+        let offset = headerEndOffset;
+        const verts = [];
+
+        for (let i = 0; i < vertexCount; i++) {
+            if (offset + 12 > buffer.byteLength) break;
+            const x = view.getFloat32(offset, true);
+            const y = view.getFloat32(offset + 4, true);
+            const z = view.getFloat32(offset + 8, true);
+            verts.push([x, y, z]);
+            offset += 12;
+        }
+
+        for (let i = 0; i < faceCount; i++) {
+            if (offset >= buffer.byteLength) break;
+            const count = view.getUint8(offset);
+            offset += 1;
+            const fVerts = [];
+            for (let j = 0; j < count; j++) {
+                fVerts.push(view.getInt32(offset, true));
+                offset += 4;
+            }
+            for (let j = 1; j < fVerts.length - 1; j++) {
+                const tri = [fVerts[0], fVerts[j], fVerts[j + 1]];
+                for (let k = 0; k < 3; k++) {
+                    positions.push(...(verts[tri[k]] || [0, 0, 0]));
+                }
+            }
+        }
+    }
+
+    const posArray = new Float32Array(positions);
+
+    return {
+        meshes: [{
+            positions: posArray,
+            normals: null,
+            indices: null,
+            color: null,
+            name: 'PLY_Model'
+        }],
+        triangleCount: posArray.length / 9,
+        vertexCount: posArray.length / 3
+    };
+}
+
+/**
+ * Parse GLTF / GLB via Three.js GLTFLoader
+ * @param {ArrayBuffer} buffer
+ * @returns {Promise<Object>}
+ */
+async function parseGLTF(buffer) {
+    if (!THREE.GLTFLoader) {
+        throw new Error('GLTFLoader is not available.');
+    }
+
+    return new Promise((resolve, reject) => {
+        const loader = new THREE.GLTFLoader();
+        loader.parse(buffer, '', (gltf) => {
+            const meshes = [];
+            let totalTriangles = 0;
+            let totalVertices = 0;
+
+            gltf.scene.traverse((child) => {
+                if (child.isMesh && child.geometry) {
+                    const geom = child.geometry.clone();
+                    const triCount = geom.index ? geom.index.count / 3 : (geom.attributes.position ? geom.attributes.position.count / 3 : 0);
+                    const vertCount = geom.attributes.position ? geom.attributes.position.count : 0;
+
+                    totalTriangles += triCount;
+                    totalVertices += vertCount;
+
+                    meshes.push({
+                        geometry: geom,
+                        material: child.material,
+                        name: child.name || 'GLTF_Mesh'
+                    });
+                }
+            });
+
+            if (meshes.length === 0) {
+                reject(new Error('No renderable meshes found in GLTF model.'));
+                return;
+            }
+
+            resolve({
+                meshes: meshes,
+                triangleCount: Math.round(totalTriangles),
+                vertexCount: Math.round(totalVertices)
+            });
+        }, (err) => {
+            reject(new Error(err && err.message ? err.message : 'Error decoding GLTF/GLB file.'));
+        });
+    });
+}
+
+/**
  * Load OpenCASCADE WASM module
  * @returns {Promise<Object>}
  */
@@ -477,26 +704,7 @@ function loadDefaultSpecimen() {
 }
 
 /**
- * Load a remote STL/STEP file by relative path
- * @param {string} url
- * @param {string} filename
- */
-async function loadFileFromUrl(url, filename) {
-    try {
-        setStatus(`Fetching ${filename}...`);
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status} fetching ${filename}`);
-        }
-        const buffer = await response.arrayBuffer();
-        await parseAndDisplayBuffer(filename, buffer);
-    } catch (err) {
-        setStatus(`Failed to fetch ${filename}: ${err.message}. Try selecting the file via the file picker above.`, true);
-    }
-}
-
-/**
- * Process ArrayBuffer and render
+ * Process ArrayBuffer and render according to format
  * @param {string} filename
  * @param {ArrayBuffer} buffer
  */
@@ -515,8 +723,17 @@ async function parseAndDisplayBuffer(filename, buffer) {
         } else if (ext === 'stp' || ext === 'step') {
             formatTag = 'STEP (ISO 10303-21 B-Rep)';
             parseResult = await parseStepFile(buffer);
+        } else if (ext === 'obj') {
+            formatTag = 'Wavefront OBJ Mesh';
+            parseResult = parseOBJ(buffer);
+        } else if (ext === 'ply') {
+            formatTag = 'Stanford PLY Polygon Mesh';
+            parseResult = parsePLY(buffer);
+        } else if (ext === 'gltf' || ext === 'glb') {
+            formatTag = ext === 'glb' ? 'Binary GLTF (GLB)' : 'GL Transmission Format (glTF)';
+            parseResult = await parseGLTF(buffer);
         } else {
-            throw new Error(`Unsupported 3D file format: .${ext}`);
+            throw new Error(`Unsupported 3D format: .${ext}. Supported formats: .stl, .stp, .step, .obj, .ply, .gltf, .glb`);
         }
 
         displayMeshes(parseResult.meshes);
@@ -540,9 +757,26 @@ async function parseAndDisplayBuffer(filename, buffer) {
 function handleFile(file) {
     if (!file) return;
 
+    const validExtensions = ['stl', 'stp', 'step', 'obj', 'ply', 'gltf', 'glb'];
+    const proprietaryFormats = {
+        'ipt': 'Autodesk Inventor Part (.ipt)',
+        'iam': 'Autodesk Inventor Assembly (.iam)',
+        'sldprt': 'SolidWorks Part (.sldprt)',
+        'sldasm': 'SolidWorks Assembly (.sldasm)',
+        'catpart': 'CATIA Part (.CATPart)',
+        'prt': 'PTC Creo / Siemens NX Part (.prt)',
+        'dwg': 'AutoCAD Drawing (.dwg)'
+    };
+
     const ext = file.name.split('.').pop().toLowerCase();
-    if (ext !== 'stl' && ext !== 'stp' && ext !== 'step') {
-        setStatus(`Unsupported format: .${ext}. Please select a .stl or .stp / .step CAD file.`, true);
+
+    if (proprietaryFormats[ext]) {
+        setStatus(`${proprietaryFormats[ext]} is a proprietary parametric feature format requiring closed-source CAD kernels (e.g. Autodesk Shape Manager / Parasolid). To view this model in the browser with 100% fidelity, export as STEP (.stp / .step) from your CAD software (File > Export > CAD Format > STEP) and load it here.`, true);
+        return;
+    }
+
+    if (!validExtensions.includes(ext)) {
+        setStatus(`Unsupported format: .${ext}. Supported formats: .stl, .stp, .step, .obj, .ply, .gltf, .glb. For native CAD files (.ipt, .sldprt), export to STEP (.stp) first.`, true);
         return;
     }
 
@@ -751,4 +985,3 @@ if (document.readyState === 'loading') {
 } else {
     initViewer();
 }
-

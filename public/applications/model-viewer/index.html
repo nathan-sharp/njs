@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.22/dist/occt-import-js.js"></script>
     <script src="../../scripts.js"></script>
     <script src="./viewer.js" defer></script>
@@ -20,20 +21,20 @@
     <div class="container">
         <header>
             <h1>3D CAD Model Viewer</h1>
-            <p>Fast client-side 3D model viewer for STL and STEP files. Inspect engineering geometries directly in your browser without desktop CAD software.</p>
+            <p>Fast client-side 3D model viewer for STL, STEP, OBJ, PLY, and GLTF/GLB files. Inspect engineering geometries directly in your browser without desktop CAD software.</p>
         </header>
 
         <main>
             <section>
                 <h2>Load 3D CAD Model</h2>
                 <p>
-                    Select or drag and drop an STL (Stereolithography) or STEP (ISO 10303-21) file. Parsing and rendering execute entirely inside your local browser. Zero bytes leave your device.
+                    Select or drag and drop a 3D CAD file (.stl, .stp, .step, .obj, .ply, .gltf, .glb). Parsing and rendering execute entirely inside your local browser. Zero bytes leave your device.
                 </p>
 
                 <div class="settings-panel" id="upload-card">
                     <div class="form-group">
-                        <label for="file-input">Select a local .stl, .stp, or .step file:</label>
-                        <input id="file-input" type="file" accept=".stl,.stp,.step">
+                        <label for="file-input">Select a local 3D file (.stl, .stp, .step, .obj, .ply, .gltf, .glb):</label>
+                        <input id="file-input" type="file" accept=".stl,.stp,.step,.obj,.ply,.gltf,.glb">
                     </div>
                     <div class="main-controls">
                         <button type="button" class="secondary" id="btn-sample-specimen">Reset to Calibration Specimen</button>
@@ -89,49 +90,78 @@
             </section>
 
             <section>
-                <h2>Format Specifications: STL vs. STEP</h2>
+                <h2>Supported 3D Format Specifications</h2>
                 <p>
-                    Computer-Aided Design (CAD) and additive manufacturing rely on distinct interchange standards for 3D representation:
+                    Engineering design and manufacturing utilize specialized interchange formats:
                 </p>
                 <table>
                     <thead>
                         <tr>
-                            <th>Specification Metric</th>
-                            <th>STL (Stereolithography)</th>
-                            <th>STEP (ISO 10303-21)</th>
+                            <th>Format</th>
+                            <th>Geometry Representation</th>
+                            <th>Primary Use Case</th>
+                            <th>Color/Material Support</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Geometry Type</td>
-                            <td>Tessellated triangular mesh</td>
+                            <td><strong>STL</strong> (.stl)</td>
+                            <td>Tessellated triangular facet mesh</td>
+                            <td>3D Printing & rapid prototyping</td>
+                            <td>Monochrome mesh</td>
+                        </tr>
+                        <tr>
+                            <td><strong>STEP</strong> (.stp, .step)</td>
                             <td>Boundary Representation (B-Rep) & NURBS</td>
+                            <td>Mechanical CAD/CAM interchange (ISO 10303-21)</td>
+                            <td>Assembly hierarchy & body colors</td>
                         </tr>
                         <tr>
-                            <td>Curved Surface Precision</td>
-                            <td>Approximated by discrete planar facets</td>
-                            <td>Exact mathematical analytical surfaces</td>
+                            <td><strong>OBJ</strong> (.obj)</td>
+                            <td>Polygonal surface mesh with normal vectors</td>
+                            <td>3D visualization & reverse engineering</td>
+                            <td>Material library (.mtl) / vertex colors</td>
                         </tr>
                         <tr>
-                            <td>Color & Body Metadata</td>
-                            <td>Typically monochrome mesh only</td>
-                            <td>Supports assembly hierarchy, body colors, and layers</td>
+                            <td><strong>PLY</strong> (.ply)</td>
+                            <td>Polygon mesh & point clouds</td>
+                            <td>Metrology, LiDAR, and surface scans</td>
+                            <td>Per-vertex RGB color & normal fields</td>
                         </tr>
                         <tr>
-                            <td>Primary Industry Use</td>
-                            <td>3D printing, CAM toolpaths, rapid prototyping</td>
-                            <td>CAD interchange, CNC machining, mechanical engineering</td>
+                            <td><strong>GLTF / GLB</strong> (.gltf, .glb)</td>
+                            <td>PBR transmission mesh & scene graph</td>
+                            <td>Standard 3D web asset exchange</td>
+                            <td>PBR materials, textures, & hierarchy</td>
                         </tr>
                     </tbody>
                 </table>
+            </section>
+
+            <section>
+                <h2>Native CAD Program Files (.ipt, .sldprt, .catpart)</h2>
+                <p>
+                    Native CAD formats (such as Autodesk Inventor .ipt, SolidWorks .sldprt, and CATIA .CATPart) store internal parametric feature trees, sketch constraints, and historical construction operations compiled specifically for proprietary modeling kernels (Autodesk Shape Manager, Parasolid, CGM).
+                </p>
+                <p>
+                    Because these proprietary kernels are closed-source and cannot be executed locally in a web browser without cloud servers, engineers export to the vendor-neutral ISO standard <strong>STEP</strong> (.stp / .step) format:
+                </p>
+                <dl>
+                    <dt>Autodesk Inventor (.ipt)</dt>
+                    <dd>Click <strong>File</strong> &rarr; <strong>Export</strong> &rarr; <strong>CAD Format</strong> &rarr; Select <strong>STEP (*.stp, *.step)</strong>.</dd>
+                    <dt>SolidWorks (.sldprt)</dt>
+                    <dd>Click <strong>File</strong> &rarr; <strong>Save As</strong> &rarr; Select <strong>STEP AP214 (*.step, *.stp)</strong>.</dd>
+                    <dt>PTC Creo / Siemens NX (.prt)</dt>
+                    <dd>Click <strong>File</strong> &rarr; <strong>Export</strong> &rarr; Select <strong>STEP (.stp)</strong>.</dd>
+                </dl>
             </section>
         </main>
 
         <footer>
             <div class="footer-left">
                 <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                <p>Page last updated by nathan-sharp at 2026-09-12T17:58:44</p>
-                <p>Site version: 2968c99</p>
+                <p>Page last updated by nathan-sharp at 2026-09-12T19:15:00</p>
+                <p>Site version: fdd7358</p>
             </div>
             <div class="footer-right">
                 <a href="/about/">About</a>

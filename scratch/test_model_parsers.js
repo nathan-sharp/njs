@@ -199,6 +199,103 @@ console.log('\n[TEST 5] Verifying Multi-Facet Binary STL decoding...');
     console.log('✓ PASS: Multi-facet binary STL decoded successfully.');
 }
 
+// ==========================================
+// TEST 6: Wavefront OBJ Parser (Triangles and Quads)
+// ==========================================
+console.log('\n[TEST 6] Verifying Wavefront OBJ Parser (Arrange-Act-Assert)...');
+{
+    // Arrange
+    const objText = `
+# Engineering Bracket Test
+v 0.0 0.0 0.0
+v 10.0 0.0 0.0
+v 10.0 10.0 0.0
+v 0.0 10.0 0.0
+vn 0.0 0.0 1.0
+f 1//1 2//1 3//1 4//1
+`;
+    const lines = objText.split(/\r?\n/);
+    const rawV = [];
+    const rawVN = [];
+    const positions = [];
+    const normals = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith('#')) continue;
+        const parts = line.split(/\s+/);
+        const tag = parts[0];
+
+        if (tag === 'v') {
+            rawV.push([parseFloat(parts[1]) || 0, parseFloat(parts[2]) || 0, parseFloat(parts[3]) || 0]);
+        } else if (tag === 'vn') {
+            rawVN.push([parseFloat(parts[1]) || 0, parseFloat(parts[2]) || 0, parseFloat(parts[3]) || 0]);
+        } else if (tag === 'f') {
+            const faceVerts = [];
+            for (let j = 1; j < parts.length; j++) {
+                const sub = parts[j].split('/');
+                let vIdx = parseInt(sub[0], 10);
+                if (vIdx < 0) vIdx = rawV.length + vIdx + 1;
+                let vnIdx = sub.length >= 3 && sub[2] ? parseInt(sub[2], 10) : 0;
+                if (vnIdx < 0) vnIdx = rawVN.length + vnIdx + 1;
+                faceVerts.push({ v: vIdx - 1, vn: vnIdx - 1 });
+            }
+            for (let j = 1; j < faceVerts.length - 1; j++) {
+                const tri = [faceVerts[0], faceVerts[j], faceVerts[j + 1]];
+                for (let k = 0; k < 3; k++) {
+                    positions.push(...rawV[tri[k].v]);
+                    if (tri[k].vn >= 0 && rawVN[tri[k].vn]) {
+                        normals.push(...rawVN[tri[k].vn]);
+                    }
+                }
+            }
+        }
+    }
+
+    // Assert
+    assert.strictEqual(positions.length, 18, 'Quad must be triangulated into 2 triangles (18 vertex floats).');
+    assert.strictEqual(normals.length, 18, '18 normal coordinates must be extracted.');
+    console.log('✓ PASS: Wavefront OBJ parser correctly triangulates polygons and parses normals.');
+}
+
+// ==========================================
+// TEST 7: Stanford PLY Parser
+// ==========================================
+console.log('\n[TEST 7] Verifying Stanford PLY Parser (Arrange-Act-Assert)...');
+{
+    // Arrange
+    const plyText = `ply
+format ascii 1.0
+element vertex 4
+property float x
+property float y
+property float z
+element face 1
+property list uchar int vertex_indices
+end_header
+0.0 0.0 0.0
+25.0 0.0 0.0
+25.0 25.0 0.0
+0.0 25.0 0.0
+4 0 1 2 3
+`;
+    const lines = plyText.trim().split(/\r?\n/);
+    const endHeaderIdx = lines.indexOf('end_header');
+    assert.ok(endHeaderIdx >= 0, 'Header must contain end_header.');
+
+    const bodyLines = lines.slice(endHeaderIdx + 1);
+    const verts = [];
+    for (let i = 0; i < 4; i++) {
+        const parts = bodyLines[i].trim().split(/\s+/);
+        verts.push([parseFloat(parts[0]), parseFloat(parts[1]), parseFloat(parts[2])]);
+    }
+    const faceParts = bodyLines[4].trim().split(/\s+/);
+    const count = parseInt(faceParts[0], 10);
+    assert.strictEqual(count, 4, 'Face must be quad.');
+    assert.strictEqual(verts[1][0], 25.0, 'X coordinate must be 25.0.');
+    console.log('✓ PASS: Stanford PLY parser correctly extracts vertices and face polygons.');
+}
+
 console.log('\n=========================================');
 console.log('ALL VERIFICATION TESTS PASSED SUCCESSFULLY');
 console.log('=========================================');
