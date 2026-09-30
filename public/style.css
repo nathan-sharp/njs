@@ -561,5 +561,63 @@ canvas.pixelated,
   }
 }
 
+/* 11. Sidebar Layout */
+.sidebar-layout {
+  display: block;
+}
 
+.sidebar-nav {
+  background: var(--ad-bg);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-lg);
+}
 
+@media (min-width: 1200px) {
+  .sidebar-nav {
+    float: left;
+    position: sticky;
+    top: var(--spacing-lg);
+    width: 220px;
+    margin-left: calc(-220px - var(--spacing-lg));
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: var(--spacing-sm);
+  color: var(--text-color);
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background-color: var(--border-color);
+  color: var(--accent-color);
+}
+
+.sidebar-nav .sub-menu {
+  margin-left: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  border-left: 2px solid var(--border-color);
+  padding-left: var(--spacing-sm);
+}
+
+.sidebar-content {
+  width: 100%;
+}

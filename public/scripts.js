@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="nav-links">
                 <a href="/applications">Applications</a>
                 <a href="/projects">Projects</a>
+                <a href="/edu/">Education</a>
                 <a href="/other">Other</a>
             </div>
         </nav>
