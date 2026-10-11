@@ -1,0 +1,12 @@
+127.0.0.1 - - [11/Oct/2026 09:12:51] "GET /robots.txt HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:12:58] "GET /robots.txt HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:13:06] "GET /edu/L6/unit-1/lo-1/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:13:06] "GET /edu/L6/unit-1/lo-2/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:14:02] "GET /edu/L6/unit-1/lo-1/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:14:02] "GET /scripts.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:14:02] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:14:05] "GET /edu/L6/unit-1/lo-2/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:18:54] "GET /edu/L6/unit-1/lo-1/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:18:54] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:18:54] "GET /scripts.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Oct/2026 09:18:55] "GET /edu/L6/unit-1/lo-2/index.html HTTP/1.1" 200 -

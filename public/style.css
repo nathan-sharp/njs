@@ -133,6 +133,14 @@ a:hover {
   border-bottom-color: var(--accent-color);
 }
 
+/* Example Boxes for Educational Content */
+.example-box {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-left: 4px solid #0056b3;
+  margin-bottom: 20px;
+}
+
 /* 4. Definition Lists (Tools & Projects) */
 dl {
   display: grid;

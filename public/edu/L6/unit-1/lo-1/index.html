@@ -48,14 +48,49 @@
                         <p>
                             In mechanical engineering, you often know the result of a formula but need to isolate a specific variable (like solving for the radius in a stress calculation). The golden rule is: whatever you do to one side of the equation, you must do to the other.
                         </p>
-                        <p>
-                            <em>Example placeholder...</em>
-                        </p>
+                        <div class="example-box">
+                            <h4>Example: Transposing a Stress Formula</h4>
+                            <p>Consider the formula for axial stress: <strong>&sigma; = F / A</strong></p>
+                            <p>Where:</p>
+                            <ul>
+                                <li><strong>&sigma;</strong> = Stress (N/m&sup2; or Pa)</li>
+                                <li><strong>F</strong> = Applied Force (N)</li>
+                                <li><strong>A</strong> = Cross-sectional Area (m&sup2;)</li>
+                            </ul>
+                            <p>If we have a circular cross-section, the area <strong>A</strong> is given by <strong>A = &pi;r&sup2;</strong>. Substituting this into the stress formula gives:</p>
+                            <p><strong>&sigma; = F / (&pi;r&sup2;)</strong></p>
+                            <p>Suppose we need to find the required radius (<strong>r</strong>) to keep the stress below a certain material limit for a given force. We must transpose the formula to solve for <strong>r</strong>:</p>
+                            <ol>
+                                <li>Multiply both sides by <strong>r&sup2;</strong>: <br> <strong>&sigma; &times; r&sup2; = F / &pi;</strong></li>
+                                <li>Divide both sides by <strong>&sigma;</strong>: <br> <strong>r&sup2; = F / (&pi; &times; &sigma;)</strong></li>
+                                <li>Take the square root of both sides: <br> <strong>r = &radic;(F / (&pi; &times; &sigma;))</strong></li>
+                            </ol>
+                            <p>This is a fundamental skill in design engineering, ensuring components are adequately sized.</p>
+                        </div>
 
                         <h3>Simultaneous Equations</h3>
                         <p>
                             When analyzing static structures (like trusses), you often have multiple unknown forces but multiple equilibrium equations (sum of forces in X, sum of forces in Y). Solving these requires simultaneous equations.
                         </p>
+                        <div class="example-box">
+                            <h4>Example: Solving a 2D Static System</h4>
+                            <p>Imagine a point in equilibrium subjected to two unknown forces, <strong>F<sub>1</sub></strong> and <strong>F<sub>2</sub></strong>. The equations of equilibrium in the x and y directions yield:</p>
+                            <p>
+                                1) <strong>3F<sub>1</sub> + 2F<sub>2</sub> = 120</strong> (from &Sigma;Fx = 0)<br>
+                                2) <strong>F<sub>1</sub> - 4F<sub>2</sub> = -30</strong> (from &Sigma;Fy = 0)
+                            </p>
+                            <p>To find <strong>F<sub>1</sub></strong> and <strong>F<sub>2</sub></strong>, we can use the elimination method:</p>
+                            <ol>
+                                <li>Multiply equation (2) by 3 so the coefficients of <strong>F<sub>1</sub></strong> match: <br> <strong>3(F<sub>1</sub> - 4F<sub>2</sub>) = 3(-30)</strong> &rarr; <strong>3F<sub>1</sub> - 12F<sub>2</sub> = -90</strong></li>
+                                <li>Subtract this new equation from equation (1):<br>
+                                    <strong>(3F<sub>1</sub> + 2F<sub>2</sub>) - (3F<sub>1</sub> - 12F<sub>2</sub>) = 120 - (-90)</strong><br>
+                                    <strong>14F<sub>2</sub> = 210</strong>
+                                </li>
+                                <li>Solve for <strong>F<sub>2</sub></strong>: <br> <strong>F<sub>2</sub> = 210 / 14 = 15 N</strong></li>
+                                <li>Substitute <strong>F<sub>2</sub> = 15</strong> back into equation (2): <br> <strong>F<sub>1</sub> - 4(15) = -30</strong> <br> <strong>F<sub>1</sub> - 60 = -30</strong> <br> <strong>F<sub>1</sub> = 30 N</strong></li>
+                            </ol>
+                            <p>The solution is <strong>F<sub>1</sub> = 30 N</strong> and <strong>F<sub>2</sub> = 15 N</strong>.</p>
+                        </div>
                     </section>
                 </div>
             </main>

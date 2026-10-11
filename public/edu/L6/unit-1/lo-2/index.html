@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>LO 2: Trigonometry | SCQF Level 6 | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Learning Outcome 2: Trigonometry for Engineering.">
+        <meta name="author" content="Nathan James Sharp">
+        <link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
+        <link rel="stylesheet" href="../../../../style.css">
+    </head>
+    <body>
+        <div class="container">
+
+                <!-- Sidebar Menu -->
+                <aside class="sidebar-nav">
+                    <h3>Units</h3>
+                    <ul>
+                        <li>
+                            <a href="../">Mathematics for Engineering</a>
+                            <!-- Expanded Learning Outcomes -->
+                            <ul class="sub-menu">
+                                <li><a href="../lo-1/">LO 1: Algebraic Methods</a></li>
+                                <li><a href="./" class="active">LO 2: Trigonometry</a></li>
+                                <li><a href="../lo-3/">LO 3: Calculus</a></li>
+                                <li><a href="../lo-4/">LO 4: Statistical Analysis</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Thermofluids</a></li>
+                    </ul>
+                </aside>
+            <header>
+                <h1>SCQF Level 6</h1>
+                <p>Advanced theoretical understanding and complex problem solving (Higher equivalent).</p>
+            </header>
+
+            <main>
+
+                <!-- Main Content Area -->
+                <div class="sidebar-content">
+                    <section>
+                        <h2>LO 2: Trigonometry</h2>
+                        <p>
+                            Trigonometry is essential in engineering for dealing with angles, waves, and resolving vectors. In this learning outcome, you will explore how trigonometric functions are applied to solve practical engineering problems, such as resolving forces in structural analysis or analyzing alternating current (AC) waveforms in electrical engineering.
+                        </p>
+
+                        <h3>Resolving Force Vectors</h3>
+                        <p>
+                            Forces rarely act in purely horizontal or vertical directions. When a force acts at an angle, it can be split (resolved) into two perpendicular components, typically an x-component (horizontal) and a y-component (vertical). This makes it much easier to perform equilibrium calculations using basic algebra.
+                        </p>
+                        <div class="example-box">
+                            <h4>Example: Resolving an Angled Force</h4>
+                            <p>Suppose a cable is pulling a crate with a force of <strong>500 N</strong> at an angle of <strong>30&deg;</strong> above the horizontal.</p>
+                            <p>To find the horizontal (<strong>F<sub>x</sub></strong>) and vertical (<strong>F<sub>y</sub></strong>) components, we use sine and cosine functions from basic right-angled triangle geometry (SOH CAH TOA):</p>
+                            <ul>
+                                <li><strong>cos(&theta;) = Adjacent / Hypotenuse</strong> &rarr; <strong>cos(30&deg;) = F<sub>x</sub> / 500</strong></li>
+                                <li><strong>sin(&theta;) = Opposite / Hypotenuse</strong> &rarr; <strong>sin(30&deg;) = F<sub>y</sub> / 500</strong></li>
+                            </ul>
+                            <p>Rearranging to solve for the components:</p>
+                            <ol>
+                                <li><strong>F<sub>x</sub> = 500 &times; cos(30&deg;)</strong> <br> <strong>F<sub>x</sub> &approx; 500 &times; 0.866 = 433 N</strong></li>
+                                <li><strong>F<sub>y</sub> = 500 &times; sin(30&deg;)</strong> <br> <strong>F<sub>y</sub> = 500 &times; 0.5 = 250 N</strong></li>
+                            </ol>
+                            <p>This means the cable provides a forward horizontal pull of 433 N and an upward vertical lift of 250 N.</p>
+                        </div>
+
+                        <h3>Sine and Cosine Rules</h3>
+                        <p>
+                            Not all triangles in engineering are right-angled. For non-right-angled triangles (scalene or oblique), we use the Sine Rule and the Cosine Rule to find missing side lengths or angles. These are particularly useful in surveying or when adding non-perpendicular vectors graphically (e.g., in a vector polygon).
+                        </p>
+                        <ul>
+                            <li><strong>Sine Rule:</strong> <code>a / sin(A) = b / sin(B) = c / sin(C)</code></li>
+                            <li><strong>Cosine Rule:</strong> <code>a&sup2; = b&sup2; + c&sup2; - 2bc &times; cos(A)</code></li>
+                        </ul>
+                    </section>
+                </div>
+            </main>
+
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by nathan-sharp at 2026-09-30T20:01:56</p>
+                    <p>Site version: 34f42b3</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+
+        <script src="../../../../scripts.js"></script>
+    </body>
+</html>
