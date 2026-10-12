@@ -131,6 +131,21 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://njs.dev/edu/L1/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://njs.dev/edu/L1/unit-1/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://njs.dev/edu/L1/unit-1/lo-1/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
         <loc>https://njs.dev/edu/L6/</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -142,6 +157,11 @@
     </url>
     <url>
         <loc>https://njs.dev/edu/L6/unit-1/lo-1/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://njs.dev/edu/L6/unit-1/lo-2/</loc>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
