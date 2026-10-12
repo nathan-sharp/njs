@@ -191,6 +191,7 @@ window.PhysicsEngine = {
         state.a2_v = 0;
         state.path = [];
         state.history = [];
+        configCtx.clearRect(0, 0, configGraphCanvas.width, configGraphCanvas.height);
     }
 
     window.togglePause = function() { // Exposed for button click
@@ -202,6 +203,7 @@ window.PhysicsEngine = {
     window.clearTrails = function() { // Exposed for button click
         state.path = [];
         state.history = [];
+        configCtx.clearRect(0, 0, configGraphCanvas.width, configGraphCanvas.height);
     }
 
     function updatePhysics() {
@@ -230,8 +232,7 @@ window.PhysicsEngine = {
         const cx = w / 2;
         const cy = h / 3;
 
-        simCtx.fillStyle = '#222';
-        simCtx.fillRect(0, 0, w, h);
+        simCtx.clearRect(0, 0, w, h);
 
         simCtx.save();
         if (w < 600) {
@@ -253,7 +254,7 @@ window.PhysicsEngine = {
 
         if (state.path.length > 1) {
             simCtx.beginPath();
-            simCtx.strokeStyle = "rgba(100, 200, 255, 0.3)";
+            simCtx.strokeStyle = "rgba(0, 85, 255, 0.25)";
             simCtx.lineWidth = 2;
             for (let i = 0; i < state.path.length - 1; i++) {
                 simCtx.moveTo(state.path[i].x, state.path[i].y);
@@ -262,7 +263,7 @@ window.PhysicsEngine = {
             simCtx.stroke();
         }
 
-        simCtx.strokeStyle = '#eee';
+        simCtx.strokeStyle = '#333';
         simCtx.lineWidth = 3;
         simCtx.beginPath();
         simCtx.moveTo(cx, cy);
@@ -280,7 +281,7 @@ window.PhysicsEngine = {
         drawBob(cx + x1, cy + y1, CONFIG.m1, '#FF5722');
         drawBob(cx + x2, cy + y2, CONFIG.m2, '#03A9F4');
         
-        simCtx.fillStyle = '#FFC107';
+        simCtx.fillStyle = '#333';
         simCtx.beginPath();
         simCtx.arc(cx, cy, 6, 0, 2 * Math.PI);
         simCtx.fill();
@@ -299,11 +300,11 @@ window.PhysicsEngine = {
         ctx.clearRect(0, 0, w, h);
         
         ctx.lineWidth = 1;
-        ctx.strokeStyle = '#444';
+        ctx.strokeStyle = '#e0e0e0';
         
         ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
 
-        ctx.fillStyle = '#888';
+        ctx.fillStyle = '#777';
         ctx.font = '10px sans-serif';
         ctx.textBaseline = 'middle';
         ctx.fillText('0', 5, h/2 - 8);
@@ -349,37 +350,55 @@ window.PhysicsEngine = {
         const h = configGraphCanvas.height;
         const ctx = configCtx;
 
-        ctx.fillStyle = 'rgba(34, 34, 34, 0.05)';
-        ctx.fillRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
 
         ctx.save();
-        ctx.strokeStyle = '#444';
+        ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 1;
         
         ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
 
-        ctx.fillStyle = '#888';
+        ctx.fillStyle = '#777';
         ctx.font = '10px sans-serif';
         ctx.fillText('θ2', w/2 + 5, 12);
         ctx.fillText('θ1', w - 20, h/2 - 5);
         ctx.restore();
 
         if (state.history.length < 1) return;
-        const latest = state.history[state.history.length - 1];
         
         let twoPi = 2 * Math.PI;
-        let a1Wrapped = (latest.a1 % twoPi + twoPi) % twoPi;
-        if (a1Wrapped > Math.PI) a1Wrapped -= twoPi;
-        
-        let a2Wrapped = (latest.a2 % twoPi + twoPi) % twoPi;
-        if (a2Wrapped > Math.PI) a2Wrapped -= twoPi;
-        
-        const x = (a1Wrapped / twoPi) * w + w / 2;
-        const y = (a2Wrapped / twoPi) * h + h / 2;
 
-        ctx.fillStyle = '#4CAF50';
-        ctx.fillRect(x, y, 2, 2);
+        for (let i = 0; i < state.history.length; i++) {
+            const pt = state.history[i];
+            let a1Wrapped = (pt.a1 % twoPi + twoPi) % twoPi;
+            if (a1Wrapped > Math.PI) a1Wrapped -= twoPi;
+            
+            let a2Wrapped = (pt.a2 % twoPi + twoPi) % twoPi;
+            if (a2Wrapped > Math.PI) a2Wrapped -= twoPi;
+            
+            const x = (a1Wrapped / twoPi) * w + w / 2;
+            const y = (a2Wrapped / twoPi) * h + h / 2;
+
+            const age = state.history.length - 1 - i;
+            if (age === 0) {
+                // Latest head: slightly larger bright blue point
+                ctx.fillStyle = '#0055ff';
+                ctx.fillRect(x - 1, y - 1, 4, 4);
+            } else if (age < 40) {
+                // Short recent trail fading smoothly from bright blue to slate gray
+                const ratio = age / 40;
+                const r = Math.round(0 + (108 - 0) * ratio);
+                const g = Math.round(85 + (117 - 85) * ratio);
+                const b = Math.round(255 + (125 - 255) * ratio);
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(x, y, 2, 2);
+            } else {
+                // Permanent history dots: darker slate gray (#6c757d) so they stand out clearly in light mode
+                ctx.fillStyle = '#6c757d';
+                ctx.fillRect(x, y, 2, 2);
+            }
+        }
     }
 
     function animate() {

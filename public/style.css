@@ -56,6 +56,40 @@ footer {
   border-top: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footer-left p {
+  margin: 0;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.footer-right a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-right a:hover {
+  color: var(--accent-color);
 }
 
 /* 3. Typography */
@@ -301,4 +335,289 @@ tr:last-child td {
 
 tr:hover {
   background-color: var(--ad-bg);
+}
+
+/* 9. Media & Canvas Utilities */
+canvas {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+canvas.pixelated,
+.pixelated,
+.dashboard canvas.pixelated {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.setting {
+  margin-bottom: var(--spacing-md);
+}
+
+.setting label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.video-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.video-controls-bar button {
+  width: auto;
+  padding: 0.5rem 1rem;
+}
+
+.video-controls-bar input[type="range"] {
+  flex-grow: 1;
+  width: auto;
+  margin: 0;
+}
+
+.audio-controls-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.audio-controls-row button {
+  flex: 1;
+}
+
+/* 10. Dashboard & Grid Layouts (Simulation Applications) */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--spacing-xl);
+}
+
+.main-view {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  background: var(--ad-bg);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  min-width: 0;
+}
+
+.angle-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  min-width: 0;
+}
+
+.graph-container {
+  background: var(--ad-bg);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.graph-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.dashboard canvas {
+  background-color: var(--bg-color);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.dashboard canvas.pixelated {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.settings-panel {
+  grid-column: 1 / -1;
+  background: var(--ad-bg);
+  padding: var(--spacing-lg);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  min-width: 0;
+}
+
+.settings-panel h3 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-sm);
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.control-item label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.control-item input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.main-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.viewport-fullscreen-btn {
+  position: absolute;
+  bottom: calc(var(--spacing-md) + 8px);
+  right: calc(var(--spacing-md) + 8px);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.viewport-fullscreen-btn:hover {
+  background-color: var(--bg-color);
+  border-color: var(--text-color);
+}
+
+.main-view:fullscreen {
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background-color: #fcfcfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.main-view:fullscreen canvas {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .main-view, .graph-container, .settings-panel {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 11. Sidebar Layout */
+.sidebar-layout {
+  display: block;
+}
+
+.sidebar-nav {
+  background: var(--ad-bg);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 1200px) {
+  .sidebar-nav {
+    float: left;
+    position: sticky;
+    top: var(--spacing-lg);
+    width: 220px;
+    margin-left: calc(-220px - var(--spacing-lg));
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: var(--spacing-sm);
+  color: var(--text-color);
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background-color: var(--border-color);
+  color: var(--accent-color);
+}
+
+.sidebar-nav .sub-menu {
+  margin-left: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  border-left: 2px solid var(--border-color);
+  padding-left: var(--spacing-sm);
+}
+
+.sidebar-content {
+  width: 100%;
 }

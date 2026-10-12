@@ -18,7 +18,7 @@
 
 = Executive Summary and Strategic Rationale
 
-The global engineering and manufacturing ecosystem stands at a critical juncture, burdened by a legacy of data fragmentation that inhibits innovation and imposes severe economic penalties. For decades, the Computer-Aided Design (CAD) industry has been characterized by a "Tower of Babel," where proprietary file formats—such as `.ipt` (Autodesk Inventor), `.f3d` (Autodesk Fusion), and `.sldprt` (SolidWorks)—effectively lock intellectual property into siloed environments. This lack of interoperability forces engineers to rely on "neutral" formats like STEP (ISO 10303) or IGES, which, while capable of transmitting explicit geometric shapes (Boundary Representation or B-Rep), fail catastrophically to preserve the "design intent"—the parametric history, constraints, and feature trees that define the functional logic of a model.
+The global engineering and manufacturing ecosystem stands at a critical juncture, burdened by a legacy of data fragmentation that inhibits innovation and imposes severe economic penalties. For decades, the Computer-Aided Design (CAD) industry has been characterized by a "Tower of Babel," where proprietary file formats, such as `.ipt` (Autodesk Inventor), `.f3d` (Autodesk Fusion), and `.sldprt` (SolidWorks), effectively lock intellectual property into siloed environments. This lack of interoperability forces engineers to rely on "neutral" formats like STEP (ISO 10303) or IGES, which, while capable of transmitting explicit geometric shapes (Boundary Representation or B-Rep), fail catastrophically to preserve the "design intent": the parametric history, constraints, and feature trees that define the functional logic of a model.
 
 This report presents a comprehensive research framework and draft proposal for a new International Standard: the *Unified Cloud-Native Parametric Exchange (UCPX)*. This standard is specifically architected to address the requirements of preserving the parametric change tree across heterogeneous software suites, segregating mechanical, electrical, and assembly domains into distinct but interlinked file types, and optimizing data transport for modern cloud infrastructure via the WebDAV protocol.
 
@@ -33,7 +33,7 @@ These costs manifest in three primary areas:
 == The Strategic Vision: UCPX
 The proposed UCPX standard aims to solve these structural deficiencies through a tripartite architecture:
 - *Universal Parametric History:* Adopting a *Macro-Parametric Approach (MPA)* to define a neutral taxonomy of modeling commands (e.g., "Extrude", "Fillet").[5]
-- *Domain Segregation:* Replacing the monolithic single-file paradigm with a distributed file set—`.ucxp` for mechanical, `.ucxe` for electrical, and `.ucxa` for assembly.
+- *Domain Segregation:* Replacing the monolithic single-file paradigm with a distributed file set: `.ucxp` for mechanical, `.ucxe` for electrical, and `.ucxa` for assembly.
 - *Cloud-Native Protocol Optimization:* Leveraging *Open Packaging Conventions (OPC)* and *WebDAV* to support granular locking and partial updates.[6]
 
 = Technical Architecture: The "Exploded" Data Model
@@ -118,7 +118,7 @@ The relevant body is **ISO/TC 184 (Automation systems and integration), Subcommi
 = Simulated Draft of the International Standard (UCPX)
 
 *ISO/WD 10303-XXX* \
-*Automation systems and integration — Unified Cloud-Native Parametric Exchange (UCPX) — Part 1: Architecture and Core Definitions*
+*Automation systems and integration: Unified Cloud-Native Parametric Exchange (UCPX), Part 1: Architecture and Core Definitions*
 
 *1. Scope* \
 This document specifies a file format and data model for the exchange of feature-based, parametric engineering data between heterogeneous CAD systems. It defines a taxonomy of Standard Modeling Commands (SMC) and a container architecture based on Open Packaging Conventions.

@@ -56,7 +56,7 @@ function getLastUpdatedMetadata(relativePath) {
 }
 
 function updateFooter(content, metadata) {
-  const footerPattern = /^(\s*)<p>©.*<\/p>$/m;
+  const footerPattern = /^(\s*)<footer>\r?\n[\s\S]*?©[\s\S]*?\r?\n\1<\/footer>$/m;
   const match = content.match(footerPattern);
 
   if (!match) {
@@ -64,7 +64,24 @@ function updateFooter(content, metadata) {
   }
 
   const indentation = match[1];
-  const updatedFooter = `${indentation}<p>©${currentYear} Nathan James Sharp. All Rights Reserved. | Last updated by ${metadata.by} at ${metadata.when} | Version: ${versionHash}</p>`;
+  const innerIndentation = indentation + '    ';
+  const pIndentation = innerIndentation + '    ';
+  const eol = content.includes('\r\n') ? '\r\n' : '\n';
+
+  const updatedFooter = [
+    `${indentation}<footer>`,
+    `${innerIndentation}<div class="footer-left">`,
+    `${pIndentation}<p>©${currentYear} Nathan James Sharp. All Rights Reserved.</p>`,
+    `${pIndentation}<p>Page last updated by ${metadata.by} at ${metadata.when}</p>`,
+    `${pIndentation}<p>Site version: ${versionHash}</p>`,
+    `${innerIndentation}</div>`,
+    `${innerIndentation}<div class="footer-right">`,
+    `${pIndentation}<a href="/about/">About</a>`,
+    `${pIndentation}<a href="/other/privacy/">Privacy Policy</a>`,
+    `${innerIndentation}</div>`,
+    `${indentation}</footer>`,
+  ].join(eol);
+
   return content.replace(footerPattern, updatedFooter);
 }
 

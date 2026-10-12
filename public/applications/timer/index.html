@@ -224,7 +224,7 @@
                 let targetRaw = getTargetParam();
                 let targetDate = null;
                 if (targetRaw != null) {
-                    // user supplied something — try to parse it as ISO datetime
+                    // user supplied something: try to parse it as ISO datetime
                     const parsed = new Date(targetRaw);
                     if (!isNaN(parsed)) {
                         targetDate = parsed;
@@ -241,7 +241,7 @@
                     // Auto-populate the URL with the ISO timestamp so it's visible to users on load
                     try {
                         const url = new URL(location.href);
-                        // use ISO (UTC) for a canonical, time zone–aware value
+                        // use ISO (UTC) for a canonical, time zone-aware value
                         url.searchParams.set('t', targetDate.toISOString());
                         history.replaceState(null, '', url.toString());
                     } catch (e) {
