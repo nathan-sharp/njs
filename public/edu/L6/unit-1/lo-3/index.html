@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>LO 3: Calculus | SCQF Level 6 | NJS.dev</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Learning Outcome 3: Calculus for Engineering.">
+        <meta name="author" content="Nathan James Sharp">
+        <link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
+        <link rel="stylesheet" href="../../../../style.css">
+    </head>
+    <body>
+        <div class="container">
+
+                <!-- Sidebar Menu -->
+                <aside class="sidebar-nav">
+                    <h3>Units</h3>
+                    <ul>
+                        <li>
+                            <a href="../">Mathematics for Engineering</a>
+                            <!-- Expanded Learning Outcomes -->
+                            <ul class="sub-menu">
+                                <li><a href="../lo-1/">LO 1: Algebraic Methods</a></li>
+                                <li><a href="../lo-2/">LO 2: Trigonometry</a></li>
+                                <li><a href="./" class="active">LO 3: Calculus</a></li>
+                                <li><a href="../lo-4/">LO 4: Statistical Analysis</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Thermofluids</a></li>
+                    </ul>
+                </aside>
+            <header>
+                <h1>SCQF Level 6</h1>
+                <p>Advanced theoretical understanding and complex problem solving (Higher equivalent).</p>
+            </header>
+
+            <main>
+
+                <!-- Main Content Area -->
+                <div class="sidebar-content">
+                    <section>
+                        <h2>LO 3: Calculus</h2>
+                        <p>
+                            Calculus is the mathematical study of continuous change. In engineering, it allows us to analyze dynamic systems, find maximum and minimum values (optimization), and calculate areas and volumes. At SCQF Level 6, you will be introduced to the two main branches: differentiation and integration.
+                        </p>
+
+                        <h3>Differentiation</h3>
+                        <p>
+                            Differentiation is used to find the rate at which a quantity is changing. The result of differentiating a function is called the <strong>derivative</strong>, often denoted as <code>dy/dx</code> or <code>f'(x)</code>. Geometrically, it represents the gradient of the tangent to a curve at any given point.
+                        </p>
+                        <p>
+                            <strong>Basic Rule for Polynomials:</strong> If <code>y = ax<sup>n</sup></code>, then <code>dy/dx = anx<sup>n-1</sup></code>.
+                        </p>
+                        <p>
+                            <strong>Example in Engineering:</strong> If the displacement (s) of an object over time (t) is given by the function <code>s(t) = 5t<sup>2</sup> + 3t</code>, the velocity (v), which is the rate of change of displacement, is the derivative:
+                        </p>
+                        <ul>
+                            <li><code>v(t) = ds/dt</code></li>
+                            <li><code>v(t) = 2(5)t<sup>2-1</sup> + 1(3)t<sup>1-1</sup></code></li>
+                            <li><code>v(t) = 10t + 3</code></li>
+                        </ul>
+
+                        <h3>Integration</h3>
+                        <p>
+                            Integration is the reverse process of differentiation. It is used to find the accumulation of a quantity, such as calculating the area under a curve, volume, or total work done by a variable force. The integral symbol is <code>&int;</code>.
+                        </p>
+                        <p>
+                            <strong>Basic Rule for Polynomials:</strong> The indefinite integral of <code>ax<sup>n</sup></code> is <code>(a/(n+1))x<sup>n+1</sup> + C</code>, where C is the constant of integration.
+                        </p>
+                        <p>
+                            <strong>Example in Engineering:</strong> If a force (F) applied to an object varies with distance (x) according to the function <code>F(x) = 4x</code>, the work done (W) in moving the object from <code>x = 0</code> to <code>x = 3</code> is the definite integral of the force function over that interval:
+                        </p>
+                        <ul>
+                            <li><code>W = &int;<sub>0</sub><sup>3</sup> (4x) dx</code></li>
+                            <li>Find the integral: <code>(4/2)x<sup>2</sup> = 2x<sup>2</sup></code></li>
+                            <li>Evaluate at bounds: <code>[2(3)<sup>2</sup>] - [2(0)<sup>2</sup>]</code></li>
+                            <li><code>W = 2(9) - 0 = 18</code> Joules</li>
+                        </ul>
+                    </section>
+                </div>
+            </main>
+
+            <footer>
+                <div class="footer-left">
+                    <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                    <p>Page last updated by google-labs-jules-bot at 2026-10-13T09:24:28</p>
+                    <p>Site version: ac03344</p>
+                </div>
+                <div class="footer-right">
+                    <a href="/about/">About</a>
+                    <a href="/other/privacy/">Privacy Policy</a>
+                </div>
+            </footer>
+        </div>
+
+        <script src="../../../../scripts.js"></script>
+    </body>
+</html>
