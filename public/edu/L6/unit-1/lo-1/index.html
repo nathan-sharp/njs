@@ -48,70 +48,76 @@
                         <p>
                             In mechanical engineering, you often know the result of a formula but need to isolate a specific variable (like solving for the radius in a stress calculation). The golden rule is: whatever you do to one side of the equation, you must do to the other.
                         </p>
-                        <p>
-                            <strong>Example:</strong> Consider the normal stress formula <code>&sigma; = F / A</code> (Stress = Force / Area). If we know the allowable stress (<code>&sigma;</code>) and the applied force (<code>F</code>), we need to find the required cross-sectional area (<code>A</code>).
-                        </p>
-                        <ol>
-                            <li>Multiply both sides by A: <code>&sigma; &times; A = F</code></li>
-                            <li>Divide both sides by &sigma;: <code>A = F / &sigma;</code></li>
-                        </ol>
+                        <div class="example-box">
+                            <p>
+                                <strong>Example:</strong> Consider the normal stress formula <code>&sigma; = F / A</code> (Stress = Force / Area). If we know the allowable stress (<code>&sigma;</code>) and the applied force (<code>F</code>), we need to find the required cross-sectional area (<code>A</code>).
+                            </p>
+                            <ol>
+                                <li>Multiply both sides by A: <code>&sigma; &times; A = F</code></li>
+                                <li>Divide both sides by &sigma;: <code>A = F / &sigma;</code></li>
+                            </ol>
+                        </div>
 
                         <h3>Simultaneous Equations</h3>
                         <p>
                             When analyzing static structures (like trusses), you often have multiple unknown forces but multiple equilibrium equations (sum of forces in X, sum of forces in Y). Solving these requires simultaneous equations.
                         </p>
-                        <p>
-                            <strong>Example:</strong> Suppose a node in a truss has two unknown forces, F<sub>1</sub> and F<sub>2</sub>, and we have the following equilibrium equations:
-                        </p>
-                        <ul>
-                            <li><code>2F<sub>1</sub> + 3F<sub>2</sub> = 12</code> (Equation 1)</li>
-                            <li><code>3F<sub>1</sub> - F<sub>2</sub> = 7</code> (Equation 2)</li>
-                        </ul>
-                        <p>
-                            To solve for F<sub>1</sub> and F<sub>2</sub>, we can use the substitution or elimination method. Let's use elimination by multiplying Equation 2 by 3:
-                        </p>
-                        <ul>
-                            <li><code>9F<sub>1</sub> - 3F<sub>2</sub> = 21</code> (Equation 3)</li>
-                        </ul>
-                        <p>
-                            Adding Equation 1 and Equation 3 eliminates F<sub>2</sub>:
-                        </p>
-                        <ul>
-                            <li><code>(2F<sub>1</sub> + 9F<sub>1</sub>) + (3F<sub>2</sub> - 3F<sub>2</sub>) = 12 + 21</code></li>
-                            <li><code>11F<sub>1</sub> = 33</code></li>
-                            <li><code>F<sub>1</sub> = 3</code></li>
-                        </ul>
-                        <p>
-                            Substitute F<sub>1</sub> back into Equation 2:
-                        </p>
-                        <ul>
-                            <li><code>3(3) - F<sub>2</sub> = 7</code></li>
-                            <li><code>9 - F<sub>2</sub> = 7</code></li>
-                            <li><code>F<sub>2</sub> = 2</code></li>
-                        </ul>
+                        <div class="example-box">
+                            <p>
+                                <strong>Example:</strong> Suppose a node in a truss has two unknown forces, F<sub>1</sub> and F<sub>2</sub>, and we have the following equilibrium equations:
+                            </p>
+                            <ul>
+                                <li><code>2F<sub>1</sub> + 3F<sub>2</sub> = 12</code> (Equation 1)</li>
+                                <li><code>3F<sub>1</sub> - F<sub>2</sub> = 7</code> (Equation 2)</li>
+                            </ul>
+                            <p>
+                                To solve for F<sub>1</sub> and F<sub>2</sub>, we can use the substitution or elimination method. Let's use elimination by multiplying Equation 2 by 3:
+                            </p>
+                            <ul>
+                                <li><code>9F<sub>1</sub> - 3F<sub>2</sub> = 21</code> (Equation 3)</li>
+                            </ul>
+                            <p>
+                                Adding Equation 1 and Equation 3 eliminates F<sub>2</sub>:
+                            </p>
+                            <ul>
+                                <li><code>(2F<sub>1</sub> + 9F<sub>1</sub>) + (3F<sub>2</sub> - 3F<sub>2</sub>) = 12 + 21</code></li>
+                                <li><code>11F<sub>1</sub> = 33</code></li>
+                                <li><code>F<sub>1</sub> = 3</code></li>
+                            </ul>
+                            <p>
+                                Substitute F<sub>1</sub> back into Equation 2:
+                            </p>
+                            <ul>
+                                <li><code>3(3) - F<sub>2</sub> = 7</code></li>
+                                <li><code>9 - F<sub>2</sub> = 7</code></li>
+                                <li><code>F<sub>2</sub> = 2</code></li>
+                            </ul>
+                        </div>
 
                         <h3>Polynomials</h3>
                         <p>
                             Polynomials are mathematical expressions consisting of variables and coefficients, involving operations of addition, subtraction, multiplication, and non-negative integer exponents of variables. In engineering, polynomials often describe curves, area moments of inertia, and dynamic system behaviors.
                         </p>
-                        <p>
-                            <strong>Example:</strong> A second-degree polynomial, or quadratic equation, takes the form <code>ax<sup>2</sup> + bx + c = 0</code>.
-                        </p>
-                        <p>
-                            To find the roots of a quadratic equation (where the curve crosses the x-axis), you can use the quadratic formula:
-                        </p>
-                        <ul>
-                            <li><code>x = (-b &plusmn; &radic;(b<sup>2</sup> - 4ac)) / (2a)</code></li>
-                        </ul>
-                        <p>
-                            For instance, if <code>x<sup>2</sup> - 5x + 6 = 0</code> (where a=1, b=-5, c=6):
-                        </p>
-                        <ul>
-                            <li><code>x = (5 &plusmn; &radic;((-5)<sup>2</sup> - 4(1)(6))) / (2(1))</code></li>
-                            <li><code>x = (5 &plusmn; &radic;(25 - 24)) / 2</code></li>
-                            <li><code>x = (5 &plusmn; 1) / 2</code></li>
-                            <li>Therefore, <code>x = 3</code> or <code>x = 2</code>.</li>
-                        </ul>
+                        <div class="example-box">
+                            <p>
+                                <strong>Example:</strong> A second-degree polynomial, or quadratic equation, takes the form <code>ax<sup>2</sup> + bx + c = 0</code>.
+                            </p>
+                            <p>
+                                To find the roots of a quadratic equation (where the curve crosses the x-axis), you can use the quadratic formula:
+                            </p>
+                            <ul>
+                                <li><code>x = (-b &plusmn; &radic;(b<sup>2</sup> - 4ac)) / (2a)</code></li>
+                            </ul>
+                            <p>
+                                For instance, if <code>x<sup>2</sup> - 5x + 6 = 0</code> (where a=1, b=-5, c=6):
+                            </p>
+                            <ul>
+                                <li><code>x = (5 &plusmn; &radic;((-5)<sup>2</sup> - 4(1)(6))) / (2(1))</code></li>
+                                <li><code>x = (5 &plusmn; &radic;(25 - 24)) / 2</code></li>
+                                <li><code>x = (5 &plusmn; 1) / 2</code></li>
+                                <li>Therefore, <code>x = 3</code> or <code>x = 2</code>.</li>
+                            </ul>
+                        </div>
                     </section>
                 </div>
             </main>
@@ -119,8 +125,8 @@
             <footer>
                 <div class="footer-left">
                     <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
-                    <p>Page last updated by google-labs-jules-bot at 2026-10-14T09:39:09</p>
-                    <p>Site version: 271d89b</p>
+                    <p>Page last updated by google-labs-jules-bot at 2026-10-17T09:56:19</p>
+                    <p>Site version: 50c7fdf</p>
                 </div>
                 <div class="footer-right">
                     <a href="/about/">About</a>
