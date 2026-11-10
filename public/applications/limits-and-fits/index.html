@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>ISO 286 Limits &amp; Fits Calculator | NJS.dev</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Client-side ISO 286-1 and ISO 286-2 Limits and Fits calculator for mechanical engineers and machinists. Compute hole and shaft tolerances, fundamental deviations, drawing dimensions, and clearance or interference fits.">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../style.css">
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+    <script src="../../scripts.js"></script>
+    <script src="./scripts.js" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>ISO 286 Limits &amp; Fits</h1>
+            <p>Calculate hole and shaft tolerance limits, deviations, drawing dimensions, and engineering fit classifications according to ISO 286.</p>
+        </header>
+
+        <main>
+            <section>
+                <h2>Fit Configuration</h2>
+                <div class="dashboard">
+                    <div class="settings-panel">
+                        <h3>Nominal Size &amp; Tolerance Classes</h3>
+                        <div class="control-grid">
+                            <div class="control-item">
+                                <label for="nominal-size">Nominal Diameter (1 – 500 mm)</label>
+                                <input type="number" id="nominal-size" value="25" min="1" max="500" step="0.5">
+                            </div>
+
+                            <div class="control-item">
+                                <label for="preferred-fit">Preferred Fit Preset (ISO 286-1)</label>
+                                <select id="preferred-fit">
+                                    <optgroup label="Hole Basis Preferred Fits">
+                                        <option value="H11/c11">H11/c11, loose running clearance</option>
+                                        <option value="H9/d9">H9/d9, free running clearance</option>
+                                        <option value="H8/f7">H8/f7, close running clearance</option>
+                                        <option value="H7/g6" selected>H7/g6, sliding clearance</option>
+                                        <option value="H7/h6">H7/h6, locational clearance</option>
+                                        <option value="H7/k6">H7/k6, locating transition</option>
+                                        <option value="H7/n6">H7/n6, tight transition</option>
+                                        <option value="H7/p6">H7/p6, light press fit</option>
+                                        <option value="H7/s6">H7/s6, medium drive fit</option>
+                                        <option value="H7/u6">H7/u6, heavy force / shrink fit</option>
+                                    </optgroup>
+                                    <optgroup label="Shaft Basis Preferred Fits">
+                                        <option value="C11/h11">C11/h11, loose running clearance</option>
+                                        <option value="D9/h9">D9/h9, free running clearance</option>
+                                        <option value="F8/h7">F8/h7, close running clearance</option>
+                                        <option value="G7/h6">G7/h6, sliding clearance</option>
+                                        <option value="K7/h6">K7/h6, locating transition</option>
+                                        <option value="N7/h6">N7/h6, tight transition</option>
+                                        <option value="P7/h6">P7/h6, light press fit</option>
+                                        <option value="S7/h6">S7/h6, medium drive fit</option>
+                                        <option value="U7/h6">U7/h6, heavy force / shrink fit</option>
+                                    </optgroup>
+                                    <optgroup label="Custom">
+                                        <option value="custom">Custom hole &amp; shaft selection</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="control-item">
+                                <label for="hole-deviation">Hole Deviation (Uppercase)</label>
+                                <select id="hole-deviation">
+                                    <option value="A">A, extra-loose clearance</option>
+                                    <option value="B">B, very loose clearance</option>
+                                    <option value="C">C, loose clearance</option>
+                                    <option value="D">D, free running clearance</option>
+                                    <option value="E">E, easy running clearance</option>
+                                    <option value="F">F, close running clearance</option>
+                                    <option value="G">G, sliding clearance</option>
+                                    <option value="H" selected>H, standard basis (zero lower)</option>
+                                    <option value="JS">JS, symmetrical transition</option>
+                                    <option value="K">K, locating transition</option>
+                                    <option value="M">M, tight transition</option>
+                                    <option value="N">N, tight transition / light press</option>
+                                    <option value="P">P, press fit</option>
+                                    <option value="R">R, medium press fit</option>
+                                    <option value="S">S, medium drive fit</option>
+                                    <option value="T">T, heavy drive fit</option>
+                                    <option value="U">U, heavy force / shrink fit</option>
+                                </select>
+                            </div>
+
+                            <div class="control-item">
+                                <label for="hole-grade">Hole Grade (IT)</label>
+                                <select id="hole-grade">
+                                    <option value="5">5, ultra-precision</option>
+                                    <option value="6">6, high precision</option>
+                                    <option value="7" selected>7, standard precision</option>
+                                    <option value="8">8, medium precision</option>
+                                    <option value="9">9, general machining</option>
+                                    <option value="10">10, coarse tolerance</option>
+                                    <option value="11">11, loose tolerance</option>
+                                    <option value="12">12, very loose tolerance</option>
+                                </select>
+                            </div>
+
+                            <div class="control-item">
+                                <label for="shaft-deviation">Shaft Deviation (Lowercase)</label>
+                                <select id="shaft-deviation">
+                                    <option value="a">a, extra-loose clearance</option>
+                                    <option value="b">b, very loose clearance</option>
+                                    <option value="c">c, loose clearance</option>
+                                    <option value="d">d, free running clearance</option>
+                                    <option value="e">e, easy running clearance</option>
+                                    <option value="f">f, close running clearance</option>
+                                    <option value="g" selected>g, sliding clearance</option>
+                                    <option value="h">h, standard basis (zero upper)</option>
+                                    <option value="js">js, symmetrical transition</option>
+                                    <option value="k">k, locating transition</option>
+                                    <option value="m">m, tight transition</option>
+                                    <option value="n">n, tight transition / light press</option>
+                                    <option value="p">p, press fit</option>
+                                    <option value="r">r, medium press fit</option>
+                                    <option value="s">s, medium drive fit</option>
+                                    <option value="t">t, heavy drive fit</option>
+                                    <option value="u">u, heavy force / shrink fit</option>
+                                </select>
+                            </div>
+
+                            <div class="control-item">
+                                <label for="shaft-grade">Shaft Grade (IT)</label>
+                                <select id="shaft-grade">
+                                    <option value="5">5, ultra-precision</option>
+                                    <option value="6" selected>6, high precision</option>
+                                    <option value="7">7, standard precision</option>
+                                    <option value="8">8, medium precision</option>
+                                    <option value="9">9, general machining</option>
+                                    <option value="10">10, coarse tolerance</option>
+                                    <option value="11">11, loose tolerance</option>
+                                    <option value="12">12, very loose tolerance</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="main-controls">
+                            <button type="button" id="btn-calculate">Calculate Fit</button>
+                            <button type="button" class="secondary" id="btn-reset">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="main-view">
+                        <canvas id="fit-canvas" width="760" height="280"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Calculated Limits &amp; Deviations</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Hole (Internal)</th>
+                            <th>Shaft (External)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tolerance Class</td>
+                            <td id="res-hole-class">25 H7</td>
+                            <td id="res-shaft-class">25 g6</td>
+                        </tr>
+                        <tr>
+                            <td>Drawing Dimension (Nominal + Deviations)</td>
+                            <td id="res-hole-dwg-dev">25 +0.021 / 0.000 mm</td>
+                            <td id="res-shaft-dwg-dev">25 -0.007 / -0.020 mm</td>
+                        </tr>
+                        <tr>
+                            <td>Drawing Dimension (Mean ± Tolerance)</td>
+                            <td id="res-hole-dwg-sym">25.0105 ±0.0105 mm</td>
+                            <td id="res-shaft-dwg-sym">24.9865 ±0.0065 mm</td>
+                        </tr>
+                        <tr>
+                            <td>Upper Deviation (µm)</td>
+                            <td id="res-hole-es">+21 µm</td>
+                            <td id="res-shaft-es">-7 µm</td>
+                        </tr>
+                        <tr>
+                            <td>Lower Deviation (µm)</td>
+                            <td id="res-hole-ei">0 µm</td>
+                            <td id="res-shaft-ei">-20 µm</td>
+                        </tr>
+                        <tr>
+                            <td>Maximum Limit (mm)</td>
+                            <td id="res-hole-max">25.0210 mm</td>
+                            <td id="res-shaft-max">24.9930 mm</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum Limit (mm)</td>
+                            <td id="res-hole-min">25.0000 mm</td>
+                            <td id="res-shaft-min">24.9800 mm</td>
+                        </tr>
+                        <tr>
+                            <td>Tolerance Width (µm)</td>
+                            <td id="res-hole-tol">21 µm</td>
+                            <td id="res-shaft-tol">13 µm</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fit Summary</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fit Designation</td>
+                            <td id="res-fit-designation">Ø25 H7/g6</td>
+                        </tr>
+                        <tr>
+                            <td>Fit Classification</td>
+                            <td id="res-fit-type">Clearance Fit</td>
+                        </tr>
+                        <tr>
+                            <td>Hole Drawing Dimension</td>
+                            <td id="res-fit-hole-dwg">Ø25.0105 ±0.0105 mm (Ø25 +0.021 / 0.000 mm)</td>
+                        </tr>
+                        <tr>
+                            <td>Shaft Drawing Dimension</td>
+                            <td id="res-fit-shaft-dwg">Ø24.9865 ±0.0065 mm (Ø25 -0.007 / -0.020 mm)</td>
+                        </tr>
+                        <tr>
+                            <td>Fit Allowance (Mean ± Tolerance)</td>
+                            <td id="res-fit-dwg-allowance">+0.024 ±0.017 mm</td>
+                        </tr>
+                        <tr>
+                            <td>Maximum Clearance / Minimum Interference (µm)</td>
+                            <td id="res-max-clearance">+41 µm (+0.041 mm)</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum Clearance / Maximum Interference (µm)</td>
+                            <td id="res-min-clearance">+7 µm (+0.007 mm)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>Understanding the ISO 286 System of Limits &amp; Fits</h2>
+                <p>
+                    <strong>ISO 286</strong> defines the internationally standardized system of linear dimensional tolerances and engineering fits for cylindrical and parallel mating features. Each tolerance class combines a <strong>Fundamental Deviation letter</strong> (uppercase $\text{A}\dots\text{ZC}$ for holes, lowercase $\text{a}\dots\text{zc}$ for shafts) with an <strong>International Tolerance Grade (IT)</strong> number.
+                </p>
+                <div class="example-box">
+                    $$i = 0.45\sqrt[3]{D} + 0.001D \quad (\mu\text{m})$$
+                </div>
+                <p>
+                    Where $i$ is the standard tolerance factor in micrometers ($\mu\text{m}$) and $D = \sqrt{D_{\min} \cdot D_{\max}}$ is the geometric mean of the nominal size step in millimeters. From the upper and lower deviations ($ES, EI$ for the hole and $es, ei$ for the shaft), the drawing limits and assembly clearances are calculated as:
+                </p>
+                <div class="example-box">
+                    $$D_{\max} = D + \frac{ES}{1000}, \qquad D_{\min} = D + \frac{EI}{1000}, \qquad D_{\text{mean}} = \frac{D_{\max} + D_{\min}}{2} \pm \frac{T_D}{2000}$$
+                    $$d_{\max} = D + \frac{es}{1000}, \qquad d_{\min} = D + \frac{ei}{1000}, \qquad d_{\text{mean}} = \frac{d_{\max} + d_{\min}}{2} \pm \frac{T_d}{2000}$$
+                    $$C_{\max} = ES - ei = D_{\max} - d_{\min}, \qquad C_{\min} = EI - es = D_{\min} - d_{\max}$$
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-left">
+                <p>©2026 Nathan James Sharp. All Rights Reserved.</p>
+                <p>Page last updated by unknown at 2026-11-10T09:30:58</p>
+                <p>Site version: 2e93266</p>
+            </div>
+            <div class="footer-right">
+                <a href="/about/">About</a>
+                <a href="/other/privacy/">Privacy Policy</a>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>
