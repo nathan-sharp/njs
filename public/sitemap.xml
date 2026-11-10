@@ -66,6 +66,11 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://njs.dev/applications/limits-and-fits/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://njs.dev/applications/mc-paintings/</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
